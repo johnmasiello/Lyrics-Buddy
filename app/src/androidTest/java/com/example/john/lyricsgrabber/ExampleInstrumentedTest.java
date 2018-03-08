@@ -66,7 +66,7 @@ public class ExampleInstrumentedTest {
         int[] regions = lyricAnalyzer.findColorRegions(matchingLineNumbers);
 
         // Construct readable output
-        // consisting of the trimmed lyrics, and match line numbers
+        // consisting of the trimmed lyrics, and matching line numbers
         String[] trimmedLines = lyricAnalyzer.trimLyrics(lines);
         StringBuilder stringBuilder = new StringBuilder();
         int lineNo = 0;
