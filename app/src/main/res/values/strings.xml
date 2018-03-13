@@ -5,7 +5,7 @@
     <string name="title_dashboard">Dashboard</string>
     <string name="title_notifications">Notifications</string>
     <string name="lyric_options_edit">Edit</string>
-    <string name="lyric_options_show">View</string>
+    <string name="lyric_options_show">Display</string>
     <string name="lyric_options_share">Share</string>
 
     <string name="artist">Ariana Grande</string>
@@ -75,4 +75,5 @@ They don\'t know, they don\'t know, they don\'t know about what we do\n
 Yeah, it\'s true,\n
 I could have all this but I\'m good if I got you\n
 Oh, they don\'t know, they don\'t know, they don\'t know, they don\'t know about us</string>
+    <string name="paste_lyrics_into_view">Paste lyrics</string>
 </resources>

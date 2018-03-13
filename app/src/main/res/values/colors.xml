@@ -3,4 +3,7 @@
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
+    <color name="defaultBackground">#FFFFFF</color>
+    <color name="editBackground">@color/defaultBackground</color>
+    <color name="showBackground">#DDDDDD</color>
 </resources>

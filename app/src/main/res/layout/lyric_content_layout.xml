@@ -1,15 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/lyrics_scroller"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     >
 
     <LinearLayout
+        android:id="@+id/lyrics_background"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:gravity="center_horizontal">
+        android:gravity="center_horizontal"
+        >
 
         <TextView
             android:id="@+id/title"
@@ -32,9 +35,12 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/lyric_body_top_margin"
+            android:inputType="textCapSentences|textMultiLine"
+            android:hint="@string/paste_lyrics_into_view"
             android:paddingLeft="12dp"
             android:paddingRight="12dp"
             android:gravity="center_horizontal|top"
-            android:text="@string/lyrics" />
+            android:text="@string/lyrics"
+            />
     </LinearLayout>
 </ScrollView>
