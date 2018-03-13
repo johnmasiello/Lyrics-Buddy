@@ -129,15 +129,15 @@ public class LyricFragment extends Fragment {
 
                 // Edit the lyrics view, by setting a nonnull key listener
                 lyrics.setKeyListener(null);
-                lyrics.clearFocus();
 
                 // Hide keyboard
-                View view = getActivity().getCurrentFocus();
+                View view = getView();
                 if (view != null) {
                     InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
                     assert imm != null;
-                    imm.hideSoftInputFromWindow(view.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+                    imm.hideSoftInputFromWindow(view.getRootView().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
                 }
+                lyrics.clearFocus();
                 lyricsScroller.scrollTo(0, 0);
 
                 // Update Visual changes
