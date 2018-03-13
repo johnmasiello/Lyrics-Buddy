@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <color name="default_line_color">@android:color/black</color>
+
+    <!--Color Hex »  Color Palettes »  Beach-->
+    <!--Color Hex »  Color Palettes »  Macarons-->
+    <!--Color Hex »  Color Palettes »  Retro VIntage-->
+    <!--Color Hex »  Color Palettes »  Beach Life High Noon-->
+    <!--Color Hex »  Color Palettes »  fun pastels-->
+    <string-array name="beach_colors">
+        <item>#96ceb4</item>
+        <item>#ffeead</item>
+        <item>#ff6f69</item>
+        <item>#ffcc5c</item>
+        <item>#f7e293</item>
+        <item>#fdb078</item>
+        <item>#2a9c9d</item>
+        <item>#f0cfcf</item>
+        <item>#ec5a5a</item>
+        <item>#8ce2ec</item>
+        <item>#ff928e</item>
+        <item>#85ecb9</item>
+        <item>#df744a</item>
+    </string-array>
+</resources>

@@ -1,10 +1,14 @@
 package com.example.john.lyricsgrabber;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.text.SpannableString;
+import android.text.Spanned;
 import android.text.method.KeyListener;
+import android.text.style.ForegroundColorSpan;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -14,6 +18,7 @@ import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ScrollView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 /**
@@ -25,6 +30,8 @@ import android.widget.Toast;
 // TODO: Put in color logic on the lyrics, for display mode
 // Menu
 // TODO: Put in an intent for the share menu item
+// TODO: Make a color palette with submenus to choose a color palette. Use a color icon for each submenu item
+// TODO: Make an option to save lyrics locally to the phone
 // Bottom Navigation
 // TODO: Home [icon only] | '+' [new project]
 public class LyricFragment extends Fragment {
@@ -33,6 +40,8 @@ public class LyricFragment extends Fragment {
     private Menu menu;
 
     private EditText lyrics;
+    private int[] lyricSpanColors;
+    private SpannableString spannableString;
     private KeyListener lyricsEditorListener;
     private ScrollView lyricsScroller;
     private int mode = MODE_EDIT;
@@ -54,6 +63,14 @@ public class LyricFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+
+        // Initialize colors to span the lyrics
+        String[] colorRes = getResources().getStringArray(R.array.beach_colors);
+        lyricSpanColors = new int[colorRes.length];
+
+        for (int i = 0; i < colorRes.length; i++) {
+            lyricSpanColors[i] = Color.parseColor(colorRes[i]);
+        }
     }
 
     @Override
@@ -75,6 +92,12 @@ public class LyricFragment extends Fragment {
         if (savedInstanceState != null) {
             mode = savedInstanceState.getInt(MODE_KEY, MODE_EDIT);
         }
+
+        // TODO: control data entry point for lyrics
+        String lyricData = getString(R.string.lyrics);
+        spannableString = new SpannableString(lyricData);
+        lyrics.setText(spannableString, TextView.BufferType.SPANNABLE);
+
         return rootView;
     }
 
@@ -117,6 +140,7 @@ public class LyricFragment extends Fragment {
                 lyrics.setKeyListener(lyricsEditorListener);
 
                 // Update Visual changes
+                removeSpansFromLyrics();
                 lyricsScroller.setBackgroundColor(getResources().getColor(R.color.editBackground));
                 break;
 
@@ -140,8 +164,49 @@ public class LyricFragment extends Fragment {
                 lyricsScroller.scrollTo(0, 0);
 
                 // Update Visual changes
+                applySpansToLyrics();
                 lyricsScroller.setBackgroundColor(getResources().getColor(R.color.showBackground));
                 break;
         }
+    }
+
+    /**
+     * Preserves the edits
+     */
+    private void applySpansToLyrics() {
+        // Fetch the previously edited text
+        spannableString = new SpannableString(lyrics.getText());
+
+        // Rotate the color spans alternating on characters of editable
+
+        int spanSize = lyricSpanColors.length + 1; // Add the default color
+        int charIndex = 0;
+        int len = (spannableString.length() >> 1) - 1;
+
+        while (charIndex < len) {
+            if ( charIndex % spanSize != lyricSpanColors.length) {
+                spannableString.setSpan(new ForegroundColorSpan(lyricSpanColors[charIndex % spanSize]),
+                        (charIndex << 1) + 1, (++charIndex) << 1,
+                        Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
+            } else {
+                charIndex++;
+            }
+        }
+        lyrics.setText(spannableString, TextView.BufferType.SPANNABLE);
+    }
+
+    /**
+     * Does not preserve the edits
+     */
+    private void removeSpansFromLyrics() {
+        // Removing spans to preserve the text in spannable string
+        ForegroundColorSpan[] spans = spannableString.getSpans(0,
+                spannableString.length(),
+                ForegroundColorSpan.class);
+
+        for (ForegroundColorSpan span : spans) {
+            spannableString.removeSpan(span);
+        }
+        lyrics.setText(spannableString, TextView.BufferType.SPANNABLE);
     }
 }
