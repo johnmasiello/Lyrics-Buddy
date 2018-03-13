@@ -4,6 +4,9 @@
     <string name="title_home">Home</string>
     <string name="title_dashboard">Dashboard</string>
     <string name="title_notifications">Notifications</string>
+    <string name="lyric_options_edit">Edit</string>
+    <string name="lyric_options_show">View</string>
+    <string name="lyric_options_share">Share</string>
 
     <string name="artist">Ariana Grande</string>
     <string name="track_title">"They Don't Know"

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/edit_lyrics"
+        android:title="@string/lyric_options_edit"
+        app:showAsAction="never|withText"
+    />
+
+    <item
+        android:id="@+id/view_lyrics"
+        android:title="@string/lyric_options_show"
+        app:showAsAction="never|withText"
+        android:visible="false"
+        />
+
+    <item
+        android:id="@+id/share_lyrics"
+        android:title="@string/lyric_options_share"
+        app:showAsAction="never|withText"
+        />
+</menu>
