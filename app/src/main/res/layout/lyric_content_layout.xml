@@ -36,10 +36,12 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/lyric_body_top_margin"
             android:gravity="center_horizontal|top"
+            android:background="@android:color/transparent"
             android:hint="@string/paste_lyrics_into_view"
             android:inputType="textCapSentences|textMultiLine"
             android:paddingLeft="12dp"
             android:paddingRight="12dp"
-            android:text="@string/lyrics" />
+            android:text="@string/lyrics"
+            />
     </LinearLayout>
 </ScrollView>

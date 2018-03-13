@@ -21,13 +21,12 @@ import android.widget.Toast;
  * Content Fragment that displays lyrics
  */
 // Edit Text
-// TODO: clear the line at the bottom of the input text
 // TODO: allow the user to enter meta data + lyrics in one edit text; print in multiple edit texts OR utilize spannable texts
-// TODO: remove long presses in non-edit mode
 // TODO: Put in color logic on the lyrics, for display mode
 // Menu
-// TODO: Put in an icon for share menu item
 // TODO: Put in an intent for the share menu item
+// Bottom Navigation
+// TODO: Home [icon only] | '+' [new project]
 public class LyricFragment extends Fragment {
 
     // Valid reference until next call to OnCreateOptionsMenu
@@ -35,7 +34,6 @@ public class LyricFragment extends Fragment {
 
     private EditText lyrics;
     private KeyListener lyricsEditorListener;
-    private ViewGroup lyricsBackground;
     private ScrollView lyricsScroller;
     private int mode = MODE_EDIT;
 
@@ -72,7 +70,6 @@ public class LyricFragment extends Fragment {
         lyrics = rootView.findViewById(R.id.lyrics_body);
         lyricsEditorListener = lyrics.getKeyListener();
 
-        lyricsBackground = rootView.findViewById(R.id.lyrics_background);
         lyricsScroller = rootView.findViewById(R.id.lyrics_scroller);
 
         if (savedInstanceState != null) {
@@ -120,7 +117,7 @@ public class LyricFragment extends Fragment {
                 lyrics.setKeyListener(lyricsEditorListener);
 
                 // Update Visual changes
-                lyricsBackground.setBackgroundColor(getResources().getColor(R.color.editBackground));
+                lyricsScroller.setBackgroundColor(getResources().getColor(R.color.editBackground));
                 break;
 
             case MODE_DISPLAY:
@@ -129,6 +126,8 @@ public class LyricFragment extends Fragment {
 
                 // Edit the lyrics view, by setting a nonnull key listener
                 lyrics.setKeyListener(null);
+                lyrics.setSelection(0);
+                lyrics.setLongClickable(false);
 
                 // Hide keyboard
                 View view = getView();
@@ -141,7 +140,7 @@ public class LyricFragment extends Fragment {
                 lyricsScroller.scrollTo(0, 0);
 
                 // Update Visual changes
-                lyricsBackground.setBackgroundColor(getResources().getColor(R.color.showBackground));
+                lyricsScroller.setBackgroundColor(getResources().getColor(R.color.showBackground));
                 break;
         }
     }
