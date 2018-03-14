@@ -199,14 +199,7 @@ public class LyricFragment extends Fragment {
      * Does not preserve the edits
      */
     private void removeSpansFromLyrics() {
-        // Removing spans to preserve the text in spannable string
-        ForegroundColorSpan[] spans = spannableString.getSpans(0,
-                spannableString.length(),
-                ForegroundColorSpan.class);
-
-        for (ForegroundColorSpan span : spans) {
-            spannableString.removeSpan(span);
-        }
+        spannableString = new SpannableString(lyrics.getText().toString());
         lyrics.setText(spannableString, TextView.BufferType.SPANNABLE);
     }
 }
