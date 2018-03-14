@@ -127,10 +127,18 @@ public class ExampleInstrumentedTest {
                 splits) {
 
             System.out.println("split: " + split.length() + (split.contains(System.lineSeparator()) ? "newline" : split));
+        }
+    }
 
-            /*
-            Output:
-             */
+    @Test
+    public void testDelimiter() throws Exception {
+        String src = "\na\n\nb\n\nc\n\t";
+
+        LyricAnalyzer lyricAnalyzer = new LyricAnalyzer();
+        String[] splits = lyricAnalyzer.delimitLines(src);
+
+        for (String split : splits) {
+            System.out.println("split: " + split);
         }
     }
 }

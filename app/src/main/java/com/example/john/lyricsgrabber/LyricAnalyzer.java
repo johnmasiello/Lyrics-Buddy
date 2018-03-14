@@ -173,20 +173,9 @@ class LyricAnalyzer {
     /**
      *
      * @param body The text to split
-     * @return Splits with the delimiter D=System.separator() as separate splits from the non-delimited expressions
+     * @return Splits with the delimiter D=System.separator()
      */
     String[] delimitLines(String body) {
-        String regexTkn;
-
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
-            regexTkn = System.lineSeparator();
-        } else {
-            // Assume UNIX system
-            regexTkn = "\n";
-        }
-
-        // Split on the regex: {LookAhead{token}}|{LookBehind{token}}
-        return body.split("(?<="+regexTkn+")|(?="+regexTkn+")");
-
+        return body.split("\\n");
     }
 }

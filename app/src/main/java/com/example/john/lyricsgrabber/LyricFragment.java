@@ -51,7 +51,6 @@ public class LyricFragment extends Fragment {
     private int defaultLineColor;
     private int[] lyricSpanColors;
     private int[] regions;
-    private String[] lyricLines;
 
     // State
     private int mode = MODE_EDIT;
@@ -185,7 +184,7 @@ public class LyricFragment extends Fragment {
     }
 
     /**
-     * Preserves the edits
+     * Apply foreground color spans to the lyrics while preserving the edits
      */
     private void applySpansToLyrics() {
 
@@ -197,25 +196,36 @@ public class LyricFragment extends Fragment {
         }
 
         // Apply color spans, highlighting the structure of the lyrics
-        String line;
+        int index, offset, nextOffset;
 
-        for (int i = 0, charOffset = 0, colorIndex; i < lyricLines.length; i++) {
-            colorIndex = regions[i];
-            line = lyricLines[i];
+        offset = index = 0;
+        nextOffset = lyrics.indexOf('\n', offset);
 
+        while (nextOffset != -1) {
             // Default text, line is not repeating in the literal phrasing of the words, so we do not highlight it
-            if (lyricAnalyzer.containsWords(line)) {
-                spannableString.setSpan(
-                        new ForegroundColorSpan(colorIndex != 0 ? lyricSpanColors[colorIndex - 1] :
-                                defaultLineColor),
-                        charOffset,
-                        charOffset + line.length(),
-                        Spanned.SPAN_INCLUSIVE_EXCLUSIVE
-                    );
+            if (lyricAnalyzer.containsWords(lyrics.substring(offset, nextOffset))) {
+                setColorSpan(spannableString, index, offset, nextOffset);
             }
-            charOffset += line.length();
+            index++;
+            offset = ++nextOffset;
+            nextOffset = lyrics.indexOf('\n', offset);
+        }
+        nextOffset = lyrics.length();
+        if (offset != nextOffset && lyricAnalyzer.containsWords(lyrics.substring(offset, nextOffset))) {
+            setColorSpan(spannableString, index, offset, nextOffset);
         }
         this.lyrics.setText(spannableString, TextView.BufferType.SPANNABLE);
+    }
+
+    private void setColorSpan(SpannableString spannable, int regionIndex, int start, int end) {
+        int colorIndex = regions[regionIndex];
+        spannable.setSpan(
+                new ForegroundColorSpan(colorIndex != 0 ? lyricSpanColors[colorIndex - 1] :
+                        defaultLineColor),
+                start,
+                end,
+                Spanned.SPAN_INCLUSIVE_EXCLUSIVE
+        );
     }
 
     /**
@@ -223,7 +233,7 @@ public class LyricFragment extends Fragment {
      * It is unnecessary, however, use this method when the color palette has been changed only.
      */
     private void computeRegions(String lyrics) {
-        lyricLines = lyricAnalyzer.delimitLines(lyrics);
+        String[] lyricLines = lyricAnalyzer.delimitLines(lyrics);
         List<List<Integer>> matchingLineNumbers = lyricAnalyzer.findEquivalentLines(lyricLines);
         regions = lyricAnalyzer.findColorRegions(matchingLineNumbers);
     }
