@@ -13,14 +13,13 @@
         <item>#ffeead</item>
         <item>#ff6f69</item>
         <item>#ffcc5c</item>
-        <item>#f7e293</item>
-        <item>#fdb078</item>
-        <item>#2a9c9d</item>
         <item>#f0cfcf</item>
-        <item>#ec5a5a</item>
-        <item>#8ce2ec</item>
+        <item>#2a9c9d</item>
         <item>#ff928e</item>
         <item>#85ecb9</item>
         <item>#df744a</item>
+        <item>#ec5a5a</item>
+        <item>#8ce2ec</item>
+        <item>#fdb078</item>
     </string-array>
 </resources>

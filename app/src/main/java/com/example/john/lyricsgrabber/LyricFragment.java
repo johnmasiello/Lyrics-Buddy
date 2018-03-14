@@ -202,7 +202,6 @@ public class LyricFragment extends Fragment {
         nextOffset = lyrics.indexOf('\n', offset);
 
         while (nextOffset != -1) {
-            // Default text, line is not repeating in the literal phrasing of the words, so we do not highlight it
             if (lyricAnalyzer.containsWords(lyrics.substring(offset, nextOffset))) {
                 setColorSpan(spannableString, index, offset, nextOffset);
             }
@@ -230,7 +229,7 @@ public class LyricFragment extends Fragment {
 
     /**
      * Should be called each time the text in lyrics has or may have been changed.
-     * It is unnecessary, however, use this method when the color palette has been changed only.
+     * It is unnecessary, however, using this method when the color palette has been changed only.
      */
     private void computeRegions(String lyrics) {
         String[] lyricLines = lyricAnalyzer.delimitLines(lyrics);

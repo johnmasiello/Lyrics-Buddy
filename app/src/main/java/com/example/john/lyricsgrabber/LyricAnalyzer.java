@@ -126,15 +126,13 @@ class LyricAnalyzer {
                 // Case a line is repeating with some other line in the lyrics
                  if (matches != null) {
                     if (index > matches.get(0)) {
-                        regions[index] = regions[matches.get(0)];
+                        coerceColor = regions[index] = regions[matches.get(0)];
                     } else if (newStanza) {
-                        regions[index] = ++lineColor; // Bump the color, once, on new stanza
+                        coerceColor = regions[index] = ++lineColor; // Bump the color, once, on new stanza
                         newStanza = false;
                     } else {
-                        regions[index] = lineColor;
+                        coerceColor = regions[index] = lineColor;
                     }
-                    coerceColor = lineColor;
-
                 }
 
                 // Set the color region for non-repeating lines within the stanza
