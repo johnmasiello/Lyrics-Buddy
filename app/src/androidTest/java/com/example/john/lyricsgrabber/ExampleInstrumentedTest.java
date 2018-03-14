@@ -93,4 +93,44 @@ public class ExampleInstrumentedTest {
     private char printColorRegion(int region) {
         return region > -1 ? (char) (65 + region) : ' ';
     }
+
+    @Test
+    public void testSplits() throws Exception {
+        String src = "\n\na\n\n\nb";
+        String[] splits = src.split("\\n");
+
+        for (String split :
+                splits) {
+
+            System.out.println("split: " + (split != null ? split : "null"));
+
+            /*
+            Output:
+            split:
+            split: a
+             */
+        }
+
+        String src_0 = "\na\n";
+        assertEquals('a', src_0.charAt(1));
+    }
+
+    @Test
+    public void testSplitKeepDelimiter() throws Exception {
+        String src = System.lineSeparator()+System.lineSeparator()+"a"+
+                     System.lineSeparator()+System.lineSeparator()+"b"; //"\n\na\n\n\nb";
+
+        String regexTkn = System.lineSeparator();
+        String[] splits = src.split("(?<="+regexTkn+")|(?="+regexTkn+")");
+
+        for (String split :
+                splits) {
+
+            System.out.println("split: " + split.length() + (split.contains(System.lineSeparator()) ? "newline" : split));
+
+            /*
+            Output:
+             */
+        }
+    }
 }

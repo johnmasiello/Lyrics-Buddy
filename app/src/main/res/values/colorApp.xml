@@ -2,11 +2,7 @@
 <resources>
     <color name="colorPrimary">#b5b5b5</color>
     <color name="colorPrimaryDark">#9e9e9e</color>
-    <color name="altcolorPrimary">#64b568</color>
-    <color name="altcolorPrimaryDark">#589e57</color>
-    <!--Use the system color for Accent, instead-->
-    <!--<color name="colorAccent">#20807e</color>-->
     <color name="defaultBackground">#FFFFFF</color>
     <color name="editBackground">@color/defaultBackground</color>
-    <color name="showBackground">#DDDDDD</color>
+    <color name="showBackground">#666666</color>
 </resources>

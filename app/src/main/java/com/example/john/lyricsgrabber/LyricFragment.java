@@ -21,6 +21,8 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.List;
+
 /**
  * Created by john on 3/12/18.
  * Content Fragment that displays lyrics
@@ -39,11 +41,19 @@ public class LyricFragment extends Fragment {
     // Valid reference until next call to OnCreateOptionsMenu
     private Menu menu;
 
+    // Handles to UI
     private EditText lyrics;
-    private int[] lyricSpanColors;
-    private SpannableString spannableString;
     private KeyListener lyricsEditorListener;
     private ScrollView lyricsScroller;
+
+    // Lyric color logic
+    private LyricAnalyzer lyricAnalyzer;
+    private int defaultLineColor;
+    private int[] lyricSpanColors;
+    private int[] regions;
+    private String[] lyricLines;
+
+    // State
     private int mode = MODE_EDIT;
 
     private static final int MODE_EDIT = 0;
@@ -64,7 +74,12 @@ public class LyricFragment extends Fragment {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
 
+        // Initialize color logic helper
+        lyricAnalyzer = new LyricAnalyzer();
+
         // Initialize colors to span the lyrics
+        defaultLineColor = getResources().getColor(R.color.default_line_color);
+
         String[] colorRes = getResources().getStringArray(R.array.beach_colors);
         lyricSpanColors = new int[colorRes.length];
 
@@ -94,9 +109,7 @@ public class LyricFragment extends Fragment {
         }
 
         // TODO: control data entry point for lyrics
-        String lyricData = getString(R.string.lyrics);
-        spannableString = new SpannableString(lyricData);
-        lyrics.setText(spannableString, TextView.BufferType.SPANNABLE);
+        lyrics.setText(new SpannableString(getString(R.string.lyrics)), TextView.BufferType.SPANNABLE);
 
         return rootView;
     }
@@ -141,6 +154,7 @@ public class LyricFragment extends Fragment {
 
                 // Update Visual changes
                 removeSpansFromLyrics();
+                regions = null;
                 lyricsScroller.setBackgroundColor(getResources().getColor(R.color.editBackground));
                 break;
 
@@ -174,32 +188,51 @@ public class LyricFragment extends Fragment {
      * Preserves the edits
      */
     private void applySpansToLyrics() {
-        // Fetch the previously edited text
-        spannableString = new SpannableString(lyrics.getText());
 
-        // Rotate the color spans alternating on characters of editable
+        String lyrics = this.lyrics.getText().toString();
+        SpannableString spannableString = new SpannableString(lyrics);
 
-        int spanSize = lyricSpanColors.length + 1; // Add the default color
-        int charIndex = 0;
-        int len = (spannableString.length() >> 1) - 1;
-
-        while (charIndex < len) {
-            if ( charIndex % spanSize != lyricSpanColors.length) {
-                spannableString.setSpan(new ForegroundColorSpan(lyricSpanColors[charIndex % spanSize]),
-                        (charIndex << 1) + 1, (++charIndex) << 1,
-                        Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
-            } else {
-                charIndex++;
-            }
+        if (regions == null) {
+            computeRegions(lyrics);
         }
-        lyrics.setText(spannableString, TextView.BufferType.SPANNABLE);
+
+        // Apply color spans, highlighting the structure of the lyrics
+        String line;
+
+        for (int i = 0, charOffset = 0, colorIndex; i < lyricLines.length; i++) {
+            colorIndex = regions[i];
+            line = lyricLines[i];
+
+            // Default text, line is not repeating in the literal phrasing of the words, so we do not highlight it
+            if (lyricAnalyzer.containsWords(line)) {
+                spannableString.setSpan(
+                        new ForegroundColorSpan(colorIndex != 0 ? lyricSpanColors[colorIndex - 1] :
+                                defaultLineColor),
+                        charOffset,
+                        charOffset + line.length(),
+                        Spanned.SPAN_INCLUSIVE_EXCLUSIVE
+                    );
+            }
+            charOffset += line.length();
+        }
+        this.lyrics.setText(spannableString, TextView.BufferType.SPANNABLE);
+    }
+
+    /**
+     * Should be called each time the text in lyrics has or may have been changed.
+     * It is unnecessary, however, use this method when the color palette has been changed only.
+     */
+    private void computeRegions(String lyrics) {
+        lyricLines = lyricAnalyzer.delimitLines(lyrics);
+        List<List<Integer>> matchingLineNumbers = lyricAnalyzer.findEquivalentLines(lyricLines);
+        regions = lyricAnalyzer.findColorRegions(matchingLineNumbers);
     }
 
     /**
      * Does not preserve the edits
      */
     private void removeSpansFromLyrics() {
-        spannableString = new SpannableString(lyrics.getText().toString());
-        lyrics.setText(spannableString, TextView.BufferType.SPANNABLE);
+        lyrics.setText(new SpannableString(lyrics.getText().toString()),
+                TextView.BufferType.SPANNABLE);
     }
 }

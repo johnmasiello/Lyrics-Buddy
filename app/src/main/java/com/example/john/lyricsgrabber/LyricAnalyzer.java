@@ -31,9 +31,11 @@ class LyricAnalyzer {
      * @param lyricLine Precondition: trimLyrics
      * @see #trimLyrics(String[])
      */
-    private boolean containsWords(String lyricLine) {
+    private boolean containsWords_(String lyricLine) {
         return lyricLine.length() > 0;
     }
+
+    boolean containsWords(String lyricLine) { return lyricLine.trim().length() > 0; }
 
     /**
      * @param lines the original lines of the lyrics
@@ -52,7 +54,7 @@ class LyricAnalyzer {
         for (int i = 0; i < tLines.length; i++) {
             line = tLines[i];
 
-            if (containsWords(line)) {
+            if (containsWords_(line)) {
                 list = new ArrayList<>();
 
                 for (int j = 0; j < tLines.length; j++) {
@@ -166,5 +168,25 @@ class LyricAnalyzer {
             } while (previousIndex < index);
         }
         return regions;
+    }
+
+    /**
+     *
+     * @param body The text to split
+     * @return Splits with the delimiter D=System.separator() as separate splits from the non-delimited expressions
+     */
+    String[] delimitLines(String body) {
+        String regexTkn;
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
+            regexTkn = System.lineSeparator();
+        } else {
+            // Assume UNIX system
+            regexTkn = "\n";
+        }
+
+        // Split on the regex: {LookAhead{token}}|{LookBehind{token}}
+        return body.split("(?<="+regexTkn+")|(?="+regexTkn+")");
+
     }
 }
