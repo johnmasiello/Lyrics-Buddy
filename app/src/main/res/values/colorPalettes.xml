@@ -9,6 +9,7 @@
     <!--Color Hex »  Color Palettes »  Retro VIntage-->
     <!--Color Hex »  Color Palettes »  Beach Life High Noon-->
     <!--Color Hex »  Color Palettes »  fun pastels-->
+    <color name="beach_color">#df744a</color>
     <string-array name="colors_beach">
         <item>#96ceb4</item>
         <item>#ffeead</item>
@@ -25,6 +26,7 @@
     </string-array>
 
     <!--Color Hex »  Color Palettes »  Jamaican Colors-->
+    <color name="reggae_color">#bc0404</color>
     <string-array name="colors_reggae">
         <item>#000000</item>
         <item>#bc0404</item>
@@ -41,6 +43,7 @@
 
     <!--Color Hex »  Color Palettes »  Gothic Colours-->
     <!--Color Hex »  Color Palettes »  a gothic mauve-->
+    <color name="rock_color">#0f005b</color>
     <string-array name="colors_goth">
         <item>#000000</item>
         <item>#0f005b</item>
@@ -54,6 +57,7 @@
         <item>#A50012</item>
     </string-array>
 
+    <color name="autumn_color">#B37443</color>
     <string-array name="colors_autumn">
         <item>#571428</item>
         <item>#932343</item>
@@ -70,6 +74,7 @@
         <item>#50522D</item>
     </string-array>
 
+    <color name="spring_color">#82C450</color>
     <string name="colors_spring">
         <item>#F8BE44</item>
         <item>#82C450</item>
@@ -91,20 +96,22 @@
 
     <!--Color Hex »  Color Palettes »  United States of America Flag-->
     <!--Color Hex »  Color Palettes »  USA STYLE-->
+    <color name="usa_color">#0157ae</color>
     <string-array name="colors_usa">
-        <item>#F0E8DD</item>
         <item>#E95057</item>
         <item>#DFC9B0</item>
         <item>#90282F</item>
         <item>#5C889D</item>
         <item>#24334C</item>
         <item>#d42729</item>
+        <item>#F0E8DD</item>
         <item>#0157ae</item>
         <item>#ff0000</item>
         <item>#000654</item>
         <item>#0447fd</item>
     </string-array>
 
+    <color name="winter_color">#A5E6F2</color>
     <string-array name="colors_snowflake">
         <item>#00D3F8</item>
         <item>#00AADC</item>

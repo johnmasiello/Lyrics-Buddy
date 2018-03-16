@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.ArrayRes;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.text.SpannableString;
@@ -22,6 +23,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.List;
+import java.util.Random;
 
 /**
  * Created by john on 3/12/18.
@@ -57,17 +59,23 @@ public class LyricFragment extends Fragment {
     private ShadowLayer shadowLayer;
     private int[] lyricSpanColors;
     private int[] regions;
+    private Random random;
 
     // State
     private int mode = MODE_EDIT;
+    private @ArrayRes int palette = R.array.colors_beach;
+    private int colorRotation = 0;
 
     private static final int MODE_EDIT = 0;
     private static final int MODE_DISPLAY = 1;
     private static final String MODE_KEY = "lyric mode";
+    private static final String PALETTE_KEY = "palette";
+    private static final String COLOR_ROTATION_KEY = "color rotation";
 
     public LyricFragment() {
         // Do Default initialization, independent of context here
         trackInfo = new SparseArray<>();
+        random = new Random(System.currentTimeMillis());
     }
 
     // Call when making the first instance of fragment
@@ -87,18 +95,21 @@ public class LyricFragment extends Fragment {
         defaultLineColorEdit = getResources().getColor(R.color.default_line_color_plain);
         defaultLineColorDisplay = getResources().getColor(R.color.default_line_color);
 
-        String[] colorRes = getResources().getStringArray(R.array.colors_beach);
-        lyricSpanColors = new int[colorRes.length];
-
-        for (int i = 0; i < colorRes.length; i++) {
-            lyricSpanColors[i] = Color.parseColor(colorRes[i]);
+        if (savedInstanceState != null) {
+            mode = savedInstanceState.getInt(MODE_KEY, MODE_EDIT);
+            palette = savedInstanceState.getInt(PALETTE_KEY, R.array.colors_beach);
+            colorRotation = savedInstanceState.getInt(COLOR_ROTATION_KEY, 0);
         }
+
+        fetchColorsFromPalette();
     }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putInt(MODE_KEY, mode);
+        outState.putInt(PALETTE_KEY, palette);
+        outState.putInt(COLOR_ROTATION_KEY, colorRotation);
     }
 
     @Nullable
@@ -123,10 +134,6 @@ public class LyricFragment extends Fragment {
 
         lyrics = rootView.findViewById(R.id.lyrics_body);
         lyricsScroller = rootView.findViewById(R.id.lyrics_scroller);
-
-        if (savedInstanceState != null) {
-            mode = savedInstanceState.getInt(MODE_KEY, MODE_EDIT);
-        }
 
         // TODO: control data entry point for lyrics
         trackInfo.get(R.id.title).setText(R.string.track_title);
@@ -172,6 +179,7 @@ public class LyricFragment extends Fragment {
         switch (mode) {
             case MODE_EDIT:
                 menu.findItem(R.id.edit_lyrics).setVisible(false);
+                menu.findItem(R.id.palette).setVisible(false);
                 menu.findItem(R.id.view_lyrics).setVisible(true);
                 lyrics.setEditable(true);
 
@@ -192,6 +200,7 @@ public class LyricFragment extends Fragment {
 
             case MODE_DISPLAY:
                 menu.findItem(R.id.edit_lyrics).setVisible(true);
+                menu.findItem(R.id.palette).setVisible(true);
                 menu.findItem(R.id.view_lyrics).setVisible(false);
 
                 lyrics.setEditable(false);
@@ -310,6 +319,15 @@ public class LyricFragment extends Fragment {
         // A co-invariant
         if (textView.getId()==R.id.artist) {
             trackInfo.get(R.id.by).setVisibility(visibility);
+        }
+    }
+
+    private void fetchColorsFromPalette() {
+        String[] colorRes = getResources().getStringArray(palette);
+        lyricSpanColors = new int[colorRes.length];
+
+        for (int i = 0; i < colorRes.length; i++) {
+            lyricSpanColors[i] = Color.parseColor(colorRes[i]);
         }
     }
 

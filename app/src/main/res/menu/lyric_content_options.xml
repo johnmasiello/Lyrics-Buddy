@@ -20,4 +20,73 @@
         android:icon="@drawable/ic_share_white_24dp"
         android:title="@string/lyric_options_share"
         app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/palette"
+        android:title="@string/lyric_options_colors"
+        app:showAsAction="never|withText"
+        android:visible="false">
+
+        <menu>
+            <group android:id="@+id/palettes">
+
+                <item
+                    android:id="@+id/beach"
+                    android:title="Beach"
+                    android:icon="@drawable/beach"
+                    app:showAsAction="withText"
+                    />
+
+                <item
+                    android:id="@+id/reggae"
+                    android:title="Reggae"
+                    android:icon="@drawable/reggae"
+                    app:showAsAction="withText"
+                    />
+
+                <item
+                    android:id="@+id/rock"
+                    android:title="Rock"
+                    android:icon="@drawable/rock"
+                    app:showAsAction="withText"
+                    />
+
+                <item
+                    android:id="@+id/usa"
+                    android:title="USA"
+                    android:icon="@drawable/usa"
+                    app:showAsAction="withText"
+                    />
+
+                <item
+                    android:id="@+id/spring"
+                    android:title="Spring"
+                    android:icon="@drawable/spring"
+                    app:showAsAction="withText"
+                    />
+
+                <item
+                    android:id="@+id/autumn"
+                    android:title="Autumn"
+                    android:icon="@drawable/autumn"
+                    app:showAsAction="withText"
+                    />
+
+                <item
+                    android:id="@+id/winter"
+                    android:title="Winter"
+                    android:icon="@drawable/winter"
+                    app:showAsAction="withText"
+                    />
+
+
+            </group>
+
+            <item
+                android:id="@+id/shuffle_colors"
+                android:title="@string/lyric_options_shuffle"
+                android:icon="@drawable/ic_action_shuffle"
+                app:showAsAction="ifRoom|withText" />
+        </menu>
+    </item>
 </menu>

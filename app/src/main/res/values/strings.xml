@@ -81,4 +81,6 @@ Oh, they don\'t know, they don\'t know, they don\'t know, they don\'t know about
     <string name="lyrics_view_hint">Lyrics</string>
     <string name="by">by</string>
     <string name="album_view_hint">Album</string>
+    <string name="lyric_options_colors">Color Schemes</string>
+    <string name="lyric_options_shuffle">Shuffle Colors</string>
 </resources>
