@@ -2,7 +2,7 @@
 <resources>
 
     <color name="default_line_color_plain">@android:color/black</color>
-    <color name="default_line_color">#ffffff</color>
+    <color name="default_line_color">#c7c7c7</color>
 
     <!--Color Hex »  Color Palettes »  Beach-->
     <!--Color Hex »  Color Palettes »  Macarons-->
@@ -12,7 +12,7 @@
     <color name="beach_color">#df744a</color>
     <string-array name="colors_beach">
         <item>#96ceb4</item>
-        <item>#ffeead</item>
+        <item>#ffeb9b</item>
         <item>#ff6f69</item>
         <item>#ffcc5c</item>
         <item>#f0cfcf</item>
@@ -28,17 +28,17 @@
     <!--Color Hex »  Color Palettes »  Jamaican Colors-->
     <color name="reggae_color">#bc0404</color>
     <string-array name="colors_reggae">
-        <item>#000000</item>
-        <item>#bc0404</item>
+        <item>#1e1e1e</item>
+        <item>#ff3636</item>
         <item>#d5d920</item>
         <item>#5bd936</item>
-        <item>#1e6534</item>
+        <item>#daa180</item>
+        <item>#2d9b4d</item>
         <item>#BE9866</item>
         <item>#858C3C</item>
         <item>#DB9A43</item>
-        <item>#EF483C</item>
+        <item>#ef723c</item>
         <item>#F8B878</item>
-        <item>#695D40</item>
     </string-array>
 
     <!--Color Hex »  Color Palettes »  Gothic Colours-->
@@ -46,14 +46,14 @@
     <color name="rock_color">#0f005b</color>
     <string-array name="colors_goth">
         <item>#000000</item>
-        <item>#0f005b</item>
-        <item>#2e0059</item>
         <item>#5b0000</item>
+        <item>#350066</item>
         <item>#3d1126</item>
-        <item>#634051</item>
-        <item>#7b224d</item>
-        <item>#222020</item>
-        <item>#333333</item>
+        <item>#120070</item>
+        <item>#a35d7f</item>
+        <item>#6b1b42</item>
+        <item>#303030</item>
+        <item>#2b3056</item>
         <item>#A50012</item>
     </string-array>
 
@@ -75,14 +75,14 @@
     </string-array>
 
     <color name="spring_color">#82C450</color>
-    <string name="colors_spring">
+    <string-array name="colors_spring">
         <item>#F8BE44</item>
         <item>#82C450</item>
         <item>#8EECE9</item>
         <item>#00AAA5</item>
         <item>#FCED66</item>
         <item>#5CAD76</item>
-        <item>#F9A2A3</item>
+        <item>#ff8082</item>
         <item>#FB414E</item>
         <item>#F2F891</item>
         <item>#D9DEDD</item>
@@ -92,23 +92,23 @@
         <item>#2E4592</item>
         <item>#416F51</item>
         <item>#A9DBA7</item>
-    </string>
+    </string-array>
 
     <!--Color Hex »  Color Palettes »  United States of America Flag-->
     <!--Color Hex »  Color Palettes »  USA STYLE-->
     <color name="usa_color">#0157ae</color>
     <string-array name="colors_usa">
-        <item>#E95057</item>
-        <item>#DFC9B0</item>
-        <item>#90282F</item>
-        <item>#5C889D</item>
-        <item>#24334C</item>
+        <item>#0447fd</item>
         <item>#d42729</item>
         <item>#F0E8DD</item>
         <item>#0157ae</item>
         <item>#ff0000</item>
         <item>#000654</item>
-        <item>#0447fd</item>
+        <item>#E95057</item>
+        <item>#DFC9B0</item>
+        <item>#90282F</item>
+        <item>#5C889D</item>
+        <item>#24334C</item>
     </string-array>
 
     <color name="winter_color">#A5E6F2</color>

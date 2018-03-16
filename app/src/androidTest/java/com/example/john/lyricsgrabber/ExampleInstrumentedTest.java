@@ -9,6 +9,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.List;
+import java.util.Random;
 
 import static org.junit.Assert.*;
 
@@ -139,6 +140,15 @@ public class ExampleInstrumentedTest {
 
         for (String split : splits) {
             System.out.println("split: " + split);
+        }
+    }
+
+    @Test
+    public void nextInt() {
+        Random rand = new Random(0l);
+
+        for (int i = 0; i < 1000; i++) {
+            assertTrue("Guess What...?", (rand.nextInt() & 0xffff) >= 0);
         }
     }
 }

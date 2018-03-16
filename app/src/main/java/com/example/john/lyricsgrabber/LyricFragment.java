@@ -32,7 +32,7 @@ import java.util.Random;
 // Menu
 // TODO: Put in an intent for the share menu item
 // https://stackoverflow.com/questions/13941093/how-to-share-entire-android-app-with-share-intent
-// TODO: Make a color palette with submenus to choose a color palette. Use a color icon for each submenu item
+// TODO: Use Background ColorSpans to contrast against each color in a palette for each palette
 // TODO: Make an option to save lyrics locally to the phone
 // Bottom Navigation
 // TODO: Home [icon only] | '+' [new project]
@@ -64,10 +64,11 @@ public class LyricFragment extends Fragment {
     // State
     private int mode = MODE_EDIT;
     private @ArrayRes int palette = R.array.colors_beach;
-    private int colorRotation = 0;
+    private int colorRotation = DEFAULT_COLOR_ROTATION;
 
     private static final int MODE_EDIT = 0;
     private static final int MODE_DISPLAY = 1;
+    private static final int DEFAULT_COLOR_ROTATION = -1;
     private static final String MODE_KEY = "lyric mode";
     private static final String PALETTE_KEY = "palette";
     private static final String COLOR_ROTATION_KEY = "color rotation";
@@ -98,7 +99,7 @@ public class LyricFragment extends Fragment {
         if (savedInstanceState != null) {
             mode = savedInstanceState.getInt(MODE_KEY, MODE_EDIT);
             palette = savedInstanceState.getInt(PALETTE_KEY, R.array.colors_beach);
-            colorRotation = savedInstanceState.getInt(COLOR_ROTATION_KEY, 0);
+            colorRotation = savedInstanceState.getInt(COLOR_ROTATION_KEY, DEFAULT_COLOR_ROTATION);
         }
 
         fetchColorsFromPalette();
@@ -153,21 +154,59 @@ public class LyricFragment extends Fragment {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.edit_lyrics:
-                updateLyricsMode(MODE_EDIT);
-                break;
+        if (item.getGroupId()==R.id.palettes) {
 
-            case R.id.view_lyrics:
-                updateLyricsMode(MODE_DISPLAY);
-                break;
+            switch (item.getItemId()) {
+                case R.id.beach:
+                    palette = R.array.colors_beach;
+                    break;
+                case R.id.reggae:
+                    palette = R.array.colors_reggae;
+                    break;
+                case R.id.rock:
+                    palette = R.array.colors_goth;
+                    break;
+                case R.id.usa:
+                    palette = R.array.colors_usa;
+                    break;
+                case R.id.spring:
+                    palette = R.array.colors_spring;
+                    break;
+                case R.id.autumn:
+                    palette = R.array.colors_autumn;
+                    break;
+                case R.id.winter:
+                    palette = R.array.colors_snowflake;
+                    break;
+                default:
+                    return super.onOptionsItemSelected(item);
+            }
+            fetchColorsFromPalette();
+            colorRotation = DEFAULT_COLOR_ROTATION;
+            applySpansToLyrics();
+        } else {
+            switch (item.getItemId()) {
+                case R.id.edit_lyrics:
+                    updateLyricsMode(MODE_EDIT);
+                    break;
 
-            case R.id.share_lyrics:
-                Toast.makeText(getActivity(), "Share Stella Lyrics", Toast.LENGTH_SHORT).show();
-                break;
+                case R.id.view_lyrics:
+                    updateLyricsMode(MODE_DISPLAY);
+                    break;
 
-            default:
-                return super.onOptionsItemSelected(item);
+                case R.id.share_lyrics:
+                    Toast.makeText(getActivity(), "Share Stella Lyrics", Toast.LENGTH_SHORT).show();
+                    break;
+
+                case R.id.shuffle_colors:
+                    // Take the lower bits of the next random integer
+                    colorRotation = random.nextInt() & 0xffff;
+                    applySpansToLyrics();
+                    break;
+
+                default:
+                    return super.onOptionsItemSelected(item);
+            }
         }
         return true;
     }
@@ -179,6 +218,7 @@ public class LyricFragment extends Fragment {
         switch (mode) {
             case MODE_EDIT:
                 menu.findItem(R.id.edit_lyrics).setVisible(false);
+                menu.findItem(R.id.shuffle_colors).setVisible(false);
                 menu.findItem(R.id.palette).setVisible(false);
                 menu.findItem(R.id.view_lyrics).setVisible(true);
                 lyrics.setEditable(true);
@@ -200,6 +240,7 @@ public class LyricFragment extends Fragment {
 
             case MODE_DISPLAY:
                 menu.findItem(R.id.edit_lyrics).setVisible(true);
+                menu.findItem(R.id.shuffle_colors).setVisible(true);
                 menu.findItem(R.id.palette).setVisible(true);
                 menu.findItem(R.id.view_lyrics).setVisible(false);
 
@@ -266,7 +307,8 @@ public class LyricFragment extends Fragment {
     private void setColorSpan(SpannableString spannable, int regionIndex, int start, int end) {
         int colorIndex = regions[regionIndex];
         spannable.setSpan(
-                new ForegroundColorSpan(colorIndex != 0 ? lyricSpanColors[colorIndex - 1] :
+                new ForegroundColorSpan(colorIndex != 0 ?
+                        lyricSpanColors[(colorIndex + colorRotation) % lyricSpanColors.length] :
                         defaultLineColorDisplay),
                 start,
                 end,

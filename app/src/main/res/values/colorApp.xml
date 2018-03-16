@@ -4,6 +4,6 @@
     <color name="colorPrimaryDark">#9e9e9e</color>
     <color name="defaultBackground">#FFFFFF</color>
     <color name="editBackground">@color/defaultBackground</color>
-    <color name="showBackground">#666666</color>
-    <color name="trackInfoShadowColor">@color/default_line_color_plain</color>
+    <color name="showBackground">#ffffff</color>
+    <color name="trackInfoShadowColor">@color/colorPrimaryDark</color>
 </resources>
