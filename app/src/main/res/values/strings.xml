@@ -8,9 +8,10 @@
     <string name="lyric_options_show">Display</string>
     <string name="lyric_options_share">Share</string>
 
+    <string name="track_title">"They Don't Know"</string>
+    <string name="track_album">Trolls Soundtrack</string>
     <string name="track_artist">Ariana Grande</string>
-    <string name="track_title">"They Don't Know"
-(from "Trolls" soundtrack)</string>
+
     <string name="lyrics">Mmmm, watch me\n
 Hey, woo\n
 One, two, three... watch me\n
@@ -79,4 +80,5 @@ Oh, they don\'t know, they don\'t know, they don\'t know, they don\'t know about
     <string name="artist_view_hint">Artist</string>
     <string name="lyrics_view_hint">Lyrics</string>
     <string name="by">by</string>
+    <string name="album_view_hint">Album</string>
 </resources>

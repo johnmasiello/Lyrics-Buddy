@@ -8,6 +8,7 @@ import android.support.v4.app.Fragment;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
+import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -38,10 +39,14 @@ public class LyricFragment extends Fragment {
     private Menu menu;
 
     // Handles to UI
-    private WrappedEditText title;
-    private WrappedEditText artist;
+    final int[] textViewIDs = new int[] {
+            R.id.title,
+            R.id.album,
+            R.id.by,
+            R.id.artist
+    };
+    private SparseArray<TextView> trackInfo;
     private WrappedEditText lyrics;
-    private TextView by;
     private ScrollView lyricsScroller;
 
     // Lyric color logic
@@ -60,6 +65,7 @@ public class LyricFragment extends Fragment {
 
     public LyricFragment() {
         // Do Default initialization, independent of context here
+        trackInfo = new SparseArray<>();
     }
 
     // Call when making the first instance of fragment
@@ -98,11 +104,13 @@ public class LyricFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.lyric_content_layout, container, false);
 
-        title = rootView.findViewById(R.id.title);
-        by = rootView.findViewById(R.id.by);
-        artist = rootView.findViewById(R.id.artist);
-        lyrics = rootView.findViewById(R.id.lyrics_body);
 
+        trackInfo.clear();
+
+        for (int id : textViewIDs) {
+            trackInfo.append(id, ((TextView) rootView.findViewById(id)));
+        }
+        lyrics = rootView.findViewById(R.id.lyrics_body);
         lyricsScroller = rootView.findViewById(R.id.lyrics_scroller);
 
         if (savedInstanceState != null) {
@@ -110,8 +118,9 @@ public class LyricFragment extends Fragment {
         }
 
         // TODO: control data entry point for lyrics
-        title.setText(getString(R.string.track_title));
-        artist.setText(getString(R.string.track_artist));
+        trackInfo.get(R.id.title).setText(R.string.track_title);
+        trackInfo.get(R.id.album).setText(getString(R.string.track_album));
+        trackInfo.get(R.id.artist).setText(getString(R.string.track_artist));
         lyrics.setText(new SpannableString(getString(R.string.lyrics)), TextView.BufferType.SPANNABLE);
 
         return rootView;
@@ -146,6 +155,8 @@ public class LyricFragment extends Fragment {
     }
 
     void updateLyricsMode(int mode) {
+        TextView textView;
+
         this.mode = mode;
         switch (mode) {
             case MODE_EDIT:
@@ -154,9 +165,15 @@ public class LyricFragment extends Fragment {
                 lyrics.setEditable(true);
 
                 // Update Visual changes
-                applyDefaultTextColor(title, MODE_EDIT);
-                applyDefaultTextColor(by, MODE_EDIT);
-                applyDefaultTextColor(artist, MODE_EDIT);
+                for (int id : textViewIDs) {
+                    textView = trackInfo.get(id);
+                    applyDefaultTextColor(textView, MODE_EDIT);
+                    setVisibility(textView, true);
+
+                    if (textView instanceof WrappedEditText) {
+                        ((WrappedEditText) textView).setEditable(true);
+                    }
+                }
                 lyrics.removeSpansFromText();
                 regions = null;
                 lyricsScroller.setBackgroundColor(getResources().getColor(R.color.editBackground));
@@ -175,13 +192,18 @@ public class LyricFragment extends Fragment {
                     assert imm != null;
                     imm.hideSoftInputFromWindow(view.getRootView().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
                 }
-//                lyrics.clearFocus();
                 lyricsScroller.scrollTo(0, 0);
 
                 // Update Visual changes
-                applyDefaultTextColor(title, MODE_DISPLAY);
-                applyDefaultTextColor(by, MODE_DISPLAY);
-                applyDefaultTextColor(artist, MODE_DISPLAY);
+                for (int id : textViewIDs) {
+                    textView = trackInfo.get(id);
+                    applyDefaultTextColor(textView, MODE_DISPLAY);
+                    setVisibility(textView, false);
+
+                    if (textView instanceof WrappedEditText) {
+                        ((WrappedEditText) textView).setEditable(false);
+                    }
+                }
                 applySpansToLyrics();
                 lyricsScroller.setBackgroundColor(getResources().getColor(R.color.showBackground));
                 break;
@@ -251,6 +273,23 @@ public class LyricFragment extends Fragment {
             case MODE_DISPLAY:
                 textView.setTextColor(defaultLineColorDisplay);
                 break;
+        }
+    }
+
+    /**
+     *
+     * @param makeVisible true implies make the textView visible; false implies make the view
+     *                    gone if the view contains no text, but make the view visible
+     */
+    private void setVisibility(TextView textView, boolean makeVisible) {
+
+        textView.setVisibility(makeVisible || lyricAnalyzer.containsWords(textView.getText().toString()) ?
+                View.VISIBLE :
+                View.GONE);
+
+        // A co-invariant
+        if (textView.getId()==R.id.artist) {
+            trackInfo.get(R.id.by).setVisibility(textView.getVisibility());
         }
     }
 }
