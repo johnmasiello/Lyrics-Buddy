@@ -2,6 +2,7 @@ package com.example.john.lyricsgrabber;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -53,6 +54,7 @@ public class LyricFragment extends Fragment {
     private LyricAnalyzer lyricAnalyzer;
     private int defaultLineColorEdit;
     private int defaultLineColorDisplay;
+    private ShadowLayer shadowLayer;
     private int[] lyricSpanColors;
     private int[] regions;
 
@@ -110,6 +112,15 @@ public class LyricFragment extends Fragment {
         for (int id : textViewIDs) {
             trackInfo.append(id, ((TextView) rootView.findViewById(id)));
         }
+        // Get the default ShadowLayer properties
+        TextView t1 = trackInfo.get(textViewIDs[0]);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            shadowLayer = new ShadowLayer(t1.getShadowRadius(), t1.getShadowDx(), t1.getShadowDy(), t1.getShadowColor());
+        } else {
+            shadowLayer = new ShadowLayer(inflater.getContext());
+        }
+
         lyrics = rootView.findViewById(R.id.lyrics_body);
         lyricsScroller = rootView.findViewById(R.id.lyrics_scroller);
 
@@ -168,7 +179,7 @@ public class LyricFragment extends Fragment {
                 for (int id : textViewIDs) {
                     textView = trackInfo.get(id);
                     applyDefaultTextColor(textView, MODE_EDIT);
-                    setVisibility(textView, true);
+                    setVisibility(textView, MODE_EDIT);
 
                     if (textView instanceof WrappedEditText) {
                         ((WrappedEditText) textView).setEditable(true);
@@ -198,7 +209,7 @@ public class LyricFragment extends Fragment {
                 for (int id : textViewIDs) {
                     textView = trackInfo.get(id);
                     applyDefaultTextColor(textView, MODE_DISPLAY);
-                    setVisibility(textView, false);
+                    setVisibility(textView, MODE_DISPLAY);
 
                     if (textView instanceof WrappedEditText) {
                         ((WrappedEditText) textView).setEditable(false);
@@ -278,18 +289,46 @@ public class LyricFragment extends Fragment {
 
     /**
      *
-     * @param makeVisible true implies make the textView visible; false implies make the view
+     * @param mode mode==MODE_EDIT implies make the textView visible; false implies make the view
      *                    gone if the view contains no text, but make the view visible
      */
-    private void setVisibility(TextView textView, boolean makeVisible) {
+    private void setVisibility(TextView textView, int mode) {
 
-        textView.setVisibility(makeVisible || lyricAnalyzer.containsWords(textView.getText().toString()) ?
+        int visibility = mode==MODE_EDIT || lyricAnalyzer.containsWords(textView.getText().toString()) ?
                 View.VISIBLE :
-                View.GONE);
+                View.GONE;
+
+        textView.setVisibility(visibility);
+
+        if (mode==MODE_EDIT) {
+            textView.setShadowLayer(0, 0, 0, Color.TRANSPARENT);
+        } else {
+            textView.setShadowLayer(shadowLayer.radius, shadowLayer.dx, shadowLayer.dy,
+                    shadowLayer.color);
+        }
 
         // A co-invariant
         if (textView.getId()==R.id.artist) {
-            trackInfo.get(R.id.by).setVisibility(textView.getVisibility());
+            trackInfo.get(R.id.by).setVisibility(visibility);
+        }
+    }
+
+    static class ShadowLayer {
+        final float radius, dx, dy;
+        final int color;
+
+        ShadowLayer(float radius, float dx, float dy, int color) {
+            this.radius = radius;
+            this.dx = dx;
+            this.dy = dy;
+            this.color = color;
+        }
+
+        ShadowLayer(Context context) {
+            this.radius = 5;
+            this.dx = 7;
+            this.dy = 7;
+            this.color = context.getResources().getColor(R.color.trackInfoShadowColor);
         }
     }
 }

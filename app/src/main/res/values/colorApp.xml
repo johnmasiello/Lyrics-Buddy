@@ -5,4 +5,5 @@
     <color name="defaultBackground">#FFFFFF</color>
     <color name="editBackground">@color/defaultBackground</color>
     <color name="showBackground">#666666</color>
+    <color name="trackInfoShadowColor">@color/default_line_color_plain</color>
 </resources>
