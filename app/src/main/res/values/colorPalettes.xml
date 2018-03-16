@@ -9,7 +9,7 @@
     <!--Color Hex »  Color Palettes »  Retro VIntage-->
     <!--Color Hex »  Color Palettes »  Beach Life High Noon-->
     <!--Color Hex »  Color Palettes »  fun pastels-->
-    <string-array name="beach_colors">
+    <string-array name="colors_beach">
         <item>#96ceb4</item>
         <item>#ffeead</item>
         <item>#ff6f69</item>
@@ -22,5 +22,101 @@
         <item>#ec5a5a</item>
         <item>#8ce2ec</item>
         <item>#fdb078</item>
+    </string-array>
+
+    <!--Color Hex »  Color Palettes »  Jamaican Colors-->
+    <string-array name="colors_reggae">
+        <item>#000000</item>
+        <item>#bc0404</item>
+        <item>#d5d920</item>
+        <item>#5bd936</item>
+        <item>#1e6534</item>
+        <item>#BE9866</item>
+        <item>#858C3C</item>
+        <item>#DB9A43</item>
+        <item>#EF483C</item>
+        <item>#F8B878</item>
+        <item>#695D40</item>
+    </string-array>
+
+    <!--Color Hex »  Color Palettes »  Gothic Colours-->
+    <!--Color Hex »  Color Palettes »  a gothic mauve-->
+    <string-array name="colors_goth">
+        <item>#000000</item>
+        <item>#0f005b</item>
+        <item>#2e0059</item>
+        <item>#5b0000</item>
+        <item>#3d1126</item>
+        <item>#634051</item>
+        <item>#7b224d</item>
+        <item>#222020</item>
+        <item>#333333</item>
+        <item>#A50012</item>
+    </string-array>
+
+    <string-array name="colors_autumn">
+        <item>#571428</item>
+        <item>#932343</item>
+        <item>#E55256</item>
+        <item>#FE8A6A</item>
+        <item>#FED687</item>
+        <item>#A88273</item>
+        <item>#775041</item>
+        <item>#FEA05D</item>
+        <item>#EC5536</item>
+        <item>#B37443</item>
+        <item>#78442A</item>
+        <item>#807F46</item>
+        <item>#50522D</item>
+    </string-array>
+
+    <string name="colors_spring">
+        <item>#F8BE44</item>
+        <item>#82C450</item>
+        <item>#8EECE9</item>
+        <item>#00AAA5</item>
+        <item>#FCED66</item>
+        <item>#5CAD76</item>
+        <item>#F9A2A3</item>
+        <item>#FB414E</item>
+        <item>#F2F891</item>
+        <item>#D9DEDD</item>
+        <item>#33984D</item>
+        <item>#49D060</item>
+        <item>#38D3C6</item>
+        <item>#2E4592</item>
+        <item>#416F51</item>
+        <item>#A9DBA7</item>
+    </string>
+
+    <!--Color Hex »  Color Palettes »  United States of America Flag-->
+    <!--Color Hex »  Color Palettes »  USA STYLE-->
+    <string-array name="colors_usa">
+        <item>#F0E8DD</item>
+        <item>#E95057</item>
+        <item>#DFC9B0</item>
+        <item>#90282F</item>
+        <item>#5C889D</item>
+        <item>#24334C</item>
+        <item>#d42729</item>
+        <item>#0157ae</item>
+        <item>#ff0000</item>
+        <item>#000654</item>
+        <item>#0447fd</item>
+    </string-array>
+
+    <string-array name="colors_snowflake">
+        <item>#00D3F8</item>
+        <item>#00AADC</item>
+        <item>#0088B2</item>
+        <item>#005480</item>
+        <item>#004878</item>
+        <item>#00E3C8</item>
+        <item>#00B295</item>
+        <item>#000C14</item>
+        <item>#002B3A</item>
+        <item>#076473</item>
+        <item>#A5E6F2</item>
+        <item>#4C9CAF</item>
     </string-array>
 </resources>

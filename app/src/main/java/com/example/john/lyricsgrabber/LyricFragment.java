@@ -27,6 +27,7 @@ import java.util.List;
  */
 // Menu
 // TODO: Put in an intent for the share menu item
+// https://stackoverflow.com/questions/13941093/how-to-share-entire-android-app-with-share-intent
 // TODO: Make a color palette with submenus to choose a color palette. Use a color icon for each submenu item
 // TODO: Make an option to save lyrics locally to the phone
 // Bottom Navigation
@@ -78,7 +79,7 @@ public class LyricFragment extends Fragment {
         defaultLineColorEdit = getResources().getColor(R.color.default_line_color_plain);
         defaultLineColorDisplay = getResources().getColor(R.color.default_line_color);
 
-        String[] colorRes = getResources().getStringArray(R.array.beach_colors);
+        String[] colorRes = getResources().getStringArray(R.array.colors_beach);
         lyricSpanColors = new int[colorRes.length];
 
         for (int i = 0; i < colorRes.length; i++) {

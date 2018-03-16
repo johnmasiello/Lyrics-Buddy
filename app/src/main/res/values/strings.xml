@@ -77,6 +77,6 @@ I could have all this but I\'m good if I got you\n
 Oh, they don\'t know, they don\'t know, they don\'t know, they don\'t know about us</string>
     <string name="title_view_hint">Title</string>
     <string name="artist_view_hint">Artist</string>
-    <string name="lyrics_view_hint">Paste Lyrics</string>
+    <string name="lyrics_view_hint">Lyrics</string>
     <string name="by">by</string>
 </resources>
