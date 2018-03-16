@@ -12,7 +12,6 @@
     <color name="beach_color">#df744a</color>
     <string-array name="colors_beach">
         <item>#96ceb4</item>
-        <item>#ffeb9b</item>
         <item>#ff6f69</item>
         <item>#ffcc5c</item>
         <item>#f0cfcf</item>
@@ -23,12 +22,13 @@
         <item>#ec5a5a</item>
         <item>#8ce2ec</item>
         <item>#fdb078</item>
+        <item>#ffeb9b</item>
     </string-array>
 
     <!--Color Hex »  Color Palettes »  Jamaican Colors-->
     <color name="reggae_color">#bc0404</color>
     <string-array name="colors_reggae">
-        <item>#1e1e1e</item>
+        <item>#121111</item>
         <item>#ff3636</item>
         <item>#d5d920</item>
         <item>#5bd936</item>
@@ -46,15 +46,14 @@
     <color name="rock_color">#0f005b</color>
     <string-array name="colors_goth">
         <item>#000000</item>
-        <item>#5b0000</item>
-        <item>#350066</item>
-        <item>#3d1126</item>
-        <item>#120070</item>
+        <item>#840000</item>
+        <item>#170091</item>
         <item>#a35d7f</item>
-        <item>#6b1b42</item>
-        <item>#303030</item>
-        <item>#2b3056</item>
         <item>#A50012</item>
+        <item>#420080</item>
+        <item>#303030</item>
+        <item>#511733</item>
+        <item>#6b1b42</item>
     </string-array>
 
     <color name="autumn_color">#B37443</color>
