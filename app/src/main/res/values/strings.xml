@@ -8,7 +8,7 @@
     <string name="lyric_options_show">Display</string>
     <string name="lyric_options_share">Share</string>
 
-    <string name="artist">Ariana Grande</string>
+    <string name="track_artist">Ariana Grande</string>
     <string name="track_title">"They Don't Know"
 (from "Trolls" soundtrack)</string>
     <string name="lyrics">Mmmm, watch me\n
@@ -75,5 +75,8 @@ They don\'t know, they don\'t know, they don\'t know about what we do\n
 Yeah, it\'s true,\n
 I could have all this but I\'m good if I got you\n
 Oh, they don\'t know, they don\'t know, they don\'t know, they don\'t know about us</string>
-    <string name="paste_lyrics_into_view">Paste Song, Artist, Lyrics</string>
+    <string name="title_view_hint">Title</string>
+    <string name="artist_view_hint">Artist</string>
+    <string name="lyrics_view_hint">Paste Lyrics</string>
+    <string name="by">by</string>
 </resources>

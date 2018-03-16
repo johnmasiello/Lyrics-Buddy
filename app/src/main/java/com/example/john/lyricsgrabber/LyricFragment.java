@@ -7,7 +7,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.text.SpannableString;
 import android.text.Spanned;
-import android.text.method.KeyListener;
 import android.text.style.ForegroundColorSpan;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -16,7 +15,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.EditText;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -27,9 +25,6 @@ import java.util.List;
  * Created by john on 3/12/18.
  * Content Fragment that displays lyrics
  */
-// Edit Text
-// TODO: allow the user to enter meta data + lyrics in one edit text; print in multiple edit texts OR utilize spannable texts
-// TODO: Put in color logic on the lyrics, for display mode
 // Menu
 // TODO: Put in an intent for the share menu item
 // TODO: Make a color palette with submenus to choose a color palette. Use a color icon for each submenu item
@@ -42,13 +37,16 @@ public class LyricFragment extends Fragment {
     private Menu menu;
 
     // Handles to UI
-    private EditText lyrics;
-    private KeyListener lyricsEditorListener;
+    private WrappedEditText title;
+    private WrappedEditText artist;
+    private WrappedEditText lyrics;
+    private TextView by;
     private ScrollView lyricsScroller;
 
     // Lyric color logic
     private LyricAnalyzer lyricAnalyzer;
-    private int defaultLineColor;
+    private int defaultLineColorEdit;
+    private int defaultLineColorDisplay;
     private int[] lyricSpanColors;
     private int[] regions;
 
@@ -77,7 +75,8 @@ public class LyricFragment extends Fragment {
         lyricAnalyzer = new LyricAnalyzer();
 
         // Initialize colors to span the lyrics
-        defaultLineColor = getResources().getColor(R.color.default_line_color);
+        defaultLineColorEdit = getResources().getColor(R.color.default_line_color_plain);
+        defaultLineColorDisplay = getResources().getColor(R.color.default_line_color);
 
         String[] colorRes = getResources().getStringArray(R.array.beach_colors);
         lyricSpanColors = new int[colorRes.length];
@@ -98,8 +97,10 @@ public class LyricFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.lyric_content_layout, container, false);
 
+        title = rootView.findViewById(R.id.title);
+        by = rootView.findViewById(R.id.by);
+        artist = rootView.findViewById(R.id.artist);
         lyrics = rootView.findViewById(R.id.lyrics_body);
-        lyricsEditorListener = lyrics.getKeyListener();
 
         lyricsScroller = rootView.findViewById(R.id.lyrics_scroller);
 
@@ -108,6 +109,8 @@ public class LyricFragment extends Fragment {
         }
 
         // TODO: control data entry point for lyrics
+        title.setText(getString(R.string.track_title));
+        artist.setText(getString(R.string.track_artist));
         lyrics.setText(new SpannableString(getString(R.string.lyrics)), TextView.BufferType.SPANNABLE);
 
         return rootView;
@@ -147,12 +150,13 @@ public class LyricFragment extends Fragment {
             case MODE_EDIT:
                 menu.findItem(R.id.edit_lyrics).setVisible(false);
                 menu.findItem(R.id.view_lyrics).setVisible(true);
-
-                // Edit the lyrics view, by setting a nonnull key listener
-                lyrics.setKeyListener(lyricsEditorListener);
+                lyrics.setEditable(true);
 
                 // Update Visual changes
-                removeSpansFromLyrics();
+                applyDefaultTextColor(title, MODE_EDIT);
+                applyDefaultTextColor(by, MODE_EDIT);
+                applyDefaultTextColor(artist, MODE_EDIT);
+                lyrics.removeSpansFromText();
                 regions = null;
                 lyricsScroller.setBackgroundColor(getResources().getColor(R.color.editBackground));
                 break;
@@ -161,10 +165,7 @@ public class LyricFragment extends Fragment {
                 menu.findItem(R.id.edit_lyrics).setVisible(true);
                 menu.findItem(R.id.view_lyrics).setVisible(false);
 
-                // Edit the lyrics view, by setting a nonnull key listener
-                lyrics.setKeyListener(null);
-                lyrics.setSelection(0);
-                lyrics.setLongClickable(false);
+                lyrics.setEditable(false);
 
                 // Hide keyboard
                 View view = getView();
@@ -173,10 +174,13 @@ public class LyricFragment extends Fragment {
                     assert imm != null;
                     imm.hideSoftInputFromWindow(view.getRootView().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
                 }
-                lyrics.clearFocus();
+//                lyrics.clearFocus();
                 lyricsScroller.scrollTo(0, 0);
 
                 // Update Visual changes
+                applyDefaultTextColor(title, MODE_DISPLAY);
+                applyDefaultTextColor(by, MODE_DISPLAY);
+                applyDefaultTextColor(artist, MODE_DISPLAY);
                 applySpansToLyrics();
                 lyricsScroller.setBackgroundColor(getResources().getColor(R.color.showBackground));
                 break;
@@ -220,7 +224,7 @@ public class LyricFragment extends Fragment {
         int colorIndex = regions[regionIndex];
         spannable.setSpan(
                 new ForegroundColorSpan(colorIndex != 0 ? lyricSpanColors[colorIndex - 1] :
-                        defaultLineColor),
+                        defaultLineColorDisplay),
                 start,
                 end,
                 Spanned.SPAN_INCLUSIVE_EXCLUSIVE
@@ -237,11 +241,15 @@ public class LyricFragment extends Fragment {
         regions = lyricAnalyzer.findColorRegions(matchingLineNumbers);
     }
 
-    /**
-     * Does not preserve the edits
-     */
-    private void removeSpansFromLyrics() {
-        lyrics.setText(new SpannableString(lyrics.getText().toString()),
-                TextView.BufferType.SPANNABLE);
+    private void applyDefaultTextColor(TextView textView, int mode) {
+        switch (mode) {
+            case MODE_EDIT:
+                textView.setTextColor(defaultLineColorEdit);
+                break;
+
+            case MODE_DISPLAY:
+                textView.setTextColor(defaultLineColorDisplay);
+                break;
+        }
     }
 }

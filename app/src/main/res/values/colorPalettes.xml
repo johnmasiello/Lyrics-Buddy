@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <color name="default_line_color_plain">@android:color/black</color>
     <color name="default_line_color">#ffffff</color>
 
     <!--Color Hex »  Color Palettes »  Beach-->

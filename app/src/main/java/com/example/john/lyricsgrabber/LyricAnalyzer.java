@@ -11,6 +11,9 @@ import java.util.List;
  */
 
 class LyricAnalyzer {
+
+    private int lyricParsingOffset;
+
     /**
      *
      * @return a copy of lines where each lines is modified by trimming white space, removing punctuation
@@ -26,12 +29,7 @@ class LyricAnalyzer {
         return out;
     }
 
-    /**
-     *
-     * @param lyricLine Precondition: trimLyrics
-     * @see #trimLyrics(String[])
-     */
-    private boolean containsWords_(String lyricLine) {
+    private boolean containsWordsNoTrim(String lyricLine) {
         return lyricLine.length() > 0;
     }
 
@@ -54,7 +52,7 @@ class LyricAnalyzer {
         for (int i = 0; i < tLines.length; i++) {
             line = tLines[i];
 
-            if (containsWords_(line)) {
+            if (containsWordsNoTrim(line)) {
                 list = new ArrayList<>();
 
                 for (int j = 0; j < tLines.length; j++) {
@@ -175,5 +173,64 @@ class LyricAnalyzer {
      */
     String[] delimitLines(String body) {
         return body.split("\\n");
+    }
+
+    /**
+     *
+     * @see #fetchLyrics(String)
+     */
+    String fetchTitle(String raw) {
+        return findNextLetteredLine(raw, 0);
+    }
+
+    /**
+     *
+     * @see #fetchLyrics(String)
+     */
+    String fetchArtist(String raw) {
+        fetchTitle(raw);
+        return findNextLetteredLine(raw, ++lyricParsingOffset);
+    }
+
+    /**
+     *
+     * <p>Related Methods {@link #fetchTitle(String)}, {@link #fetchArtist(String)}</p>
+     * @param raw The raw text in the form {Title}\n{Artist}\n{Body}
+     * @return The lyric body of raw
+     */
+    String fetchLyrics(String raw) {
+        fetchArtist(raw);
+        lyricParsingOffset++;
+        return lyricParsingOffset < raw.length() ? raw.substring(lyricParsingOffset) : "";
+    }
+
+    private String findNextLetteredLine(String raw, int startOffset) {
+        int endOffset;
+        String parsed = "";
+
+        final String terminal = "\n";
+        endOffset = raw.indexOf(terminal, startOffset);
+
+        while (endOffset != -1) {
+            parsed = raw.substring(startOffset, endOffset);
+
+            if (containsWords(parsed)) {
+                lyricParsingOffset = endOffset;
+                return parsed;
+            }
+            startOffset = ++endOffset;
+            endOffset = raw.indexOf(terminal, startOffset);
+        }
+        endOffset = raw.length();
+
+        if (startOffset < endOffset) {
+            parsed = raw.substring(startOffset, endOffset);
+
+            if (!containsWords(parsed)) {
+                parsed = "";
+            }
+        }
+        lyricParsingOffset = endOffset;
+        return parsed;
     }
 }
