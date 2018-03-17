@@ -37,8 +37,6 @@ import java.util.Random;
 // Menu
 // TODO: Put in an intent for the share menu item
 // https://stackoverflow.com/questions/13941093/how-to-share-entire-android-app-with-share-intent
-// Bottom Navigation
-// TODO: Home [icon only] | '+' [new project]
 public class LyricFragment extends Fragment {
 
     // Valid reference until next call to OnCreateOptionsMenu
@@ -221,7 +219,7 @@ public class LyricFragment extends Fragment {
         switch (mode) {
             case MODE_EDIT:
                 menu.findItem(R.id.edit_lyrics).setVisible(false);
-                menu.findItem(R.id.shuffle_colors).setVisible(false);
+                menu.findItem(R.id.shuffle_colors).setEnabled(false);
                 menu.findItem(R.id.palette).setVisible(false);
                 menu.findItem(R.id.view_lyrics).setVisible(true);
                 lyrics.setEditable(true);
@@ -243,7 +241,7 @@ public class LyricFragment extends Fragment {
 
             case MODE_DISPLAY:
                 menu.findItem(R.id.edit_lyrics).setVisible(true);
-                menu.findItem(R.id.shuffle_colors).setVisible(true);
+                menu.findItem(R.id.shuffle_colors).setEnabled(true);
                 menu.findItem(R.id.palette).setVisible(true);
                 menu.findItem(R.id.view_lyrics).setVisible(false);
 
