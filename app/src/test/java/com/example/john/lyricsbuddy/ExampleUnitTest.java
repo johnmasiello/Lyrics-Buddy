@@ -1,4 +1,4 @@
-package com.example.john.lyricsgrabber;
+package com.example.john.lyricsbuddy;
 
 import org.junit.Test;
 

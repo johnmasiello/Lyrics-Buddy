@@ -1,4 +1,4 @@
-package com.example.john.lyricsgrabber;
+package com.example.john.lyricsbuddy;
 
 import android.content.Context;
 import android.text.SpannableString;

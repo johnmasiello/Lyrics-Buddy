@@ -1,9 +1,7 @@
 <resources>
-    <string name="app_name">LyricsGrabber</string>
-    <string name="app_label">Lyrics Grabber</string>
+    <string name="app_name">LyricsBuddy</string>
+    <string name="app_label">Lyrics Buddy</string>
     <string name="title_home">Home</string>
-    <string name="title_dashboard">Dashboard</string>
-    <string name="title_notifications">Notifications</string>
     <string name="lyric_options_edit">Edit</string>
     <string name="lyric_options_show">Display</string>
     <string name="lyric_options_share">Share</string>
@@ -83,4 +81,5 @@ Oh, they don\'t know, they don\'t know, they don\'t know, they don\'t know about
     <string name="album_view_hint">Album</string>
     <string name="lyric_options_colors">Color Schemes</string>
     <string name="lyric_options_shuffle">Shuffle Colors</string>
+    <string name="title_new_lyrics">New</string>
 </resources>

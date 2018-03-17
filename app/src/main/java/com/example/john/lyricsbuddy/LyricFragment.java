@@ -1,4 +1,4 @@
-package com.example.john.lyricsgrabber;
+package com.example.john.lyricsbuddy;
 
 import android.content.Context;
 import android.content.res.Resources;
@@ -32,11 +32,11 @@ import java.util.Random;
  * Created by john on 3/12/18.
  * Content Fragment that displays lyrics
  */
+// TODO: Undo edits feature
+// TODO: Save feature
 // Menu
 // TODO: Put in an intent for the share menu item
 // https://stackoverflow.com/questions/13941093/how-to-share-entire-android-app-with-share-intent
-// TODO: Use Background ColorSpans to contrast against each color in a palette for each palette
-// TODO: Make an option to save lyrics locally to the phone
 // Bottom Navigation
 // TODO: Home [icon only] | '+' [new project]
 public class LyricFragment extends Fragment {
