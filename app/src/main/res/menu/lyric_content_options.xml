@@ -84,8 +84,6 @@
                     android:icon="@drawable/winter"
                     app:showAsAction="withText"
                     />
-
-
             </group>
         </menu>
     </item>

@@ -2,7 +2,7 @@
 <resources>
 
     <color name="default_line_color_plain">@android:color/black</color>
-    <color name="default_line_color">#c7c7c7</color>
+    <color name="default_line_color">#ffffff</color>
 
     <!--Color Hex »  Color Palettes »  Beach-->
     <!--Color Hex »  Color Palettes »  Macarons-->

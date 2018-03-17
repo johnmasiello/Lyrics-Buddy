@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="shadowDx" format="float" type="fraction">6</item>
+    <item name="shadowDy" format="float" type="fraction">6</item>
+    <item name="shadowRadius" format="float" type="fraction">4</item>
+</resources>

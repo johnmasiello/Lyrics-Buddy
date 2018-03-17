@@ -1,6 +1,7 @@
 package com.example.john.lyricsgrabber;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
@@ -11,8 +12,8 @@ import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.style.BackgroundColorSpan;
 import android.text.style.ForegroundColorSpan;
-import android.util.Log;
 import android.util.SparseArray;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -400,10 +401,18 @@ public class LyricFragment extends Fragment {
         }
 
         ShadowLayer(Context context) {
-            this.radius = 5;
-            this.dx = 7;
+            Resources res = context.getResources();
+            TypedValue val = new TypedValue();
+
+            res.getValue(R.fraction.shadowDx, val, true);
+            this.dx = val.getFloat();
+
+            res.getValue(R.fraction.shadowDy, val, true);
             this.dy = 7;
-            this.color = context.getResources().getColor(R.color.trackInfoShadowColor);
+
+            res.getValue(R.fraction.shadowRadius, val, true);
+            this.radius = val.getFloat();
+            this.color = res.getColor(R.color.trackInfoShadowColor);
         }
     }
 
@@ -421,15 +430,6 @@ public class LyricFragment extends Fragment {
     int getGray(float relativeLuminance) {
         int y = ((int) relativeLuminance);
         return Color.rgb(y, y, y);
-    }
-
-    /**
-     * Uses {@link #computeRelativeLuminance(int)} to compute a relative luminance, which is then remapped via
-     * a One's complement with 1 representing 0xFF in a color Channel for each channel in RGB
-     * color representation, then finding a shade of grey with equal luminance, with alpha set to 0xFF
-     */
-    int getOnesComplementGray(int color) {
-        return getGray(0xff & ~((int) computeRelativeLuminance(color)));
     }
 
     /**
