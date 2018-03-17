@@ -17,7 +17,7 @@
 
     <item
         android:id="@+id/share_lyrics"
-        android:icon="@drawable/ic_share_white_24dp"
+        android:icon="@drawable/ic_share_22dp"
         android:title="@string/lyric_options_share"
         app:showAsAction="ifRoom" />
 
@@ -25,7 +25,7 @@
         android:id="@+id/shuffle_colors"
         android:title="@string/lyric_options_shuffle"
         android:icon="@drawable/ic_action_shuffle"
-        app:showAsAction="withText" />
+        app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/palette"

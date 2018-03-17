@@ -9,7 +9,9 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.text.SpannableString;
 import android.text.Spanned;
+import android.text.style.BackgroundColorSpan;
 import android.text.style.ForegroundColorSpan;
+import android.util.Log;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -306,10 +308,23 @@ public class LyricFragment extends Fragment {
 
     private void setColorSpan(SpannableString spannable, int regionIndex, int start, int end) {
         int colorIndex = regions[regionIndex];
+        int foregroundColor, backgroundColor;
+
+        if (colorIndex == 0) {
+            foregroundColor = defaultLineColorDisplay;
+        } else {
+            backgroundColor = lyricSpanColors[(colorIndex + colorRotation) % lyricSpanColors.length];
+            foregroundColor = getEquidistantGray(backgroundColor);
+
+            spannable.setSpan(
+                    new BackgroundColorSpan(backgroundColor),
+                    start,
+                    end,
+                    Spanned.SPAN_INCLUSIVE_EXCLUSIVE
+            );
+        }
         spannable.setSpan(
-                new ForegroundColorSpan(colorIndex != 0 ?
-                        lyricSpanColors[(colorIndex + colorRotation) % lyricSpanColors.length] :
-                        defaultLineColorDisplay),
+                new ForegroundColorSpan(foregroundColor),
                 start,
                 end,
                 Spanned.SPAN_INCLUSIVE_EXCLUSIVE
@@ -390,5 +405,41 @@ public class LyricFragment extends Fragment {
             this.dy = 7;
             this.color = context.getResources().getColor(R.color.trackInfoShadowColor);
         }
+    }
+
+    /**
+     *
+     * @param color color in the form argb with 1 byte for each channel. Only the rgb channels are used
+     * @return Relative Luminance of RGB. Assumes no chroma compression. In that case, the formula is
+     * Y = .2126R + .71522G + .0722B
+     * https://en.wikipedia.org/wiki/Relative_luminance
+     */
+    public static float computeRelativeLuminance(int color) {
+        return .2126f * Color.red(color) + .71522f * Color.green(color) + .0722f * Color.blue(color);
+    }
+
+    int getGray(float relativeLuminance) {
+        int y = ((int) relativeLuminance);
+        return Color.rgb(y, y, y);
+    }
+
+    /**
+     * Uses {@link #computeRelativeLuminance(int)} to compute a relative luminance, which is then remapped via
+     * a One's complement with 1 representing 0xFF in a color Channel for each channel in RGB
+     * color representation, then finding a shade of grey with equal luminance, with alpha set to 0xFF
+     */
+    int getOnesComplementGray(int color) {
+        return getGray(0xff & ~((int) computeRelativeLuminance(color)));
+    }
+
+    /**
+     *
+     * Makes a gray color by transforming the relative luminance in a map where the output is always exactly 128
+     * distance from the input. The map is achieved by connecting the endpoints {0, 255} to form a circle,
+     * then taking the output as the antipodal point on the circle.
+     */
+    int getEquidistantGray(int color) {
+        int y = ((int) computeRelativeLuminance(color));
+        return getGray(y > 127 ? y - 128 : y + 128);
     }
 }
