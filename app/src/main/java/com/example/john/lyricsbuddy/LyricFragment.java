@@ -36,7 +36,6 @@ import java.util.Random;
  * Created by john on 3/12/18.
  * Content Fragment that displays lyrics
  */
-// TODO: Make Palette Menu checkable
 // TODO: Undo edits feature
 // TODO: Save feature
 // Menu
@@ -266,6 +265,8 @@ public class LyricFragment extends Fragment {
                 menu.findItem(R.id.shuffle_colors).setVisible(false);
                 menu.findItem(R.id.palette).setVisible(false);
                 menu.findItem(R.id.view_lyrics).setVisible(true);
+                menu.findItem(R.id.undo).setVisible(true);
+                menu.findItem(R.id.redo).setVisible(true);
                 lyrics.setEditable(true);
 
                 // Update Visual changes
@@ -288,6 +289,8 @@ public class LyricFragment extends Fragment {
                 menu.findItem(R.id.shuffle_colors).setVisible(true);
                 menu.findItem(R.id.palette).setVisible(true);
                 menu.findItem(R.id.view_lyrics).setVisible(false);
+                menu.findItem(R.id.undo).setVisible(false);
+                menu.findItem(R.id.redo).setVisible(false);
 
                 lyrics.setEditable(false);
 
@@ -298,7 +301,6 @@ public class LyricFragment extends Fragment {
                     assert imm != null;
                     imm.hideSoftInputFromWindow(view.getRootView().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
                 }
-                lyricsScroller.scrollTo(0, 0);
 
                 // Update Visual changes
                 for (int id : textViewIDs) {
@@ -357,7 +359,7 @@ public class LyricFragment extends Fragment {
             foregroundColor = defaultLineColorDisplay;
         } else {
             backgroundColor = lyricSpanColors[(colorIndex + colorRotation) % lyricSpanColors.length];
-            foregroundColor = getEquidistantGray(backgroundColor);
+            foregroundColor = ColorPerceptionHelper.getEquidistantGray(backgroundColor);
 
             spannable.setSpan(
                     new BackgroundColorSpan(backgroundColor),
@@ -501,29 +503,34 @@ public class LyricFragment extends Fragment {
     }
 
     /**
-     *
-     * @param color color in the form argb with 1 byte for each channel. Only the rgb channels are used
-     * @return Relative Luminance of RGB. Assumes no chroma compression. In that case, the formula is
-     * Y = .2126R + .71522G + .0722B
-     * https://en.wikipedia.org/wiki/Relative_luminance
+     * A class that aids in computing an intensity of gray for text so its relative luminance
+     * will have a medium level of contrast with respect to the background color in order to reduce
+     * the strain on the eyes
      */
-    public static float computeRelativeLuminance(int color) {
-        return .2126f * Color.red(color) + .71522f * Color.green(color) + .0722f * Color.blue(color);
-    }
+    static class ColorPerceptionHelper {
+        /**
+         * @param color color in the form argb with 1 byte for each channel. Only the rgb channels are used
+         * @return Relative Luminance of RGB. Assumes no chroma compression. In that case, the formula is
+         * Y = .2126R + .71522G + .0722B
+         * https://en.wikipedia.org/wiki/Relative_luminance
+         */
+        static float computeRelativeLuminance(int color) {
+            return .2126f * Color.red(color) + .71522f * Color.green(color) + .0722f * Color.blue(color);
+        }
 
-    int getGray(float relativeLuminance) {
-        int y = ((int) relativeLuminance);
-        return Color.rgb(y, y, y);
-    }
+        static int getGray(float relativeLuminance) {
+            int y = ((int) relativeLuminance);
+            return Color.rgb(y, y, y);
+        }
 
-    /**
-     *
-     * Makes a gray color by transforming the relative luminance in a map where the output is always exactly 128
-     * distance from the input. The map is achieved by connecting the endpoints {0, 255} to form a circle,
-     * then taking the output as the antipodal point on the circle.
-     */
-    int getEquidistantGray(int color) {
-        int y = ((int) computeRelativeLuminance(color));
-        return getGray(y > 127 ? y - 128 : y + 128);
+        /**
+         * Makes a gray color by transforming the relative luminance in a map where the output is always exactly 128
+         * distance from the input. The map is achieved by connecting the endpoints {0, 255} to form a circle,
+         * then taking the output as the antipodal point on the circle.
+         */
+        static int getEquidistantGray(int color) {
+            int y = ((int) computeRelativeLuminance(color));
+            return getGray(y > 127 ? y - 128 : y + 128);
+        }
     }
 }

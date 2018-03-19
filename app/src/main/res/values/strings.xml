@@ -82,4 +82,6 @@ Oh, they don\'t know, they don\'t know, they don\'t know, they don\'t know about
     <string name="lyric_options_colors">Color Schemes</string>
     <string name="lyric_options_shuffle">Shuffle Colors</string>
     <string name="title_new_lyrics">New</string>
+    <string name="lyric_options_undo">Undo</string>
+    <string name="lyric_options_redo">Redo</string>
 </resources>

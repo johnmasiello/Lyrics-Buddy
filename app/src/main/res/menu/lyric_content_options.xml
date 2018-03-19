@@ -20,7 +20,22 @@
         android:id="@+id/share_lyrics"
         android:icon="@drawable/ic_share_22dp"
         android:title="@string/lyric_options_share"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="ifRoom"
+        />
+
+    <item
+        android:id="@+id/undo"
+        android:icon="@drawable/ic_undo_24dp"
+        android:title="@string/lyric_options_undo"
+        app:showAsAction="always"
+        />
+
+    <item
+        android:id="@+id/redo"
+        android:icon="@drawable/ic_redo_24dp"
+        android:title="@string/lyric_options_redo"
+        app:showAsAction="always"
+        />
 
     <item
         android:id="@+id/shuffle_colors"
