@@ -40,49 +40,49 @@
                 <item
                     android:id="@+id/beach"
                     android:title="Beach"
-                    android:icon="@drawable/beach"
+                    android:icon="@drawable/palette_beach"
                     app:showAsAction="withText"
                     />
 
                 <item
                     android:id="@+id/reggae"
                     android:title="Reggae"
-                    android:icon="@drawable/reggae"
+                    android:icon="@drawable/palette_reggae"
                     app:showAsAction="withText"
                     />
 
                 <item
                     android:id="@+id/rock"
                     android:title="Rock"
-                    android:icon="@drawable/rock"
+                    android:icon="@drawable/palette_rock"
                     app:showAsAction="withText"
                     />
 
                 <item
                     android:id="@+id/usa"
                     android:title="USA"
-                    android:icon="@drawable/usa"
+                    android:icon="@drawable/palette_usa"
                     app:showAsAction="withText"
                     />
 
                 <item
                     android:id="@+id/spring"
                     android:title="Spring"
-                    android:icon="@drawable/spring"
+                    android:icon="@drawable/palette_spring"
                     app:showAsAction="withText"
                     />
 
                 <item
                     android:id="@+id/autumn"
                     android:title="Autumn"
-                    android:icon="@drawable/autumn"
+                    android:icon="@drawable/palette_autumn"
                     app:showAsAction="withText"
                     />
 
                 <item
                     android:id="@+id/winter"
                     android:title="Winter"
-                    android:icon="@drawable/winter"
+                    android:icon="@drawable/palette_winter"
                     app:showAsAction="withText"
                     />
             </group>

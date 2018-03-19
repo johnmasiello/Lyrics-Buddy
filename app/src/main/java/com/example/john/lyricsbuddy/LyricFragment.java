@@ -6,12 +6,16 @@ import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.ArrayRes;
+import android.support.annotation.DrawableRes;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.text.Editable;
 import android.text.SpannableString;
 import android.text.Spanned;
+import android.text.TextWatcher;
 import android.text.style.BackgroundColorSpan;
 import android.text.style.ForegroundColorSpan;
+import android.util.Log;
 import android.util.SparseArray;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -32,6 +36,7 @@ import java.util.Random;
  * Created by john on 3/12/18.
  * Content Fragment that displays lyrics
  */
+// TODO: Make Palette Menu checkable
 // TODO: Undo edits feature
 // TODO: Save feature
 // Menu
@@ -64,7 +69,7 @@ public class LyricFragment extends Fragment {
 
     // State
     private int mode = MODE_EDIT;
-    private @ArrayRes int palette = R.array.colors_beach;
+    private int paletteId = R.id.beach;
     private int colorRotation = DEFAULT_COLOR_ROTATION;
 
     private static final int MODE_EDIT = 0;
@@ -99,7 +104,7 @@ public class LyricFragment extends Fragment {
 
         if (savedInstanceState != null) {
             mode = savedInstanceState.getInt(MODE_KEY, MODE_EDIT);
-            palette = savedInstanceState.getInt(PALETTE_KEY, R.array.colors_beach);
+            paletteId = savedInstanceState.getInt(PALETTE_KEY, R.id.beach);
             colorRotation = savedInstanceState.getInt(COLOR_ROTATION_KEY, DEFAULT_COLOR_ROTATION);
         }
 
@@ -110,7 +115,7 @@ public class LyricFragment extends Fragment {
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putInt(MODE_KEY, mode);
-        outState.putInt(PALETTE_KEY, palette);
+        outState.putInt(PALETTE_KEY, paletteId);
         outState.putInt(COLOR_ROTATION_KEY, colorRotation);
     }
 
@@ -143,6 +148,51 @@ public class LyricFragment extends Fragment {
         trackInfo.get(R.id.artist).setText(getString(R.string.track_artist));
         lyrics.setText(new SpannableString(getString(R.string.lyrics)), TextView.BufferType.SPANNABLE);
 
+        lyrics.addTextChangedListener(new TextWatcher() {
+            int start;
+            int oldLength;
+            int newLength;
+
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+//                Log.d("BeforeText", String.format("%s [...] at Start %d, consuming %d, with len %d",
+//                        charSequence.toString().substring(i, i + 10), i, i1, i2));
+
+                String replace = charSequence.subSequence(i, i + i1).toString();
+                String with = charSequence.subSequence(i, i + i2).toString();
+
+                Log.d("BeforeTexxt", String.format("\"%s\" \t\t\t %d %d %d",
+                    replace, i, i1, i2));
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+//                Log.d("OnText", String.format("%s [...] at Start %d, consuming %d, with len %d",
+//                        charSequence.toString().substring(i, i + 10), i, i1, i2));
+
+                start = i;
+                oldLength = i1;
+                newLength = i2;
+
+                String replace = charSequence.subSequence(i, i + i1).toString();
+                String with = charSequence.subSequence(i, i + i2).toString();
+
+                Log.d("OnnnnTexxt", String.format("\"%s\" \t\t\t %d %d %d",
+                        with, i, i1, i2));
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+//                Log.d("AfterText", editable.toString().substring(start, start + 10));
+
+                String replace = editable.subSequence(start, start + oldLength).toString();
+                String with = editable.subSequence(start, start + newLength).toString();
+
+//                Log.d("AfterTexxt", String.format("\"%s\" \t\t\t %d %d %d",
+//                        with, start, oldLength, newLength));
+            }
+        });
+
         return rootView;
     }
 
@@ -150,6 +200,14 @@ public class LyricFragment extends Fragment {
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.lyric_content_options, menu);
         this.menu = menu;
+
+        // Update the menu icons
+        MenuItem item = menu.findItem(paletteId);
+        if (item != null) {
+            item.setIcon(menuItemIcon(paletteId, true));
+        }
+
+        // Update the lyrics
         updateLyricsMode(mode);
     }
 
@@ -157,31 +215,17 @@ public class LyricFragment extends Fragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getGroupId()==R.id.palettes) {
 
-            switch (item.getItemId()) {
-                case R.id.beach:
-                    palette = R.array.colors_beach;
-                    break;
-                case R.id.reggae:
-                    palette = R.array.colors_reggae;
-                    break;
-                case R.id.rock:
-                    palette = R.array.colors_goth;
-                    break;
-                case R.id.usa:
-                    palette = R.array.colors_usa;
-                    break;
-                case R.id.spring:
-                    palette = R.array.colors_spring;
-                    break;
-                case R.id.autumn:
-                    palette = R.array.colors_autumn;
-                    break;
-                case R.id.winter:
-                    palette = R.array.colors_snowflake;
-                    break;
-                default:
-                    return super.onOptionsItemSelected(item);
+            // Remove the previously checkedItem
+            MenuItem oldItem = menu.findItem(paletteId);
+            if (oldItem != null) {
+                oldItem.setIcon(menuItemIcon(paletteId, false));
             }
+
+            paletteId = item.getItemId();
+
+            // Check this item
+            item.setIcon(menuItemIcon(paletteId, true));
+
             fetchColorsFromPalette();
             colorRotation = DEFAULT_COLOR_ROTATION;
             applySpansToLyrics();
@@ -219,7 +263,7 @@ public class LyricFragment extends Fragment {
         switch (mode) {
             case MODE_EDIT:
                 menu.findItem(R.id.edit_lyrics).setVisible(false);
-                menu.findItem(R.id.shuffle_colors).setEnabled(false);
+                menu.findItem(R.id.shuffle_colors).setVisible(false);
                 menu.findItem(R.id.palette).setVisible(false);
                 menu.findItem(R.id.view_lyrics).setVisible(true);
                 lyrics.setEditable(true);
@@ -241,7 +285,7 @@ public class LyricFragment extends Fragment {
 
             case MODE_DISPLAY:
                 menu.findItem(R.id.edit_lyrics).setVisible(true);
-                menu.findItem(R.id.shuffle_colors).setEnabled(true);
+                menu.findItem(R.id.shuffle_colors).setVisible(true);
                 menu.findItem(R.id.palette).setVisible(true);
                 menu.findItem(R.id.view_lyrics).setVisible(false);
 
@@ -379,11 +423,53 @@ public class LyricFragment extends Fragment {
     }
 
     private void fetchColorsFromPalette() {
-        String[] colorRes = getResources().getStringArray(palette);
+        String[] colorRes = getResources().getStringArray(fetchPalette(paletteId));
         lyricSpanColors = new int[colorRes.length];
 
         for (int i = 0; i < colorRes.length; i++) {
             lyricSpanColors[i] = Color.parseColor(colorRes[i]);
+        }
+    }
+
+    private @ArrayRes int fetchPalette(int menuItemId) {
+        switch (menuItemId) {
+            case R.id.beach:
+                return R.array.colors_beach;
+            case R.id.reggae:
+                return R.array.colors_reggae;
+            case R.id.rock:
+                return R.array.colors_goth;
+            case R.id.usa:
+                return R.array.colors_usa;
+            case R.id.spring:
+                return R.array.colors_spring;
+            case R.id.autumn:
+                return R.array.colors_autumn;
+            case R.id.winter:
+                return R.array.colors_snowflake;
+            default:
+                return -1;
+        }
+    }
+
+    private @DrawableRes int menuItemIcon(int menuItemId, boolean isChecked) {
+        switch (menuItemId) {
+            case R.id.beach:
+                return isChecked ? R.drawable.palette_beach_check : R.drawable.palette_beach;
+            case R.id.reggae:
+                return isChecked ? R.drawable.palette_reggae_check : R.drawable.palette_reggae;
+            case R.id.rock:
+                return isChecked ? R.drawable.palette_rock_check : R.drawable.palette_rock;
+            case R.id.usa:
+                return isChecked ? R.drawable.palette_usa_check : R.drawable.palette_usa;
+            case R.id.spring:
+                return isChecked ? R.drawable.palette_spring_check : R.drawable.palette_spring;
+            case R.id.autumn:
+                return isChecked ? R.drawable.palette_autumn_check : R.drawable.palette_autumn;
+            case R.id.winter:
+                return isChecked ? R.drawable.palette_winter_check : R.drawable.palette_winter;
+            default:
+                return -1;
         }
     }
 

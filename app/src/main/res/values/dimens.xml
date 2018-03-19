@@ -5,4 +5,6 @@
     <dimen name="lyric_body_top_margin">36dp</dimen>
     <dimen name="album_top_margin">2dp</dimen>
     <dimen name="shadowPadding">3dp</dimen>
+    <dimen name="menu_circle_small">15dp</dimen>
+    <dimen name="menu_circle_medium">18dp</dimen>
 </resources>
