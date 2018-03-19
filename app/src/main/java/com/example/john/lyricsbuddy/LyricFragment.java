@@ -145,7 +145,7 @@ public class LyricFragment extends Fragment {
         trackInfo.get(R.id.title).setText(R.string.track_title);
         trackInfo.get(R.id.album).setText(getString(R.string.track_album));
         trackInfo.get(R.id.artist).setText(getString(R.string.track_artist));
-        lyrics.setText(new SpannableString(getString(R.string.lyrics)), TextView.BufferType.SPANNABLE);
+        lyrics.setText(new SpannableString(getString(R.string.lyrics)), TextView.BufferType.EDITABLE);
 
         lyrics.addTextChangedListener(new TextWatcher() {
             int start;
@@ -158,7 +158,7 @@ public class LyricFragment extends Fragment {
 //                        charSequence.toString().substring(i, i + 10), i, i1, i2));
 
                 String replace = charSequence.subSequence(i, i + i1).toString();
-                String with = charSequence.subSequence(i, i + i2).toString();
+//                String with = charSequence.subSequence(i, i + i2).toString();
 
                 Log.d("BeforeTexxt", String.format("\"%s\" \t\t\t %d %d %d",
                     replace, i, i1, i2));
@@ -173,7 +173,7 @@ public class LyricFragment extends Fragment {
                 oldLength = i1;
                 newLength = i2;
 
-                String replace = charSequence.subSequence(i, i + i1).toString();
+//                String replace = charSequence.subSequence(i, i + i1).toString();
                 String with = charSequence.subSequence(i, i + i2).toString();
 
                 Log.d("OnnnnTexxt", String.format("\"%s\" \t\t\t %d %d %d",
@@ -191,6 +191,9 @@ public class LyricFragment extends Fragment {
 //                        with, start, oldLength, newLength));
             }
         });
+
+        // Get the scrollview to scroll to the topmost view in the layout
+        trackInfo.get(textViewIDs[0]).requestFocus();
 
         return rootView;
     }
@@ -323,9 +326,13 @@ public class LyricFragment extends Fragment {
      */
     private void applySpansToLyrics() {
 
-        String lyrics = this.lyrics.getText().toString();
-        SpannableString spannableString = new SpannableString(lyrics);
+        // Remove the spans
+        this.lyrics.removeSpansFromText();
 
+        // Add new spans...
+        Editable editable = this.lyrics.getEditableText();
+
+        String lyrics = editable.toString();
         if (regions == null) {
             computeRegions(lyrics);
         }
@@ -338,7 +345,7 @@ public class LyricFragment extends Fragment {
 
         while (nextOffset != -1) {
             if (lyricAnalyzer.containsWords(lyrics.substring(offset, nextOffset))) {
-                setColorSpan(spannableString, index, offset, nextOffset);
+                setColorSpan(editable, index, offset, nextOffset);
             }
             index++;
             offset = ++nextOffset;
@@ -346,12 +353,11 @@ public class LyricFragment extends Fragment {
         }
         nextOffset = lyrics.length();
         if (offset != nextOffset && lyricAnalyzer.containsWords(lyrics.substring(offset, nextOffset))) {
-            setColorSpan(spannableString, index, offset, nextOffset);
+            setColorSpan(editable, index, offset, nextOffset);
         }
-        this.lyrics.setText(spannableString, TextView.BufferType.SPANNABLE);
     }
 
-    private void setColorSpan(SpannableString spannable, int regionIndex, int start, int end) {
+    private void setColorSpan(Editable editable, int regionIndex, int start, int end) {
         int colorIndex = regions[regionIndex];
         int foregroundColor, backgroundColor;
 
@@ -361,14 +367,14 @@ public class LyricFragment extends Fragment {
             backgroundColor = lyricSpanColors[(colorIndex + colorRotation) % lyricSpanColors.length];
             foregroundColor = ColorPerceptionHelper.getEquidistantGray(backgroundColor);
 
-            spannable.setSpan(
+            editable.setSpan(
                     new BackgroundColorSpan(backgroundColor),
                     start,
                     end,
                     Spanned.SPAN_INCLUSIVE_EXCLUSIVE
             );
         }
-        spannable.setSpan(
+        editable.setSpan(
                 new ForegroundColorSpan(foregroundColor),
                 start,
                 end,

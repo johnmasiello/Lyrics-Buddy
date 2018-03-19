@@ -2,10 +2,11 @@ package com.example.john.lyricsbuddy;
 
 import android.content.Context;
 import android.support.v7.widget.AppCompatEditText;
-import android.text.SpannableString;
+import android.text.Editable;
 import android.text.method.KeyListener;
+import android.text.style.BackgroundColorSpan;
+import android.text.style.ForegroundColorSpan;
 import android.util.AttributeSet;
-import android.widget.TextView;
 
 /**
  * Created by john on 3/15/18.
@@ -48,25 +49,30 @@ public class WrappedEditText extends AppCompatEditText {
     }
 
     public void removeSpansFromText() {
-        setText(new SpannableString(getText().toString()),
-                TextView.BufferType.SPANNABLE);
-    }
-
-    @Override
-    public void setText(CharSequence text, BufferType type) {
         // Preserve the start of the selection offset
-        try
-        {
+        if (getEditableText() != null) {
             selectionOffset = getSelectionStart();
-        } catch (Exception ignore) {
-            // A getText() is called, which throws a ClassCastException, when called before
-            // setText(). This behavior could change upon changes to the framework
         }
 
-        super.setText(text, type);
+        Editable editable = getEditableText();
+        Class[] classes = new Class[] {
+                ForegroundColorSpan.class,
+                BackgroundColorSpan.class
+            };
+
+        Object[] spans;
+        int len = editable.length();
+
+        for (Class clasz : classes) {
+            spans = editable.getSpans(0, len, clasz);
+
+            for (Object span : spans) {
+                editable.removeSpan(span);
+            }
+        }
 
         // Set the cursor to the selection offset
-        if (selectionOffset <= text.length()) {
+        if (selectionOffset <= editable.length() && selectionOffset > -1) {
             setSelection(selectionOffset, selectionOffset);
         }
     }
