@@ -12,10 +12,8 @@ import android.support.v4.app.Fragment;
 import android.text.Editable;
 import android.text.SpannableString;
 import android.text.Spanned;
-import android.text.TextWatcher;
 import android.text.style.BackgroundColorSpan;
 import android.text.style.ForegroundColorSpan;
-import android.util.Log;
 import android.util.SparseArray;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -147,55 +145,25 @@ public class LyricFragment extends Fragment {
         trackInfo.get(R.id.artist).setText(getString(R.string.track_artist));
         lyrics.setText(new SpannableString(getString(R.string.lyrics)), TextView.BufferType.EDITABLE);
 
-        lyrics.addTextChangedListener(new TextWatcher() {
-            int start;
-            int oldLength;
-            int newLength;
-
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-//                Log.d("BeforeText", String.format("%s [...] at Start %d, consuming %d, with len %d",
-//                        charSequence.toString().substring(i, i + 10), i, i1, i2));
-
-                String replace = charSequence.subSequence(i, i + i1).toString();
-//                String with = charSequence.subSequence(i, i + i2).toString();
-
-                Log.d("BeforeTexxt", String.format("\"%s\" \t\t\t %d %d %d",
-                    replace, i, i1, i2));
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-//                Log.d("OnText", String.format("%s [...] at Start %d, consuming %d, with len %d",
-//                        charSequence.toString().substring(i, i + 10), i, i1, i2));
-
-                start = i;
-                oldLength = i1;
-                newLength = i2;
-
-//                String replace = charSequence.subSequence(i, i + i1).toString();
-                String with = charSequence.subSequence(i, i + i2).toString();
-
-                Log.d("OnnnnTexxt", String.format("\"%s\" \t\t\t %d %d %d",
-                        with, i, i1, i2));
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-//                Log.d("AfterText", editable.toString().substring(start, start + 10));
-
-                String replace = editable.subSequence(start, start + oldLength).toString();
-                String with = editable.subSequence(start, start + newLength).toString();
-
-//                Log.d("AfterTexxt", String.format("\"%s\" \t\t\t %d %d %d",
-//                        with, start, oldLength, newLength));
-            }
-        });
+        // Reset the undo stack so the content in the editTexts will be synchronized with the undo stack
+        WrappedEditText.resetUndoStack();
 
         // Get the scrollview to scroll to the topmost view in the layout
         trackInfo.get(textViewIDs[0]).requestFocus();
 
         return rootView;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        lyrics.addTextWatcher(-1);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        lyrics.removeTextWatcher();
     }
 
     @Override
