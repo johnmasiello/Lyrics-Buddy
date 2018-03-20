@@ -20,13 +20,14 @@
             android:id="@+id/title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:maxWidth="@dimen/max_width_track_info"
             android:layout_marginTop="@dimen/activity_vertical_margin"
             android:paddingRight="@dimen/shadowPadding"
             android:paddingEnd="@dimen/shadowPadding"
             android:background="@android:color/transparent"
             android:gravity="center"
             android:hint="@string/title_view_hint"
-            android:inputType="textCapWords|textNoSuggestions"
+            android:inputType="textCapWords|textNoSuggestions|textMultiLine"
             android:textAppearance="@style/TrackInfo"
             />
 
@@ -35,14 +36,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/album_top_margin"
-            android:paddingRight="@dimen/shadowPadding"
-            android:paddingEnd="@dimen/shadowPadding"
             android:background="@android:color/transparent"
             android:gravity="center"
             android:hint="@string/album_view_hint"
-            android:inputType="textCapWords|textNoSuggestions"
-            android:textAppearance="@style/TrackInfo_Subordinate"
-            />
+            android:inputType="textCapWords|textNoSuggestions|textMultiLine"
+            android:maxWidth="@dimen/max_width_track_info"
+            android:paddingEnd="@dimen/shadowPadding"
+            android:paddingRight="@dimen/shadowPadding"
+            android:textAppearance="@style/TrackInfo_Subordinate" />
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -68,6 +69,7 @@
                 android:id="@+id/artist"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:maxWidth="@dimen/max_width_track_info"
                 android:layout_centerVertical="true"
                 android:layout_toEndOf="@+id/by"
                 android:layout_toRightOf="@+id/by"
@@ -76,7 +78,7 @@
                 android:paddingEnd="@dimen/shadowPadding"
                 android:gravity="center_horizontal|top"
                 android:hint="@string/artist_view_hint"
-                android:inputType="textCapWords|textNoSuggestions"
+                android:inputType="textCapWords|textNoSuggestions|textMultiLine"
                 android:textAllCaps="false"
                 android:textAppearance="@style/TrackInfo_Subordinate"
                 android:textStyle="italic" />

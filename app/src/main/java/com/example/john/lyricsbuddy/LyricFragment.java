@@ -10,6 +10,7 @@ import android.support.annotation.DrawableRes;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.text.Editable;
+import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.style.BackgroundColorSpan;
 import android.text.style.ForegroundColorSpan;
@@ -34,7 +35,6 @@ import java.util.Random;
  * Created by john on 3/12/18.
  * Content Fragment that displays lyrics
  */
-// TODO: Undo edits feature
 // TODO: Save feature
 // Menu
 // TODO: Put in an intent for the share menu item
@@ -143,10 +143,10 @@ public class LyricFragment extends Fragment {
         lyricsScroller = rootView.findViewById(R.id.lyrics_scroller);
 
         // TODO: control data entry point for lyrics
-        trackInfo.get(R.id.title).setText(R.string.track_title);
-        trackInfo.get(R.id.album).setText(getString(R.string.track_album));
-        trackInfo.get(R.id.artist).setText(getString(R.string.track_artist));
-//        lyrics.setText(new SpannableString(getString(R.string.lyrics)), TextView.BufferType.EDITABLE);
+        trackInfo.get(R.id.title).setText(R.string.jellyRollBlues_title);
+        trackInfo.get(R.id.album).setText(getString(R.string.jellyRollBlues_album));
+        trackInfo.get(R.id.artist).setText(getString(R.string.jellyRollBlues_artist));
+        lyrics.setText(new SpannableString(getString(R.string.jellyRollBlues_lyrics)), TextView.BufferType.EDITABLE);
 
         WrappedEditText.ensureUndoStack();
         WrappedEditText.ensureRedoStack();

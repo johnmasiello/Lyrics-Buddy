@@ -6,74 +6,111 @@
     <string name="lyric_options_show">Display</string>
     <string name="lyric_options_share">Share</string>
 
-    <string name="track_title">"They Don't Know"</string>
-    <string name="track_album">Trolls Soundtrack</string>
-    <string name="track_artist">Ariana Grande</string>
+    <!--http://helensedwick.com/sources-of-public-domain-lyrics/-->
+    <string name="ballgame_title">Take Me Out To The Ball Game</string>
+    <string name="ballgame_artist">Ed Meeker</string>
+    <string name="ballgame_lyrics">
+        Take me out to the ball game\n
+        Take me out with the crowd\n
+        Buy me some peanuts and crackerjacks\n
+        I don\'t care if I never get back\n
+        Let me root, root, root\n
+        For the home team\n
+        If they don\'t win it\'s a shame\n
+        Aahh.\n
+        For it\'s one,\n
+        Two,\n
+        Three strikes you\'re out\n
+        At the old ball game\n
+        \n
+        All I need is just one chance\n
+        I could hit a home run\n
+        There isn\'t anyone else like me\n
+        Maybe I\'ll go down in history\n
+        And it\'s root, root, root\n
+        For the home team\n
+        Here comes fortune and fame\n
+        \'Cause I know\n
+        That\n
+        I\'ll be the star\n
+        At the old\n
+        Ball \n
+        Game
+    </string>
 
-    <string name="lyrics">Mmmm, watch me\n
-Hey, woo\n
-One, two, three... watch me\n
-\n
-I woke up with all this sunlight\n
-Ain\'t got time to listen to many shade, yeah\n
-The wind in my pony, top-down, alright\n
-Ain\'t got time to let them darken my day, that\'s right\n
-\n
-So light the fireworks\n
-Sing like no one\'s heard\n
-Dance.\n
-It\'s us against the world\n
-\n
-Oh, they don\'t know, they don\'t know, they don\'t know, they don\'t know about us\n
-They don\'t know, they don\'t know, they don\'t know about what we do\n
-Yeah, it\'s true,\n
-I could have all this but I\'m good if I got you\n
-Oh, they don\'t know, they don\'t know, they don\'t know, they don\'t know about...\n
-Mmmm, listen, watch me\n
-\n
-You wait so long to catch that feeling\n
-So hold onto it for as long as you can\n
-We could run away to only where we know\n
-Boy, I got plans, hey\n
-\n
-So light the fireworks\n
-Sing like no one\'s heard\n
-Dance.\n
-It\'s us against the world\n
-\n
-Oh, they don\'t know, they don\'t know, they don\'t know, they don\'t know about us\n
-They don\'t know, they don\'t know, they don\'t know about what we do\n
-Yeah, it\'s true,\n
-I could have all this but I\'m good if I got you\n
-Oh, they don\'t know, they don\'t know, they don\'t know, they don\'t know about...\n
-\n
-Hey\n
-They don\'t know about, they don\'t know \'bout, \'bout, \'bout us\n
-Light the fireworks, let it catch fire\n
-We gon\' dance, dance \'til it hurts\n
-When we in the clubs\n
-We \'bout to let \'em know, know who\'s your girl\n
-So put your hand in my hand\n
-It\'s you and me, it\'s us against the world\n
-Sing it to me one more time\n
-It\'s you and me, it\'s us against the world\n
-Sing it to me one more time\n
-It\'s you and me, it\'s us against the world\n
-I\'m tryna tell you, honey, it\'s us against the world\n
-\n
-Oh, they don\'t know, they don\'t know, they don\'t know, they don\'t know about us\n
-They don\'t know, they don\'t know, they don\'t know about what we do\n
-Yeah, it\'s true,\n
-I could have all this but I\'m good if I got you\n
-Oh, they don\'t know, they don\'t know, they don\'t know, they don\'t know about...\n
-\n
-I woke up with all this sunlight\n
-They don\'t know, they don\'t know, they don\'t know, they don\'t know about us\n
-Wind in my pony, top-down, alright\n
-They don\'t know, they don\'t know, they don\'t know about what we do\n
-Yeah, it\'s true,\n
-I could have all this but I\'m good if I got you\n
-Oh, they don\'t know, they don\'t know, they don\'t know, they don\'t know about us</string>
+    <string name="sweetChariot_title">Swing Low, Sweet Chariot</string>
+    <string name="sweetChariot_artist">Wallace Willis</string>
+    <string name="sweetChariot_lyrics">
+        Swing low, sweet chariot
+        \nComing for to carry me home
+        \nSwing low, sweet chariot
+        \nComing for to carry me home
+        \n
+        \nI looked over Jordan, and what did I see
+        \nComing for to carry me home
+        \nA band of angels coming after me
+        \nComing for to carry me home
+        \n
+        \nSwing low, sweet chariot
+        \nComing for to carry me home
+        \nSwing low, sweet chariot
+        \nComing for to carry me home
+        \n
+        \nIf you get there before I do
+        \nComing for to carry me home
+        \nTell all my friends I\'m coming, too
+        \nComing for to carry me home
+        \n
+        \nSwing low, sweet chariot
+        \nComing for to carry me home
+        \nSwing low, sweet chariot
+        \nComing for to carry me home
+        \n
+        \nI\'m sometimes up and sometimes down
+        \nComing for to carry me home
+        \nBut still my soul feels heavenly bound
+        \nComing for to carry me home
+        \n
+        \nSwing low, sweet chariot
+        \nComing for to carry me home
+        \nSwing low, sweet chariot
+        \nComing for to carry me home
+        \nThe brightest day that I can say
+        \nComing for to carry me home
+        \nWhen Jesus washed my sins away
+        \nComing for to carry me home
+        \nSwing low, sweet chariot
+        \nComing for to carry me home
+        \nSwing low, sweet chariot
+        \nComing for to carry me home
+        \n
+        \nIf I get there before you do
+        \nComing for to carry me home
+        \nI\'ll cut a hole and pull you through
+        \nComing for to carry me home
+    </string>
+
+    <string name="jellyRollBlues_title">Jelly Roll Blues</string>
+    <string name="jellyRollBlues_album">Jelly Roll Morton Plays Jelly Roll Morton and Other Favorites</string>
+    <string name="jellyRollBlues_artist">Jelly Roll Morton</string>
+    <string name="jellyRollBlues_lyrics">
+        I stood on the corner, my feet was dripping wet
+        \nI stood on the corner, my feet was dripping wet
+        \nI asked every man I met
+        \n
+        \nCan\'t give me a dollar, give me a lousy dime
+        \nCan\'t give me a dollar, give me a lousy dime
+        \nJust to feed that hungry man of mine
+        \n
+        \nI got a husband and I got a kid man too
+        \nI got a husband and I got a kid man too
+        \nMy husband can\'t do what my kid man can do
+        \n
+        \nI like the way he cook my cabbage for me
+        \nI like the way he cook my cabbage for me
+        \nLook like he set my natural soul free
+    </string>
+
     <string name="title_view_hint">Title</string>
     <string name="artist_view_hint">Artist</string>
     <string name="lyrics_view_hint">Lyrics</string>

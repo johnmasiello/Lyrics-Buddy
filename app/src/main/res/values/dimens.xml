@@ -7,4 +7,5 @@
     <dimen name="shadowPadding">3dp</dimen>
     <dimen name="menu_circle_small">15dp</dimen>
     <dimen name="menu_circle_medium">18dp</dimen>
+    <dimen name="max_width_track_info">220dp</dimen>
 </resources>

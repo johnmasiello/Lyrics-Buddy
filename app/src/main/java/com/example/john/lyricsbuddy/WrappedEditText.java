@@ -185,7 +185,8 @@ public class WrappedEditText extends AppCompatEditText {
         editText.removeTextWatcher();
 
         TextChange tx = undo.pop();
-        // Todo: Update the editText with TextChange
+
+        // Update the editText with TextChange
         editText.getEditableText().replace(tx.start, tx.start + tx.with.length(), tx.replace);
 
         // Push the undo TextChange back onto the redo stack
@@ -210,7 +211,8 @@ public class WrappedEditText extends AppCompatEditText {
         editText.removeTextWatcher();
 
         TextChange tx = redo.pop();
-        // Todo: Update the editText with TextChange
+
+        // Update the editText with TextChange
         editText.getEditableText().replace(tx.start, tx.start + tx.replace.length(), tx.with);
 
         // Push the redo TextChange back onto the undo stack
@@ -273,8 +275,6 @@ public class WrappedEditText extends AppCompatEditText {
                 return "Text Change with id: "+ id + " not fully initialized";
             }
         }
-
-        // Todo: write convenience methods for textChange
 
         /**
          * <p>Purpose of this method is to chunk text changes into 'larger' undo states</p>
