@@ -163,12 +163,30 @@ public class LyricFragment extends Fragment {
     public void onResume() {
         super.onResume();
         lyrics.addTextWatcher(-1);
+
+        TextView t;
+        for (int i = 0; i < textViewIDs.length; i++) {
+            t = trackInfo.get(textViewIDs[i]);
+
+            if (t instanceof WrappedEditText) {
+                ((WrappedEditText) t).addTextWatcher(i);
+            }
+        }
     }
 
     @Override
     public void onPause() {
         super.onPause();
         lyrics.removeTextWatcher();
+
+        TextView t;
+        for (int textViewID : textViewIDs) {
+            t = trackInfo.get(textViewID);
+
+            if (t instanceof WrappedEditText) {
+                ((WrappedEditText) t).removeTextWatcher();
+            }
+        }
     }
 
     @Override
