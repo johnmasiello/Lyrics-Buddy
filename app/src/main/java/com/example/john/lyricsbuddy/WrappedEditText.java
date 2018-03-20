@@ -9,7 +9,6 @@ import android.text.method.KeyListener;
 import android.text.style.BackgroundColorSpan;
 import android.text.style.ForegroundColorSpan;
 import android.util.AttributeSet;
-import android.util.Log;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -27,6 +26,7 @@ public class WrappedEditText extends AppCompatEditText {
     private int selectionOffset = 0;
 
     private static Deque<TextChange> undo, redo;
+    public static final int NO_UNDO_ID = -2;
 
     public WrappedEditText(Context context) {
         super(context);
@@ -118,10 +118,107 @@ public class WrappedEditText extends AppCompatEditText {
         }
     }
 
+    static void ensureUndoStack() {
+        if (undo == null) {
+            undo = new ArrayDeque<>(1000);
+        }
+    }
+
+    static void ensureRedoStack() {
+        if (redo == null) {
+            redo = new ArrayDeque<>(1000);
+        }
+    }
+
     static void discardRedo() {
         if (redo != null) {
             redo.clear();
         }
+    }
+
+    /**
+     * This method can be synchronized, if thread safety is need later on
+     * @param textChange Item to push onto stack
+     */
+    static void pushUndo(TextChange textChange) {
+        undo.push(textChange);
+    }
+
+    /**
+     *
+     * @return !undo.isEmpty() -> undo.peek().id; undo.isEmpty() -> {@link #NO_UNDO_ID}
+     */
+    static int peekUndoId() {
+        ensureUndoStack();
+
+        if (undo.isEmpty()) {
+            return NO_UNDO_ID;
+        } else {
+            return undo.peek().id;
+        }
+    }
+
+    /**
+     *
+     * @return !redo.isEmpty() -> redo.peek().id; redo.isEmpty() -> {@link #NO_UNDO_ID}
+     */
+    static int peekRedoId() {
+        ensureRedoStack();
+
+        if (redo.isEmpty()) {
+            return NO_UNDO_ID;
+        } else {
+            return redo.peek().id;
+        }
+    }
+
+    /**
+     * Undoes the most recent text change, of which is largely determined by {@link TextChange#canStateMerge(TextChange)}
+     * @param editText EditText that should correspond to id=undo.peek().id
+     */
+    static void undoTextChange(WrappedEditText editText) {
+        if (editText == null) {
+            return;
+        }
+
+        // Disable the textWatcher from editText by temporarily removing it
+        editText.removeTextWatcher();
+
+        TextChange tx = undo.pop();
+        // Todo: Update the editText with TextChange
+        editText.getEditableText().replace(tx.start, tx.start + tx.with.length(), tx.replace);
+
+        // Push the undo TextChange back onto the redo stack
+        ensureRedoStack();
+        redo.push(tx);
+
+        // Enable the textWatcher
+        editText.addTextWatcher(tx.id);
+    }
+
+    /**
+     * Redoes the most recent text change
+     * @param editText EditText that should correspond to id=redo.peek().id
+     * @see #undoTextChange(WrappedEditText)
+     */
+    static void redoTextChange(WrappedEditText editText) {
+        if (editText == null) {
+            return;
+        }
+
+        // Disable the textWatcher from editText by temporarily removing it
+        editText.removeTextWatcher();
+
+        TextChange tx = redo.pop();
+        // Todo: Update the editText with TextChange
+        editText.getEditableText().replace(tx.start, tx.start + tx.replace.length(), tx.with);
+
+        // Push the redo TextChange back onto the undo stack
+        ensureUndoStack();
+        undo.push(tx);
+
+        // Enable the textWatcher
+        editText.addTextWatcher(tx.id);
     }
 
     private class UndoTextWatcher implements TextWatcher {
@@ -130,11 +227,11 @@ public class WrappedEditText extends AppCompatEditText {
 
         UndoTextWatcher(int id) {
             this.id = id;
-            textChange = new TextChange(id);
         }
 
         @Override
         public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            textChange = new TextChange(id);
             textChange.start = start;
             textChange.replace = s.subSequence(start, start + count);
 
@@ -145,7 +242,11 @@ public class WrappedEditText extends AppCompatEditText {
         @Override
         public void onTextChanged(CharSequence s, int start, int before, int count) {
             textChange.with = s.subSequence(start, start + count);
-            Log.d("Texxt", ""+textChange);
+
+            ensureUndoStack();
+            if (!textChange.canStateMerge(undo.peek())) {
+                pushUndo(textChange);
+            }
         }
 
         @Override
@@ -176,7 +277,7 @@ public class WrappedEditText extends AppCompatEditText {
         // Todo: write convenience methods for textChange
 
         /**
-         *
+         * <p>Purpose of this method is to chunk text changes into 'larger' undo states</p>
          * @param peek the TextChange on the top of the undo stack
          * @return if this can be merged with peek, then both peek is modified by the merge and
          * true is returned. Otherwise, false is returned and this still needs to be pushed onto the stack
@@ -186,13 +287,26 @@ public class WrappedEditText extends AppCompatEditText {
                 return false;
 
             if (start == peek.start) {
-                if (replace.length() == peek.with.length() &&
-                        replace.toString().equals(peek.with.toString())) {
+                if (peek.replace.length() == 0 && // <- Avoid merging an 'add' with a 'delete' undo step
+                        replace.toString().equals(peek.with.toString())) // <- Detect transitive text changes
+                    {
 
+                    // Merge characters into single words when adding words
                     peek.with = with;
                     return true;
                 }
-            } else if (start + 1 == peek.start);
+            } else if (start + 1 == peek.start &&
+                    with.length() == 0 &&
+                    replace.charAt(0) != ' ') {
+
+                // Merge deleted characters in whole single words
+
+                // Prepend peek's replace with the current replace text
+                peek.replace = replace.toString() + peek.replace;
+
+                peek.start = start;
+                return true;
+            }
 
             return false;
         }

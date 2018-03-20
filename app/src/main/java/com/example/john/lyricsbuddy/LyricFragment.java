@@ -10,7 +10,6 @@ import android.support.annotation.DrawableRes;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.text.Editable;
-import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.style.BackgroundColorSpan;
 import android.text.style.ForegroundColorSpan;
@@ -23,6 +22,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -103,6 +103,9 @@ public class LyricFragment extends Fragment {
             mode = savedInstanceState.getInt(MODE_KEY, MODE_EDIT);
             paletteId = savedInstanceState.getInt(PALETTE_KEY, R.id.beach);
             colorRotation = savedInstanceState.getInt(COLOR_ROTATION_KEY, DEFAULT_COLOR_ROTATION);
+        } else {
+            // Reset the undo stack so the content in the editTexts will be synchronized with the undo stack
+            WrappedEditText.resetUndoStack();
         }
 
         fetchColorsFromPalette();
@@ -143,13 +146,15 @@ public class LyricFragment extends Fragment {
         trackInfo.get(R.id.title).setText(R.string.track_title);
         trackInfo.get(R.id.album).setText(getString(R.string.track_album));
         trackInfo.get(R.id.artist).setText(getString(R.string.track_artist));
-        lyrics.setText(new SpannableString(getString(R.string.lyrics)), TextView.BufferType.EDITABLE);
+//        lyrics.setText(new SpannableString(getString(R.string.lyrics)), TextView.BufferType.EDITABLE);
 
-        // Reset the undo stack so the content in the editTexts will be synchronized with the undo stack
-        WrappedEditText.resetUndoStack();
+        WrappedEditText.ensureUndoStack();
+        WrappedEditText.ensureRedoStack();
 
         // Get the scrollview to scroll to the topmost view in the layout
-        trackInfo.get(textViewIDs[0]).requestFocus();
+        EditText t2 = ((EditText) trackInfo.get(textViewIDs[0]));
+        t2.requestFocus();
+        t2.setSelection(0, 0);
 
         return rootView;
     }
@@ -219,11 +224,35 @@ public class LyricFragment extends Fragment {
                     applySpansToLyrics();
                     break;
 
+                case R.id.undo:
+                    WrappedEditText.undoTextChange(
+                            fetchEditTextFromUndoRedo(WrappedEditText.peekUndoId()));
+                    break;
+
+                case R.id.redo:
+                    WrappedEditText.redoTextChange(
+                            fetchEditTextFromUndoRedo(WrappedEditText.peekRedoId()));
+                    break;
+
                 default:
                     return super.onOptionsItemSelected(item);
             }
         }
         return true;
+    }
+
+    WrappedEditText fetchEditTextFromUndoRedo(int id) {
+        if (id == WrappedEditText.NO_UNDO_ID) {
+            return null;
+        } else if (id == -1) {
+            return lyrics;
+        } else {
+            try {
+                return ((WrappedEditText) trackInfo.get(textViewIDs[id]));
+            } catch (Exception e) {
+                throw new IllegalStateException("Undo operation: invalid id of EditText; id = "+id);
+            }
+        }
     }
 
     void updateLyricsMode(int mode) {
