@@ -39,5 +39,8 @@ public class MainActivity extends AppCompatActivity {
                     LyricFragment.newInstance())
                     .commit();
         }
+
+        // Get an app Database to manage all of the lyrics
+        LyricDatabaseHelper.AppDatabase database = LyricDatabaseHelper.getAppDatabase(getApplicationContext());
     }
 }
