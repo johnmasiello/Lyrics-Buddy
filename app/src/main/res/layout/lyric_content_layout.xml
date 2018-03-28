@@ -94,8 +94,6 @@
             android:gravity="center_horizontal|top"
             android:hint="@string/lyrics_view_hint"
             android:inputType="textCapSentences|textMultiLine"
-            android:paddingLeft="12dp"
-            android:paddingRight="12dp"
             />
     </LinearLayout>
 </ScrollView>

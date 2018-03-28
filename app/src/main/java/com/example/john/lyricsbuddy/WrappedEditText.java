@@ -6,7 +6,6 @@ import android.support.v7.widget.AppCompatEditText;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.text.method.KeyListener;
-import android.text.style.BackgroundColorSpan;
 import android.text.style.ForegroundColorSpan;
 import android.util.AttributeSet;
 
@@ -67,7 +66,7 @@ public class WrappedEditText extends AppCompatEditText {
         Editable editable = getEditableText();
         Class[] classes = new Class[] {
                 ForegroundColorSpan.class,
-                BackgroundColorSpan.class
+                PaddedBackgroundColorSpan.class
             };
 
         Object[] spans;

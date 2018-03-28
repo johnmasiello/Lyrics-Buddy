@@ -13,7 +13,6 @@ import android.support.v4.app.Fragment;
 import android.text.Editable;
 import android.text.SpannableString;
 import android.text.Spanned;
-import android.text.style.BackgroundColorSpan;
 import android.text.style.ForegroundColorSpan;
 import android.util.SparseArray;
 import android.util.TypedValue;
@@ -64,6 +63,7 @@ public class LyricFragment extends Fragment {
     private int[] lyricSpanColors;
     private int[] regions;
     private Random random;
+    private int highlightPadding;
 
     // State
     private int mode = MODE_EDIT;
@@ -99,6 +99,7 @@ public class LyricFragment extends Fragment {
         // Initialize colors to span the lyrics
         defaultLineColorEdit = getResources().getColor(R.color.default_line_color_plain);
         defaultLineColorDisplay = getResources().getColor(R.color.default_line_color);
+        highlightPadding = getResources().getDimensionPixelSize(R.dimen.highlighted_lyrics_padding);
 
         if (savedInstanceState != null) {
             mode = savedInstanceState.getInt(MODE_KEY, MODE_EDIT);
@@ -141,6 +142,9 @@ public class LyricFragment extends Fragment {
         }
 
         lyrics = rootView.findViewById(R.id.lyrics_body);
+        // Force the lyrics to respect the color background padding
+        lyrics.setShadowLayer(highlightPadding /* radius */, 0, 0, Color.TRANSPARENT);
+        lyrics.setPadding(highlightPadding, highlightPadding, highlightPadding, highlightPadding);
         lyricsScroller = rootView.findViewById(R.id.lyrics_scroller);
 
         // TODO: control data entry point for lyrics
@@ -384,7 +388,7 @@ public class LyricFragment extends Fragment {
             foregroundColor = ColorPerceptionHelper.getEquidistantGray(backgroundColor);
 
             editable.setSpan(
-                    new BackgroundColorSpan(backgroundColor),
+                    new PaddedBackgroundColorSpan(highlightPadding, backgroundColor),
                     start,
                     end,
                     Spanned.SPAN_INCLUSIVE_EXCLUSIVE

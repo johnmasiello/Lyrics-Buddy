@@ -4,8 +4,8 @@
     <color name="colorPrimaryDark">#9e9e9e</color>
     <color name="defaultBackground">#FFFFFF</color>
     <color name="editBackground">@color/defaultBackground</color>
-    <color name="showBackground">#7f7f7f</color>
-    <color name="trackInfoShadowColor">#454545</color>
+    <color name="showBackground">#343434</color>
+    <color name="trackInfoShadowColor">#7f7f7f</color>
     <color name="navigationFocused">#FFFFFFFF</color>
     <color name="navigationUnfocused">#7FFFFFFF</color>
 </resources>
