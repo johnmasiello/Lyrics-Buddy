@@ -24,8 +24,8 @@ public class LyricDatabaseHelper {
 
     @Entity
     public static class User {
-        @PrimaryKey
-        private int uid;
+        @PrimaryKey(autoGenerate = true)
+        private long uid;
 
         @ColumnInfo(name = "first_name")
         private String firstName;
@@ -33,11 +33,19 @@ public class LyricDatabaseHelper {
         @ColumnInfo(name = "last_name")
         private String lastName;
 
-        int getUid() {
+        User(String firstName, String lastName) {
+            // Primary key
+            this.uid = 0; // This will be treated as not-set by the auto generator
+
+            this.firstName = firstName;
+            this.lastName = lastName;
+        }
+
+        long getUid() {
             return uid;
         }
 
-        void setUid(int uid) {
+        void setUid(long uid) {
             this.uid = uid;
         }
 
@@ -56,6 +64,14 @@ public class LyricDatabaseHelper {
         void setLastName(String lastName) {
             this.lastName = lastName;
         }
+
+        @Override
+        public String toString() {
+            return String.valueOf(uid) + "\t\t first name: "+(firstName != null ? firstName : "NA") +
+             "\t\t last name: "+(lastName != null ? lastName : "NA");
+        }
+
+
     }
 
     @Dao
@@ -77,7 +93,7 @@ public class LyricDatabaseHelper {
         void delete(User user);
     }
 
-    @Database(entities = {User.class}, version = 1)
+    @Database(entities = {User.class}, version = 3)
     public abstract static class AppDatabase extends RoomDatabase {
         public abstract UserDao userDao();
     }
@@ -87,8 +103,9 @@ public class LyricDatabaseHelper {
     static AppDatabase getAppDatabase(Context context) {
         if (appDatabase == null) {
             appDatabase = Room.databaseBuilder(context,
-                    AppDatabase.class, "database-name")
+                    AppDatabase.class, "lyricDatabase")
                     .allowMainThreadQueries()
+                    .fallbackToDestructiveMigration()
                     .build();
         }
         return appDatabase;

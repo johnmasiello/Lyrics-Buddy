@@ -4,8 +4,13 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Toast;
+
+import java.util.List;
+
+import static com.example.john.lyricsbuddy.LyricDatabaseHelper.*;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -41,6 +46,26 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // Get an app Database to manage all of the lyrics
-        LyricDatabaseHelper.AppDatabase database = LyricDatabaseHelper.getAppDatabase(getApplicationContext());
+        AppDatabase database = getAppDatabase(getApplicationContext());
+
+        UserDao userDao = database.userDao();
+
+        List<LyricDatabaseHelper.User> users = userDao.getAll();
+
+        if (users.isEmpty()) {
+            // Populate the data
+            userDao.insertAll(
+                    new User(getString(R.string.ballgame_title), null),
+                    new User(getString(R.string.jellyRollBlues_title), null),
+                    new User(getString(R.string.sweetChariot_title), null)
+            );
+        } else {
+            for (User user: users) {
+                Log.d("User", user.toString());
+
+                // Uncomment to remove ALL records
+//                userDao.delete(user);
+            }
+        }
     }
 }
