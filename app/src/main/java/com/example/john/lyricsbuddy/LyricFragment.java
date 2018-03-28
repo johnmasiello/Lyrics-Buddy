@@ -144,7 +144,7 @@ public class LyricFragment extends Fragment {
         lyrics = rootView.findViewById(R.id.lyrics_body);
         // Force the lyrics to respect the color background padding
         lyrics.setShadowLayer(highlightPadding /* radius */, 0, 0, Color.TRANSPARENT);
-        lyrics.setPadding(highlightPadding, highlightPadding, highlightPadding, highlightPadding);
+        lyrics.setPadding(highlightPadding, highlightPadding >> 1, highlightPadding, highlightPadding >> 1);
         lyricsScroller = rootView.findViewById(R.id.lyrics_scroller);
 
         // TODO: control data entry point for lyrics

@@ -17,6 +17,10 @@ class PaddedBackgroundColorSpan implements LineBackgroundSpan {
     private int mBackgroundColor = Color.WHITE;
     private Rect mBgRect;
 
+    private static final int JUSTIFY_CENTER = 0;
+    private static final int JUSTIFY_FULL = 1;
+    private final int alignment = JUSTIFY_CENTER;
+
     PaddedBackgroundColorSpan(int padding, int backgroundColor) {
         this.mPadding = padding;
         this.mBackgroundColor = backgroundColor;
@@ -26,13 +30,28 @@ class PaddedBackgroundColorSpan implements LineBackgroundSpan {
 
     @Override
     public void drawBackground(Canvas c, Paint p, int left, int right, int top, int baseline, int bottom, CharSequence text, int start, int end, int lnum) {
-        final int textWidth = Math.round(p.measureText(text, start, end));
         final int paintColor = p.getColor();
-        // Draw the background
-        mBgRect.set(left - mPadding,
-                top - mPadding,
-                right + mPadding,
-                bottom + mPadding);
+
+        switch (alignment) {
+            case JUSTIFY_CENTER:
+                final int textWidth = Math.round(p.measureText(text, start, end));
+                final int midH = (left + right) >> 1;
+
+                // Draw the background...
+                // Assuming center alignment of text
+                mBgRect.set(midH - (textWidth >> 1) - (mPadding << 1),
+                        top - (mPadding >> 1),
+                        midH + (textWidth >> 1) + (mPadding << 1),
+                        bottom + (mPadding >> 1));
+                break;
+
+            case JUSTIFY_FULL:
+            default:
+                mBgRect.set(left - (mPadding << 1),
+                        top - (mPadding >> 1),
+                        right + (mPadding << 1),
+                        bottom + (mPadding >> 1));
+        }
         p.setColor(mBackgroundColor);
         c.drawRect(mBgRect, p);
         p.setColor(paintColor);
