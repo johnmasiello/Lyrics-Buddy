@@ -12,7 +12,7 @@
         <activity
             android:name="com.example.john.lyricsbuddy.MainActivity"
             android:label="@string/app_label"
-            android:windowSoftInputMode="stateUnchanged|adjustNothing"
+            android:windowSoftInputMode="stateUnchanged|adjustPan"
             >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
