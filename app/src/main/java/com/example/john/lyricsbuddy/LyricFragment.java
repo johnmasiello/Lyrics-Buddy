@@ -144,14 +144,17 @@ public class LyricFragment extends Fragment {
         lyrics = rootView.findViewById(R.id.lyrics_body);
         // Force the lyrics to respect the color background padding
         lyrics.setShadowLayer(highlightPadding /* radius */, 0, 0, Color.TRANSPARENT);
-        lyrics.setPadding(highlightPadding, highlightPadding >> 1, highlightPadding, highlightPadding >> 1);
+        lyrics.setPadding(highlightPadding, 0, highlightPadding, highlightPadding);
         lyricsScroller = rootView.findViewById(R.id.lyrics_scroller);
 
         // TODO: control data entry point for lyrics
-        trackInfo.get(R.id.title).setText(R.string.jellyRollBlues_title);
-        trackInfo.get(R.id.album).setText(getString(R.string.jellyRollBlues_album));
-        trackInfo.get(R.id.artist).setText(getString(R.string.jellyRollBlues_artist));
-        lyrics.setText(new SpannableString(getString(R.string.jellyRollBlues_lyrics)), TextView.BufferType.EDITABLE);
+        LyricDatabaseHelper.SongLyrics songLyrics = LyricDatabaseHelper.getAppDatabase(getActivity().getApplicationContext())
+                .songLyricsDao().findByArtist("Jelly Roll Morton").get(0);
+
+        trackInfo.get(R.id.title).setText(songLyrics.getTrackTitle());
+        trackInfo.get(R.id.album).setText(songLyrics.getAlbum());
+        trackInfo.get(R.id.artist).setText(songLyrics.getArtist());
+        lyrics.setText(new SpannableString(songLyrics.getLyrics()), TextView.BufferType.EDITABLE);
 
         WrappedEditText.ensureUndoStack();
         WrappedEditText.ensureRedoStack();

@@ -31,6 +31,9 @@ class PaddedBackgroundColorSpan implements LineBackgroundSpan {
     @Override
     public void drawBackground(Canvas c, Paint p, int left, int right, int top, int baseline, int bottom, CharSequence text, int start, int end, int lnum) {
         final int paintColor = p.getColor();
+        int inflatePadding = (int) (mPadding * 1.5f);
+        int paddingTop = (int) (mPadding * 0.5f);
+        int paddingBottom = (int) (mPadding * 0.5f);
 
         switch (alignment) {
             case JUSTIFY_CENTER:
@@ -39,18 +42,18 @@ class PaddedBackgroundColorSpan implements LineBackgroundSpan {
 
                 // Draw the background...
                 // Assuming center alignment of text
-                mBgRect.set(midH - (textWidth >> 1) - (mPadding << 1),
-                        top - (mPadding >> 1),
-                        midH + (textWidth >> 1) + (mPadding << 1),
-                        bottom + (mPadding >> 1));
+                mBgRect.set(midH - (textWidth >> 1) - inflatePadding,
+                        top - paddingTop,
+                        midH + (textWidth >> 1) + inflatePadding,
+                        bottom + paddingBottom);
                 break;
 
             case JUSTIFY_FULL:
             default:
-                mBgRect.set(left - (mPadding << 1),
-                        top - (mPadding >> 1),
-                        right + (mPadding << 1),
-                        bottom + (mPadding >> 1));
+                mBgRect.set(left - inflatePadding,
+                        top - paddingTop,
+                        right + inflatePadding,
+                        bottom + paddingBottom);
         }
         p.setColor(mBackgroundColor);
         c.drawRect(mBgRect, p);

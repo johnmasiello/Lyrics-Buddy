@@ -11,7 +11,9 @@ import android.arch.persistence.room.Query;
 import android.arch.persistence.room.Room;
 import android.arch.persistence.room.RoomDatabase;
 import android.content.Context;
+import android.support.annotation.Nullable;
 
+import java.io.File;
 import java.util.List;
 
 /**
@@ -22,23 +24,33 @@ import java.util.List;
 
 public class LyricDatabaseHelper {
 
+    private static final String DATABASE_NAME = "lyricDatabase";
+
     @Entity
-    public static class User {
+    public static class SongLyrics {
         @PrimaryKey(autoGenerate = true)
         private long uid;
 
-        @ColumnInfo(name = "first_name")
-        private String firstName;
+        @ColumnInfo(name = "album")
+        private String album;
 
-        @ColumnInfo(name = "last_name")
-        private String lastName;
+        @ColumnInfo(name = "track_title")
+        private String trackTitle;
 
-        User(String firstName, String lastName) {
+        @ColumnInfo(name = "artist")
+                private String artist;
+
+        @ColumnInfo(name = "lyrics")
+        private String lyrics;
+
+        SongLyrics(String trackTitle, String album, String artist, String lyrics) {
             // Primary key
             this.uid = 0; // This will be treated as not-set by the auto generator
 
-            this.firstName = firstName;
-            this.lastName = lastName;
+            this.album = album;
+            this.trackTitle = trackTitle;
+            this.artist = artist;
+            this.lyrics = lyrics;
         }
 
         long getUid() {
@@ -49,65 +61,130 @@ public class LyricDatabaseHelper {
             this.uid = uid;
         }
 
-        String getFirstName() {
-            return firstName;
+        String getAlbum() {
+            return getPrintableString(album);
         }
 
-        void setFirstName(String firstName) {
-            this.firstName = firstName;
+        void setAlbum(String album) {
+            this.album = album;
         }
 
-        String getLastName() {
-            return lastName;
+        String getTrackTitle() {
+            return getPrintableString(trackTitle);
         }
 
-        void setLastName(String lastName) {
-            this.lastName = lastName;
+        void setTrackTitle(String trackTitle) {
+            this.trackTitle = trackTitle;
+        }
+
+        public String getArtist() {
+            return getPrintableString(artist);
+        }
+
+        public void setArtist(String artist) {
+            this.artist = artist;
+        }
+
+        public String getLyrics() {
+            return getPrintableString(lyrics);
+        }
+
+        public void setLyrics(String lyrics) {
+            this.lyrics = lyrics;
+        }
+
+        private String getPrintableString(@Nullable String str) {
+            return str != null ? str : "";
         }
 
         @Override
         public String toString() {
-            return String.valueOf(uid) + "\t\t first name: "+(firstName != null ? firstName : "NA") +
-             "\t\t last name: "+(lastName != null ? lastName : "NA");
+            return String.valueOf(uid)      +
+             "\t\t track: "+getTrackTitle() +
+             "\t\t album: "+getAlbum()      +
+             "\t\t artist: "+getArtist()    +
+             "\t\t lyrics: "+getLyrics();
         }
 
 
     }
 
     @Dao
-    public interface UserDao {
-        @Query("SELECT * FROM user")
-        List<User> getAll();
+    public interface SongLyricsDao {
+        @Query("SELECT * FROM SongLyrics")
+        List<SongLyrics> getAll();
 
-        @Query("SELECT * FROM user WHERE uid IN (:userIds)")
-        List<User> loadAllByIds(int[] userIds);
+        /**
+         *
+         * @return The first user in the database. Used to determine if database has any records
+         */
+        @Query("SELECT * FROM SongLyrics LIMIT 1 OFFSET 0")
+        SongLyrics getFirstUser();
 
-        @Query("SELECT * FROM user WHERE first_name LIKE :first AND "
-                + "last_name LIKE :last LIMIT 1")
-        User findByName(String first, String last);
+        @Query("SELECT * FROM SongLyrics WHERE uid IN (:songLyricsIds)")
+        List<SongLyrics> loadAllByIds(int[] songLyricsIds);
+
+        @Query("SELECT * FROM SongLyrics WHERE artist LIKE :artist")
+        List<SongLyrics> findByArtist(String artist);
+
+        @Query("SELECT * FROM SongLyrics WHERE album LIKE :album")
+        List<SongLyrics> findByAlbum(String album);
+
+        @Query("SELECT * FROM SongLyrics WHERE artist LIKE :artist AND "
+                + "track_title LIKE :track LIMIT 1")
+        SongLyrics findByTrackTitle(String artist, String track);
 
         @Insert
-        void insertAll(User... users);
+        void insertAll(SongLyrics... songLyrics);
 
         @Delete
-        void delete(User user);
+        void delete(SongLyrics songLyrics);
     }
 
-    @Database(entities = {User.class}, version = 3)
+    @Database(entities = {SongLyrics.class}, version = 5)
     public abstract static class AppDatabase extends RoomDatabase {
-        public abstract UserDao userDao();
+        public abstract SongLyricsDao songLyricsDao();
     }
 
     private static AppDatabase appDatabase;
 
-    static AppDatabase getAppDatabase(Context context) {
+    static AppDatabase getAppDatabase(final Context context) {
         if (appDatabase == null) {
+
             appDatabase = Room.databaseBuilder(context,
-                    AppDatabase.class, "lyricDatabase")
+                    AppDatabase.class, DATABASE_NAME)
                     .allowMainThreadQueries()
                     .fallbackToDestructiveMigration()
                     .build();
         }
         return appDatabase;
+    }
+
+    static boolean doesDatabaseExist(Context context) {
+        File dbFile = context.getDatabasePath(DATABASE_NAME);
+        return dbFile.exists();
+    }
+
+    static void writeInitialRecords(final Context context) {
+        if (appDatabase != null && context != null) {
+
+            // Populate the first-time data
+            appDatabase.songLyricsDao().insertAll(
+                    new SongLyrics(context.getString(R.string.ballgame_title),
+                            null,
+                            context.getString(R.string.ballgame_artist),
+                            context.getString(R.string.ballgame_lyrics)),
+
+                    new SongLyrics(context.getString(R.string.jellyRollBlues_title),
+                            context.getString(R.string.jellyRollBlues_album),
+                            context.getString(R.string.jellyRollBlues_artist),
+                            context.getString(R.string.jellyRollBlues_lyrics)),
+
+                    new SongLyrics(context.getString(R.string.sweetChariot_title),
+                            null,
+                            context.getString(R.string.sweetChariot_artist),
+                            context.getString(R.string.sweetChariot_lyrics))
+            );
+        }
     }
 }

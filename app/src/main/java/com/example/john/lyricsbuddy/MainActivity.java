@@ -1,5 +1,6 @@
 package com.example.john.lyricsbuddy;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
@@ -7,8 +8,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Toast;
-
-import java.util.List;
 
 import static com.example.john.lyricsbuddy.LyricDatabaseHelper.*;
 
@@ -46,26 +45,16 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // Get an app Database to manage all of the lyrics
-        AppDatabase database = getAppDatabase(getApplicationContext());
+        Context context = getApplicationContext();
+        boolean databaseAlreadyExists = LyricDatabaseHelper.doesDatabaseExist(context);
 
-        UserDao userDao = database.userDao();
+        AppDatabase database = getAppDatabase(context);
 
-        List<LyricDatabaseHelper.User> users = userDao.getAll();
-
-        if (users.isEmpty()) {
-            // Populate the data
-            userDao.insertAll(
-                    new User(getString(R.string.ballgame_title), null),
-                    new User(getString(R.string.jellyRollBlues_title), null),
-                    new User(getString(R.string.sweetChariot_title), null)
-            );
+        if (!databaseAlreadyExists) {
+            LyricDatabaseHelper.writeInitialRecords(context);
+            Log.d("Database", "Database Record No 1="+String.valueOf(database.songLyricsDao().getFirstUser()));
         } else {
-            for (User user: users) {
-                Log.d("User", user.toString());
-
-                // Uncomment to remove ALL records
-//                userDao.delete(user);
-            }
+            Log.d("Database", "Database already exists");
         }
     }
 }
