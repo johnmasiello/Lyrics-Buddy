@@ -12,6 +12,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.text.Editable;
 import android.text.SpannableString;
+import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
 import android.util.SparseArray;
@@ -145,6 +146,7 @@ public class LyricFragment extends Fragment {
         // Force the lyrics to respect the color background padding
         lyrics.setShadowLayer(highlightPadding /* radius */, 0, 0, Color.TRANSPARENT);
         lyrics.setPadding(highlightPadding, 0, highlightPadding, highlightPadding);
+        lyrics.setLineSpacing(highlightPadding, 1.0f);
         lyricsScroller = rootView.findViewById(R.id.lyrics_scroller);
 
         // TODO: control data entry point for lyrics
