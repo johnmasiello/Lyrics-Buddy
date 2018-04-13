@@ -12,9 +12,9 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.text.Editable;
 import android.text.SpannableString;
-import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
+import android.util.Log;
 import android.util.SparseArray;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -31,6 +31,10 @@ import android.widget.Toast;
 
 import java.util.List;
 import java.util.Random;
+
+import static com.example.john.lyricsbuddy.LyricDatabaseHelper.SongLyrics;
+import static com.example.john.lyricsbuddy.LyricDatabaseHelper.SongLyricsListItem;
+import static com.example.john.lyricsbuddy.LyricDatabaseHelper.AppDatabase;
 
 /**
  * Created by john on 3/12/18.
@@ -55,6 +59,7 @@ public class LyricFragment extends Fragment {
     private SparseArray<TextView> trackInfo;
     private WrappedEditText lyrics;
     private ScrollView lyricsScroller;
+    private SongLyrics songLyrics; // TODO set in newInstance()
 
     // Lyric color logic
     private LyricAnalyzer lyricAnalyzer;
@@ -127,7 +132,6 @@ public class LyricFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.lyric_content_layout, container, false);
 
-
         trackInfo.clear();
 
         for (int id : textViewIDs) {
@@ -149,14 +153,30 @@ public class LyricFragment extends Fragment {
         lyrics.setLineSpacing(highlightPadding, 1.0f);
         lyricsScroller = rootView.findViewById(R.id.lyrics_scroller);
 
-        // TODO: control data entry point for lyrics
-        LyricDatabaseHelper.SongLyrics songLyrics = LyricDatabaseHelper.getAppDatabase(getActivity().getApplicationContext())
-                .songLyricsDao().findByArtist("Jelly Roll Morton").get(0);
+        return rootView;
+    }
 
-        trackInfo.get(R.id.title).setText(songLyrics.getTrackTitle());
-        trackInfo.get(R.id.album).setText(songLyrics.getAlbum());
-        trackInfo.get(R.id.artist).setText(songLyrics.getArtist());
-        lyrics.setText(new SpannableString(songLyrics.getLyrics()), TextView.BufferType.EDITABLE);
+    @Override
+    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
+        super.onViewStateRestored(savedInstanceState);
+
+        // TODO: control data entry point for lyrics
+        AppDatabase database = LyricDatabaseHelper.getAppDatabase(getActivity().getApplicationContext());
+        LyricDatabaseHelper.SongLyricsDao dao = database.songLyricsDao();
+
+        List<SongLyricsListItem> songLyricsList = dao.findByArtist("Jelly%");
+
+        if (!songLyricsList.isEmpty()) {
+            SongLyricsListItem item = songLyricsList.get(0);
+            this.songLyrics = dao.fetchSongLyric(item.getUid());
+
+            Log.d("DataSongLyricsEntity", "Read: uid = "+songLyrics.getUid());
+
+            trackInfo.get(R.id.title).setText(songLyrics.getTrackTitle());
+            trackInfo.get(R.id.album).setText(songLyrics.getAlbum());
+            trackInfo.get(R.id.artist).setText(songLyrics.getArtist());
+            lyrics.setText(new SpannableString(songLyrics.getLyrics()), TextView.BufferType.EDITABLE);
+        }
 
         WrappedEditText.ensureUndoStack();
         WrappedEditText.ensureRedoStack();
@@ -165,8 +185,6 @@ public class LyricFragment extends Fragment {
         EditText t2 = ((EditText) trackInfo.get(textViewIDs[0]));
         t2.requestFocus();
         t2.setSelection(0, 0);
-
-        return rootView;
     }
 
     @Override
@@ -196,6 +214,18 @@ public class LyricFragment extends Fragment {
             if (t instanceof WrappedEditText) {
                 ((WrappedEditText) t).removeTextWatcher();
             }
+        }
+
+        // Save songLyrics to SQLite using Room
+        if (songLyrics != null) {
+            songLyrics.setTrackTitle(trackInfo.get(R.id.title).getText().toString());
+            songLyrics.setAlbum(trackInfo.get(R.id.album).getText().toString());
+            songLyrics.setArtist(trackInfo.get(R.id.artist).getText().toString());
+            songLyrics.setLyrics(lyrics.getText().toString());
+            LyricDatabaseHelper.getAppDatabase(getActivity().getApplicationContext())
+                    .songLyricsDao().updateSongLyrics(songLyrics);
+
+            Log.d("DataSongLyricsEntity", "Write: uid = " + songLyrics.getUid());
         }
     }
 

@@ -9,6 +9,8 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import java.util.List;
+
 import static com.example.john.lyricsbuddy.LyricDatabaseHelper.*;
 
 public class MainActivity extends AppCompatActivity {
@@ -48,13 +50,28 @@ public class MainActivity extends AppCompatActivity {
         Context context = getApplicationContext();
         boolean databaseAlreadyExists = LyricDatabaseHelper.doesDatabaseExist(context);
 
-        AppDatabase database = getAppDatabase(context);
+        // Create a singleton instance of the app database that persists for the app's lifecycle
+        getAppDatabase(context);
 
         if (!databaseAlreadyExists) {
             LyricDatabaseHelper.writeInitialRecords(context);
-            Log.d("Database", "Database Record No 1="+String.valueOf(database.songLyricsDao().getFirstUser()));
-        } else {
-            Log.d("Database", "Database already exists");
+        }
+
+        adapterTest();
+    }
+
+    private void adapterTest() {
+        AppDatabase database = getAppDatabase(getApplicationContext());
+
+        // Item Count
+        Log.d("Database", "Count = " + database.songLyricsDao().count());
+
+        // Items
+        List<SongLyricsListItem> listItems = database.songLyricsDao()
+                .fetchListItems_NaturalOrder(0, 2);
+
+        for (int i = 0; i < listItems.size(); i++) {
+            Log.d("Database","Item "+ i + " uid=" + listItems.get(i).getUid());
         }
     }
 }

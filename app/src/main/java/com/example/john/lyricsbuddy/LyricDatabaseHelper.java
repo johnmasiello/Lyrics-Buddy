@@ -5,11 +5,13 @@ import android.arch.persistence.room.Dao;
 import android.arch.persistence.room.Database;
 import android.arch.persistence.room.Delete;
 import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.Index;
 import android.arch.persistence.room.Insert;
 import android.arch.persistence.room.PrimaryKey;
 import android.arch.persistence.room.Query;
 import android.arch.persistence.room.Room;
 import android.arch.persistence.room.RoomDatabase;
+import android.arch.persistence.room.Update;
 import android.content.Context;
 import android.support.annotation.Nullable;
 
@@ -26,7 +28,7 @@ public class LyricDatabaseHelper {
 
     private static final String DATABASE_NAME = "lyricDatabase";
 
-    @Entity
+    @Entity(indices = {@Index("album"), @Index("track_title"), @Index("artist")})
     public static class SongLyrics {
         @PrimaryKey(autoGenerate = true)
         private long uid;
@@ -109,39 +111,108 @@ public class LyricDatabaseHelper {
 
     }
 
+    public static class SongLyricsListItem {
+        @ColumnInfo(name = "uid")
+        private long uid;
+
+        @ColumnInfo(name = "album")
+        private String album;
+
+        @ColumnInfo(name = "track_title")
+        private String trackTitle;
+
+        @ColumnInfo(name = "artist")
+        private String artist;
+
+        public long getUid() {
+            return uid;
+        }
+
+        public void setUid(long uid) {
+            this.uid = uid;
+        }
+
+        public String getAlbum() {
+            return album;
+        }
+
+        public void setAlbum(String album) {
+            this.album = album;
+        }
+
+        public String getTrackTitle() {
+            return trackTitle;
+        }
+
+        public void setTrackTitle(String trackTitle) {
+            this.trackTitle = trackTitle;
+        }
+
+        public String getArtist() {
+            return artist;
+        }
+
+        public void setArtist(String artist) {
+            this.artist = artist;
+        }
+    }
+
     @Dao
     public interface SongLyricsDao {
-        @Query("SELECT * FROM SongLyrics")
-        List<SongLyrics> getAll();
-
-        /**
-         *
-         * @return The first user in the database. Used to determine if database has any records
+        /*
+        Data Adapters
          */
-        @Query("SELECT * FROM SongLyrics LIMIT 1 OFFSET 0")
-        SongLyrics getFirstUser();
+        @Query("SELECT COUNT() FROM SongLyrics")
+        int count();
 
-        @Query("SELECT * FROM SongLyrics WHERE uid IN (:songLyricsIds)")
-        List<SongLyrics> loadAllByIds(int[] songLyricsIds);
+        @Query("SELECT uid, album, track_title, artist FROM SongLyrics " +
+                "ORDER BY uid ASC LIMIT :howMany OFFSET :offset")
+        List<SongLyricsListItem> fetchListItems_NaturalOrder(int offset, int howMany);
 
-        @Query("SELECT * FROM SongLyrics WHERE artist LIKE :artist")
-        List<SongLyrics> findByArtist(String artist);
+        @Query("SELECT uid, album, track_title, artist FROM SongLyrics " +
+                "ORDER BY artist ASC LIMIT :howMany OFFSET :offset")
+        List<SongLyricsListItem> fetchListItems_Artist(int offset, int howMany);
 
-        @Query("SELECT * FROM SongLyrics WHERE album LIKE :album")
-        List<SongLyrics> findByAlbum(String album);
+        @Query("SELECT uid, album, track_title, artist FROM SongLyrics " +
+                "ORDER BY album ASC LIMIT :howMany OFFSET :offset")
+        List<SongLyricsListItem> fetchListItems_Album(int offset, int howMany);
 
-        @Query("SELECT * FROM SongLyrics WHERE artist LIKE :artist AND "
-                + "track_title LIKE :track LIMIT 1")
-        SongLyrics findByTrackTitle(String artist, String track);
+        @Query("SELECT uid, album, track_title, artist FROM SongLyrics " +
+                "ORDER BY track_title ASC LIMIT :howMany OFFSET :offset")
+        List<SongLyricsListItem> fetchListItems_Track(int offset, int howMany);
 
+        /*
+        Data detail view
+         */
+        @Query("SELECT * FROM SongLyrics WHERE uid LIKE :uid LIMIT 1")
+        SongLyrics fetchSongLyric(Long uid);
+
+        /*
+         Searches
+         */
+        @Query("SELECT uid, album, track_title, artist FROM SongLyrics WHERE artist LIKE :artist")
+        List<SongLyricsListItem> findByArtist(String artist);
+
+        @Query("SELECT uid, album, track_title, artist FROM SongLyrics WHERE album LIKE :album")
+        List<SongLyricsListItem> findByAlbum(String album);
+
+        @Query("SELECT uid, album, track_title, artist FROM SongLyrics WHERE track_title LIKE :track")
+        List<SongLyricsListItem> findByTrackTitle(String track);
+
+        /*
+        Population
+         */
         @Insert
         void insertAll(SongLyrics... songLyrics);
 
         @Delete
         void delete(SongLyrics songLyrics);
+
+        @Update
+        void updateSongLyrics(SongLyrics songLyrics);
     }
 
-    @Database(entities = {SongLyrics.class}, version = 5)
+    @Database(entities = {SongLyrics.class}, version = 6)
     public abstract static class AppDatabase extends RoomDatabase {
         public abstract SongLyricsDao songLyricsDao();
     }
@@ -154,7 +225,6 @@ public class LyricDatabaseHelper {
             appDatabase = Room.databaseBuilder(context,
                     AppDatabase.class, DATABASE_NAME)
                     .allowMainThreadQueries()
-                    .fallbackToDestructiveMigration()
                     .build();
         }
         return appDatabase;

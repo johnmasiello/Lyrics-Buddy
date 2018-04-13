@@ -6,6 +6,7 @@
     android:id="@+id/lyrics_scroller"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:scrollbarAlwaysDrawVerticalTrack="true"
     >
 
     <LinearLayout
