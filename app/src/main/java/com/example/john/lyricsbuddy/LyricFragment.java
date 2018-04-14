@@ -90,7 +90,8 @@ public class LyricFragment extends Fragment {
     }
 
     // Call when making the first instance of fragment
-    public static LyricFragment newInstance() {
+    public static LyricFragment newInstance(@NonNull  SongLyrics songLyrics) {
+        // TODO put songLyrics into setArgs bundle
         return new LyricFragment();
     }
 

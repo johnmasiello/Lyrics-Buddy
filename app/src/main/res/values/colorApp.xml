@@ -8,4 +8,5 @@
     <color name="trackInfoShadowColor">#7f7f7f</color>
     <color name="navigationFocused">#FFFFFFFF</color>
     <color name="navigationUnfocused">#7FFFFFFF</color>
+    <color name="lyricListItemTextColor">#000000</color>
 </resources>

@@ -121,4 +121,5 @@
     <string name="title_new_lyrics">New</string>
     <string name="lyric_options_undo">Undo</string>
     <string name="lyric_options_redo">Redo</string>
+    <string name="track_artist_separator_text">&#8211;</string>
 </resources>

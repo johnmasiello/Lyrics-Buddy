@@ -41,10 +41,13 @@ public class MainActivity extends AppCompatActivity {
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
 
         if (savedInstanceState == null) {
-            getSupportFragmentManager().beginTransaction().add(R.id.lyric_content_container,
-                    LyricFragment.newInstance())
-                    .commit();
+//            getSupportFragmentManager().beginTransaction()
+//                    .add(R.id.lyric_content_container,
+//                    )
+//                    .commit();
         }
+
+        // TODO If container for detail view is not null and FragmentManager does not contain detail view, add detail view in transaction
 
         // Get an app Database to manage all of the lyrics
         Context context = getApplicationContext();
