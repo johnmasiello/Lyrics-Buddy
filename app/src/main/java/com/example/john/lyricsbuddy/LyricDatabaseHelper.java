@@ -1,5 +1,7 @@
 package com.example.john.lyricsbuddy;
 
+import android.arch.lifecycle.LiveData;
+import android.arch.lifecycle.MutableLiveData;
 import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Dao;
 import android.arch.persistence.room.Database;
@@ -162,24 +164,22 @@ public class LyricDatabaseHelper {
         /*
         Data Adapters
          */
-        @Query("SELECT COUNT() FROM SongLyrics")
-        int count();
 
         @Query("SELECT uid, album, track_title, artist FROM SongLyrics " +
-                "ORDER BY uid ASC LIMIT :howMany OFFSET :offset")
-        List<SongLyricsListItem> fetchListItems_NaturalOrder(int offset, int howMany);
+                "ORDER BY uid ASC")
+        LiveData<List<SongLyricsListItem>> fetchListItems_NaturalOrder();
 
         @Query("SELECT uid, album, track_title, artist FROM SongLyrics " +
-                "ORDER BY artist ASC LIMIT :howMany OFFSET :offset")
-        List<SongLyricsListItem> fetchListItems_Artist(int offset, int howMany);
+                "ORDER BY artist ASC")
+        LiveData<List<SongLyricsListItem>> fetchListItems_Artist();
 
         @Query("SELECT uid, album, track_title, artist FROM SongLyrics " +
-                "ORDER BY album ASC LIMIT :howMany OFFSET :offset")
-        List<SongLyricsListItem> fetchListItems_Album(int offset, int howMany);
+                "ORDER BY album ASC")
+        LiveData<List<SongLyricsListItem>> fetchListItems_Album();
 
         @Query("SELECT uid, album, track_title, artist FROM SongLyrics " +
-                "ORDER BY track_title ASC LIMIT :howMany OFFSET :offset")
-        List<SongLyricsListItem> fetchListItems_Track(int offset, int howMany);
+                "ORDER BY track_title ASC")
+        LiveData<List<SongLyricsListItem>> fetchListItems_Track();
 
         /*
         Data detail view
