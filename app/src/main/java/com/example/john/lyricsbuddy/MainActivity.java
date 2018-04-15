@@ -1,5 +1,6 @@
 package com.example.john.lyricsbuddy;
 
+import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.os.Bundle;
@@ -7,9 +8,12 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static com.example.john.lyricsbuddy.LyricDatabaseHelper.SongLyricsListItem;
@@ -43,13 +47,13 @@ public class MainActivity extends AppCompatActivity {
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
 
         if (savedInstanceState == null) {
-//            getSupportFragmentManager().beginTransaction()
-//                    .add(R.id.lyric_content_container,
-//                    )
-//                    .commit();
-        }
-
         // TODO If container for detail view is not null and FragmentManager does not contain detail view, add detail view in transaction
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.lyric_content_container,
+                    new LyricListFragment())
+                    .commit();
+        }
+        initializeSongLyricsDatabase();
     }
 
     private void initializeSongLyricsDatabase() {
@@ -64,19 +68,5 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void initializeSongLyricsListItemViewModel() {
-        SongLyricsListViewModel songLyricsListViewModel =
-                ViewModelProviders.of(this).get(SongLyricsListViewModel.class);
 
-        // Add an observer to the recyclerView UI
-        songLyricsListViewModel
-                .fetchSongLyricsListViewModel(getAppDatabase(this).songLyricsDao())
-                .observe(this, new Observer<List<SongLyricsListItem>>() {
-
-                    @Override
-                    public void onChanged(@Nullable List<SongLyricsListItem> songLyricsListItems) {
-                        // TODO submit list to the recycler view list adapter
-                    }
-                });
-    }
 }

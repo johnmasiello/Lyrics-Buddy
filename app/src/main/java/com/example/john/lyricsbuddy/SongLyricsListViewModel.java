@@ -3,6 +3,7 @@ package com.example.john.lyricsbuddy;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.ViewModel;
+import android.util.Log;
 
 import java.util.List;
 
@@ -37,12 +38,16 @@ public class SongLyricsListViewModel extends ViewModel {
         if (this.sortOrder.getValue() != null &&
             this.sortOrder.getValue().equals(sortOrder)) {
             if (songLyricListItems != null) {
+                Log.d("Database", "song lyric list items not null");
                 return songLyricListItems;
+            } else {
+                Log.d("Database", "song lyric list items is null");
             }
         } else {
             this.sortOrder.setValue(sortOrder);
         }
         switch (sortOrder) {
+            // TODO use an asyncTask to make queries
             case ORDER_ARTIST:
                 this.songLyricListItems = songLyricsDao.fetchListItems_Artist();
                 break;

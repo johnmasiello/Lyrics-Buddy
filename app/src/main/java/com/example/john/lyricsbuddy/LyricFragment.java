@@ -40,7 +40,6 @@ import static com.example.john.lyricsbuddy.LyricDatabaseHelper.AppDatabase;
  * Created by john on 3/12/18.
  * Content Fragment that displays lyrics
  */
-// TODO: Save feature
 // Menu
 // TODO: Put in an intent for the share menu item
 // https://stackoverflow.com/questions/13941093/how-to-share-entire-android-app-with-share-intent
@@ -59,7 +58,7 @@ public class LyricFragment extends Fragment {
     private SparseArray<TextView> trackInfo;
     private WrappedEditText lyrics;
     private ScrollView lyricsScroller;
-    private SongLyrics songLyrics; // TODO set in newInstance()
+    private SongLyrics songLyrics;
 
     // Lyric color logic
     private LyricAnalyzer lyricAnalyzer;
@@ -161,7 +160,6 @@ public class LyricFragment extends Fragment {
     public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
         super.onViewStateRestored(savedInstanceState);
 
-        // TODO: control data entry point for lyrics
         AppDatabase database = LyricDatabaseHelper.getAppDatabase(getActivity().getApplicationContext());
         LyricDatabaseHelper.SongLyricsDao dao = database.songLyricsDao();
 

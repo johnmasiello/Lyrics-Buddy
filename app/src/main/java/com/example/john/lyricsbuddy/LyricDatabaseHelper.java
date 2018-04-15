@@ -157,6 +157,36 @@ public class LyricDatabaseHelper {
         public void setArtist(String artist) {
             this.artist = artist;
         }
+
+        @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
+        @Override
+        public boolean equals(Object obj) {
+            SongLyricsListItem l2 = (SongLyricsListItem) obj;
+            if (album != null) {
+                if (!album.equals(l2.album)) {
+                    return false;
+                }
+            } else if (l2.album != null) {
+                return false;
+            }
+
+            if (artist != null) {
+                if (!artist.equals(l2.artist)) {
+                    return false;
+                }
+            } else if (l2.artist != null) {
+                return false;
+            }
+
+            if (trackTitle != null) {
+                if (!trackTitle.equals(l2.trackTitle)) {
+                    return false;
+                }
+            } else if (l2.trackTitle != null) {
+                return false;
+            }
+            return true;
+        }
     }
 
     @Dao
