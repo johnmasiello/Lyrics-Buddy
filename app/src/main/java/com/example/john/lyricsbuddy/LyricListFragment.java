@@ -16,10 +16,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import java.util.Collections;
 import java.util.List;
 
 import static com.example.john.lyricsbuddy.LyricDatabaseHelper.SongLyricsListItem;
-import static com.example.john.lyricsbuddy.LyricDatabaseHelper.getAppDatabase;
+import static com.example.john.lyricsbuddy.LyricDatabaseHelper.getSongLyricDatabase;
 
 /**
  * A Fragment featuring recyclerView with an underlying listAdapter using Room, LiveData, ViewModel
@@ -132,14 +133,22 @@ public class LyricListFragment extends Fragment {
         SongLyricsListViewModel songLyricsListViewModel =
                 ViewModelProviders.of(this).get(SongLyricsListViewModel.class);
 
+        songLyricsListViewModel.setSongLyricsDao(getSongLyricDatabase(getActivity()).songLyricsDao());
         // Add an observer to the recyclerView UI
         songLyricsListViewModel
-                .fetchSongLyricsListViewModel(getAppDatabase(getActivity()).songLyricsDao())
+                .getLyricList()
                 .observe(this, new Observer<List<SongLyricsListItem>>() {
 
                     @Override
                     public void onChanged(@Nullable List<SongLyricsListItem> songLyricsListItems) {
                         listAdapter.submitList(songLyricsListItems);
+
+                        if (songLyricsListItems != null) {
+                            for (SongLyricsListItem item : songLyricsListItems) {
+                                Log.d("Database", String.valueOf(item));
+                            }
+                        }
+
                     }
                 });
     }

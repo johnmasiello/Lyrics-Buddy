@@ -1,23 +1,13 @@
 package com.example.john.lyricsbuddy;
 
-import android.arch.lifecycle.LiveData;
-import android.arch.lifecycle.Observer;
-import android.arch.lifecycle.ViewModelProviders;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
-import static com.example.john.lyricsbuddy.LyricDatabaseHelper.SongLyricsListItem;
-import static com.example.john.lyricsbuddy.LyricDatabaseHelper.getAppDatabase;
+import static com.example.john.lyricsbuddy.LyricDatabaseHelper.getSongLyricDatabase;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -46,6 +36,8 @@ public class MainActivity extends AppCompatActivity {
         BottomNavigationView navigation = findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
 
+        initializeSongLyricsDatabase();
+
         if (savedInstanceState == null) {
         // TODO If container for detail view is not null and FragmentManager does not contain detail view, add detail view in transaction
             getSupportFragmentManager().beginTransaction()
@@ -53,7 +45,6 @@ public class MainActivity extends AppCompatActivity {
                     new LyricListFragment())
                     .commit();
         }
-        initializeSongLyricsDatabase();
     }
 
     private void initializeSongLyricsDatabase() {
@@ -61,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
         boolean databaseAlreadyExists = LyricDatabaseHelper.doesDatabaseExist(this);
 
         // Create a singleton instance of the app database that persists for the app's lifecycle
-        getAppDatabase(this);
+        getSongLyricDatabase(this);
 
         if (!databaseAlreadyExists) {
             LyricDatabaseHelper.writeInitialRecords(this);

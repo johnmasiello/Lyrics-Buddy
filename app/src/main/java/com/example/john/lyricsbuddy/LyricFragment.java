@@ -34,7 +34,6 @@ import java.util.Random;
 
 import static com.example.john.lyricsbuddy.LyricDatabaseHelper.SongLyrics;
 import static com.example.john.lyricsbuddy.LyricDatabaseHelper.SongLyricsListItem;
-import static com.example.john.lyricsbuddy.LyricDatabaseHelper.AppDatabase;
 
 /**
  * Created by john on 3/12/18.
@@ -160,7 +159,7 @@ public class LyricFragment extends Fragment {
     public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
         super.onViewStateRestored(savedInstanceState);
 
-        AppDatabase database = LyricDatabaseHelper.getAppDatabase(getActivity().getApplicationContext());
+        LyricDatabaseHelper.SongLyricDatabase database = LyricDatabaseHelper.getSongLyricDatabase(getActivity().getApplicationContext());
         LyricDatabaseHelper.SongLyricsDao dao = database.songLyricsDao();
 
         List<SongLyricsListItem> songLyricsList = dao.findByArtist("Jelly%");
@@ -221,7 +220,7 @@ public class LyricFragment extends Fragment {
             songLyrics.setAlbum(trackInfo.get(R.id.album).getText().toString());
             songLyrics.setArtist(trackInfo.get(R.id.artist).getText().toString());
             songLyrics.setLyrics(lyrics.getText().toString());
-            LyricDatabaseHelper.getAppDatabase(getActivity().getApplicationContext())
+            LyricDatabaseHelper.getSongLyricDatabase(getActivity().getApplicationContext())
                     .songLyricsDao().updateSongLyrics(songLyrics);
 
             Log.d("DataSongLyricsEntity", "Write: uid = " + songLyrics.getUid());

@@ -1,8 +1,11 @@
 package com.example.john.lyricsbuddy;
 
 import android.arch.lifecycle.LiveData;
+import android.arch.lifecycle.MediatorLiveData;
 import android.arch.lifecycle.MutableLiveData;
+import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModel;
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 import java.util.List;
@@ -11,12 +14,13 @@ import static com.example.john.lyricsbuddy.LyricDatabaseHelper.*;
 
 /**
  * Created by john on 4/14/18.
- * ViewModel that holds LiveData that it fetches using Room
+ * ViewModel that holds LiveData that fetches using Room
  */
 
 public class SongLyricsListViewModel extends ViewModel {
-    private LiveData<List<SongLyricsListItem>> songLyricListItems;
-    private MutableLiveData<Integer> sortOrder;
+    private MutableLiveData<SongLyricsDao> mSongLyricsDao;
+    private MediatorLiveData<List<SongLyricsListItem>> mSongLyricListItems;
+    private MutableLiveData<Integer> mSortOrder;
 
     public static final int ORDER_NATURAL   = 0;
     public static final int ORDER_ARTIST    = 1;
@@ -24,46 +28,94 @@ public class SongLyricsListViewModel extends ViewModel {
     public static final int ORDER_TRACK     = 3;
 
     public SongLyricsListViewModel() {
-        sortOrder = new MutableLiveData<>();
-        sortOrder.setValue(ORDER_NATURAL);
-    }
-
-    public LiveData<List<SongLyricsListItem>> fetchSongLyricsListViewModel(SongLyricsDao songLyricsDao) {
-        return fetchSongLyricsListViewModel(songLyricsDao, sortOrder.getValue());
-    }
-
-    public LiveData<List<SongLyricsListItem>> fetchSongLyricsListViewModel(SongLyricsDao songLyricsDao,
-                                   Integer sortOrder) {
-
-        if (this.sortOrder.getValue() != null &&
-            this.sortOrder.getValue().equals(sortOrder)) {
-            if (songLyricListItems != null) {
-                Log.d("Database", "song lyric list items not null");
-                return songLyricListItems;
-            } else {
-                Log.d("Database", "song lyric list items is null");
-            }
-        } else {
-            this.sortOrder.setValue(sortOrder);
+        if (mSortOrder == null) {
+            mSortOrder = new MutableLiveData<>();
+            mSortOrder.setValue(ORDER_NATURAL);
         }
-        switch (sortOrder) {
-            // TODO use an asyncTask to make queries
+    }
+
+    @SuppressWarnings("ConstantConditions")
+    public LiveData<List<SongLyricsListItem>> getLyricList() {
+        return getLyricList(mSortOrder.getValue());
+    }
+
+    @SuppressWarnings("ConstantConditions")
+    public LiveData<List<SongLyricsListItem>> getLyricList(int sortOrder) {
+        boolean needsToFetchItems = false;
+
+        if (mSongLyricListItems == null) {
+            mSongLyricListItems = new MediatorLiveData<>();
+            needsToFetchItems = true;
+        }
+        if (!mSortOrder.getValue().equals(sortOrder)) {
+            mSortOrder.setValue(sortOrder);
+            needsToFetchItems = true;
+        }
+        if (needsToFetchItems) {
+            Log.d("Database", "Need to fetch LyricListItems as LiveData");
+            loadSongLyricListItems();
+        } else {
+            Log.d("Database", "Song lyric list items already populated");
+        }
+        return mSongLyricListItems;
+    }
+
+    public void setSongLyricsDao(SongLyricsDao songLyricsDao) {
+        if (mSongLyricsDao == null) {
+            mSongLyricsDao = new MutableLiveData<>();
+            mSongLyricsDao.setValue(songLyricsDao);
+        } else {
+            Log.d("Database", "song lyric dao already set");
+        }
+    }
+
+    /**
+     * Asynchronously load {@literal List<SongLyricListItems>} as LiveData stream
+     */
+    @SuppressWarnings("ConstantConditions")
+    private void loadSongLyricListItems() {
+        SongLyricsDao songLyricsDao = mSongLyricsDao.getValue();
+
+        if (songLyricsDao == null) {
+            Log.d("Database", "Unable to fetch data from database; song lyrics dao unset");
+            throw new IllegalStateException("SongLyricDao unset");
+        }
+        LiveData<List<SongLyricsListItem>> query;
+        switch (mSortOrder.getValue()) {
             case ORDER_ARTIST:
-                this.songLyricListItems = songLyricsDao.fetchListItems_Artist();
+                query = songLyricsDao.fetchListItems_Artist();
                 break;
 
             case ORDER_ALBUM:
-                this.songLyricListItems = songLyricsDao.fetchListItems_Album();
+                query = songLyricsDao.fetchListItems_Album();
                 break;
 
             case ORDER_TRACK:
-                this.songLyricListItems = songLyricsDao.fetchListItems_Track();
+                query = songLyricsDao.fetchListItems_Track();
                 break;
 
             case ORDER_NATURAL:
             default:
-                this.songLyricListItems = songLyricsDao.fetchListItems_NaturalOrder();
+                query = songLyricsDao.fetchListItems_NaturalOrder();
         }
-        return songLyricListItems;
+
+        final LiveData<List<SongLyricsListItem>> query_sorted =
+                query;
+        mSongLyricListItems.addSource(query_sorted,
+                new Observer<List<SongLyricsListItem>>() {
+                    @Override
+                    public void onChanged(@Nullable List<SongLyricsListItem> songLyricsListItems) {
+                        mSongLyricListItems.removeSource(query_sorted);
+                        mSongLyricListItems.setValue(songLyricsListItems);
+
+                        List<SongLyricsListItem> list = mSongLyricListItems.getValue();
+
+                        if (list != null) {
+                            for (SongLyricsListItem item : list) {
+                                Log.d("Database", String.valueOf(item));
+                            }
+                        }
+                    }
+                });
     }
 }

@@ -1,7 +1,6 @@
 package com.example.john.lyricsbuddy;
 
 import android.arch.lifecycle.LiveData;
-import android.arch.lifecycle.MutableLiveData;
 import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Dao;
 import android.arch.persistence.room.Database;
@@ -187,6 +186,14 @@ public class LyricDatabaseHelper {
             }
             return true;
         }
+
+        @Override
+        public String toString() {
+            return String.valueOf(uid)      +
+                    "\t\t track: "+String.valueOf(trackTitle) +
+                    "\t\t album: "+String.valueOf(album)      +
+                    "\t\t artist: "+String.valueOf(artist);
+        }
     }
 
     @Dao
@@ -243,21 +250,21 @@ public class LyricDatabaseHelper {
     }
 
     @Database(entities = {SongLyrics.class}, version = 6)
-    public abstract static class AppDatabase extends RoomDatabase {
+    public abstract static class SongLyricDatabase extends RoomDatabase {
         public abstract SongLyricsDao songLyricsDao();
     }
 
-    private static AppDatabase appDatabase;
+    private static SongLyricDatabase songLyricDatabase;
 
-    static AppDatabase getAppDatabase(final Context context) {
-        if (appDatabase == null) {
+    static SongLyricDatabase getSongLyricDatabase(final Context context) {
+        if (songLyricDatabase == null) {
 
-            appDatabase = Room.databaseBuilder(context,
-                    AppDatabase.class, DATABASE_NAME)
+            songLyricDatabase = Room.databaseBuilder(context,
+                    SongLyricDatabase.class, DATABASE_NAME)
                     .allowMainThreadQueries()
                     .build();
         }
-        return appDatabase;
+        return songLyricDatabase;
     }
 
     static boolean doesDatabaseExist(Context context) {
@@ -266,10 +273,10 @@ public class LyricDatabaseHelper {
     }
 
     static void writeInitialRecords(final Context context) {
-        if (appDatabase != null && context != null) {
+        if (songLyricDatabase != null && context != null) {
 
             // Populate the first-time data
-            appDatabase.songLyricsDao().insertAll(
+            songLyricDatabase.songLyricsDao().insertAll(
                     new SongLyrics(context.getString(R.string.ballgame_title),
                             null,
                             context.getString(R.string.ballgame_artist),
