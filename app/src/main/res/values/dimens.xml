@@ -9,4 +9,6 @@
     <dimen name="menu_circle_medium">18dp</dimen>
     <dimen name="max_width_track_info">220dp</dimen>
     <dimen name="highlighted_lyrics_padding">4dp</dimen>
+    <dimen name="list_item_track_text_size">16sp</dimen>
+    <dimen name="lyric_list_item_album_text_size">12sp</dimen>
 </resources>

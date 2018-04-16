@@ -77,7 +77,6 @@ public class SongLyricsListViewModel extends ViewModel {
         SongLyricsDao songLyricsDao = mSongLyricsDao.getValue();
 
         if (songLyricsDao == null) {
-            Log.d("Database", "Unable to fetch data from database; song lyrics dao unset");
             throw new IllegalStateException("SongLyricDao unset");
         }
         LiveData<List<SongLyricsListItem>> query;
@@ -107,14 +106,6 @@ public class SongLyricsListViewModel extends ViewModel {
                     public void onChanged(@Nullable List<SongLyricsListItem> songLyricsListItems) {
                         mSongLyricListItems.removeSource(query_sorted);
                         mSongLyricListItems.setValue(songLyricsListItems);
-
-                        List<SongLyricsListItem> list = mSongLyricListItems.getValue();
-
-                        if (list != null) {
-                            for (SongLyricsListItem item : list) {
-                                Log.d("Database", String.valueOf(item));
-                            }
-                        }
                     }
                 });
     }

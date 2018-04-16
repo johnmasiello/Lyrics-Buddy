@@ -10,13 +10,12 @@ import android.support.v7.recyclerview.extensions.ListAdapter;
 import android.support.v7.util.DiffUtil;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import java.util.Collections;
 import java.util.List;
 
 import static com.example.john.lyricsbuddy.LyricDatabaseHelper.SongLyricsListItem;
@@ -33,6 +32,7 @@ public class LyricListFragment extends Fragment {
             LyricsListFragmentAdapter.SongLyricViewHolder> {
 
         public LyricsListFragmentAdapter() {
+            // TODO Consider using an AsyncListDiffer, to compute differences between LISTS, in order to fix the problem of the list not adjusting to its new size
             super(DIFF_CALLBACK);
             setHasStableIds(true);
         }
@@ -56,7 +56,7 @@ public class LyricListFragment extends Fragment {
                     int position = viewHolder.getAdapterPosition();
 
                     if (position != RecyclerView.NO_POSITION) {
-                        Log.d("DataListItemClick", "UID="+getItemId(position));
+                        Toast.makeText(v.getContext(), "UID="+getItemId(position), Toast.LENGTH_SHORT).show();
                     }
                 }
             });
@@ -142,13 +142,6 @@ public class LyricListFragment extends Fragment {
                     @Override
                     public void onChanged(@Nullable List<SongLyricsListItem> songLyricsListItems) {
                         listAdapter.submitList(songLyricsListItems);
-
-                        if (songLyricsListItems != null) {
-                            for (SongLyricsListItem item : songLyricsListItems) {
-                                Log.d("Database", String.valueOf(item));
-                            }
-                        }
-
                     }
                 });
     }

@@ -261,7 +261,7 @@ public class LyricDatabaseHelper {
 
             songLyricDatabase = Room.databaseBuilder(context,
                     SongLyricDatabase.class, DATABASE_NAME)
-                    .allowMainThreadQueries()
+//                    .allowMainThreadQueries()
                     .build();
         }
         return songLyricDatabase;

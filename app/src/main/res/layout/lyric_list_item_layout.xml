@@ -3,12 +3,11 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:minHeight="100dp"
-    android:layout_marginTop="4dp"
-    android:layout_marginBottom="4dp"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="6dp"
+    android:layout_marginTop="6dp"
     android:clickable="false"
-    >
+    android:minHeight="55dp">
 
     <TextView
         android:id="@+id/track"
@@ -18,6 +17,8 @@
         android:layout_marginStart="24dp"
         android:hint="Track"
         android:textColor="@color/lyricListItemTextColor"
+        android:textSize="@dimen/list_item_track_text_size"
+        android:textStyle="bold"
         app:layout_constraintEnd_toStartOf="@+id/track_artist_separator"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
@@ -30,8 +31,10 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
-        android:textColor="@color/lyricListItemTextColor"
         android:text="@string/track_artist_separator_text"
+        android:textColor="@color/lyricListItemTextColor"
+        android:textSize="@dimen/list_item_track_text_size"
+        android:textStyle="normal"
         app:layout_constraintEnd_toStartOf="@+id/artist"
         app:layout_constraintStart_toEndOf="@+id/track"
         tools:text="-" />
@@ -42,6 +45,8 @@
         android:layout_height="wrap_content"
         android:hint="Artist"
         android:textColor="@color/lyricListItemTextColor"
+        android:textSize="@dimen/list_item_track_text_size"
+        android:textStyle="normal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toEndOf="@+id/track_artist_separator"
@@ -53,11 +58,12 @@
         android:id="@+id/album"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textStyle="italic"
+        android:layout_marginTop="6dp"
         android:hint="Album"
         android:textColor="@color/lyricListItemTextColor"
+        android:textSize="@dimen/lyric_list_item_album_text_size"
+        android:textStyle="italic"
         app:layout_constraintStart_toStartOf="@+id/track"
         app:layout_constraintTop_toBottomOf="@+id/track"
-        android:layout_marginTop="6dp"
         tools:text="Album" />
 </android.support.constraint.ConstraintLayout>
