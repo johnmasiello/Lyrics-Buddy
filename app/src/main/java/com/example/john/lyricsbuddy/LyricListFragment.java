@@ -2,12 +2,14 @@ package com.example.john.lyricsbuddy;
 
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.recyclerview.extensions.ListAdapter;
 import android.support.v7.util.DiffUtil;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -32,7 +34,6 @@ public class LyricListFragment extends Fragment {
             LyricsListFragmentAdapter.SongLyricViewHolder> {
 
         public LyricsListFragmentAdapter() {
-            // TODO Consider using an AsyncListDiffer, to compute differences between LISTS, in order to fix the problem of the list not adjusting to its new size
             super(DIFF_CALLBACK);
             setHasStableIds(true);
         }
@@ -111,9 +112,12 @@ public class LyricListFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view =  inflater.inflate(R.layout.lyrics_master_layout, container, false);
 
-        // Add and observer to observe changes on the view model for lyric list items to the
-        // recyclerView's adapter
         recyclerView = view.findViewById(R.id.lyricList);
+        Context context = recyclerView.getContext();
+        DividerItemDecoration itemDecor = new DividerItemDecoration(context,
+                DividerItemDecoration.VERTICAL);
+        itemDecor.setDrawable(getResources().getDrawable(R.drawable.list_item_divider));
+        recyclerView.addItemDecoration(itemDecor);
         return view;
     }
 
@@ -134,7 +138,8 @@ public class LyricListFragment extends Fragment {
                 ViewModelProviders.of(this).get(SongLyricsListViewModel.class);
 
         songLyricsListViewModel.setSongLyricsDao(getSongLyricDatabase(getActivity()).songLyricsDao());
-        // Add an observer to the recyclerView UI
+        // Add an observer register changes from LiveData to the adapter backing the recyclerView
+        // to reflect changes in the UI
         songLyricsListViewModel
                 .getLyricList()
                 .observe(this, new Observer<List<SongLyricsListItem>>() {
