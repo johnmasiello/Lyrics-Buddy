@@ -217,6 +217,7 @@ public class LyricFragment extends Fragment {
             }
         }
 
+        // TODO save state of lyrics; consider customizing LiveData using onInactive()
         // Save songLyrics to SQLite using Room
 //        if (songLyrics != null) {
 //            songLyrics.setTrackTitle(trackInfo.get(R.id.title).getText().toString());

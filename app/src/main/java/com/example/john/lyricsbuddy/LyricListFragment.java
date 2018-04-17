@@ -178,6 +178,7 @@ public class LyricListFragment extends Fragment implements ListItemClickCallback
 
             detailViewModel.setId(item.getUid());
 
+            // TODO: Support 2-pane layout when flowing to detail view
             fragmentManager.beginTransaction()
                     .addToBackStack(DETAIL_BACKSTACK_TAG)
                     .replace(containerId, new LyricFragment(),

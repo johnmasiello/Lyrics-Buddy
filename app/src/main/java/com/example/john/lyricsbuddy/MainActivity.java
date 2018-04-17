@@ -68,6 +68,7 @@ public class MainActivity extends AppCompatActivity {
         getSongLyricDatabase(this);
 
         if (!databaseAlreadyExists) {
+            // TODO Refactor Update using AsyncTask
             LyricDatabaseHelper.writeInitialRecords(this);
         }
     }

@@ -266,6 +266,7 @@ public class LyricDatabaseHelper {
     static SongLyricDatabase getSongLyricDatabase(final Context context) {
         if (songLyricDatabase == null) {
 
+            // TODO remove main thread queries
             songLyricDatabase = Room.databaseBuilder(context,
                     SongLyricDatabase.class, DATABASE_NAME)
                     .allowMainThreadQueries()

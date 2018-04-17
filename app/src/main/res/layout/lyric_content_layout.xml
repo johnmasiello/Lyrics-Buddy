@@ -94,7 +94,7 @@
             android:background="@android:color/transparent"
             android:gravity="center_horizontal|top"
             android:hint="@string/lyrics_view_hint"
-            android:inputType="textCapSentences|textMultiLine"
+            android:inputType="textCapSentences|textNoSuggestions|textMultiLine"
             />
     </LinearLayout>
 </ScrollView>
