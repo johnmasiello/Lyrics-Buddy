@@ -225,7 +225,7 @@ public class LyricFragment extends Fragment {
 //            songLyrics.setArtist(trackInfo.get(R.id.artist).getText().toString());
 //            songLyrics.setLyrics(lyrics.getText().toString());
 //            LyricDatabaseHelper.getSongLyricDatabase(getActivity().getApplicationContext())
-//                    .songLyricsDao().updateSongLyrics(songLyrics);
+//                    .songLyricsDao().update(songLyrics);
 //
 //            Log.d("DataSongLyricsEntity", "Write: uid = " + songLyrics.getUid());
 //        }

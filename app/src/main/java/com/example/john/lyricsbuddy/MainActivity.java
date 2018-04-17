@@ -39,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
         BottomNavigationView navigation = findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
 
-        initializeSongLyricsDatabase();
+        doDatabaseInitializeEvent();
 
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
@@ -60,16 +60,9 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void initializeSongLyricsDatabase() {
-        // Get an app Database to manage all of the lyrics
-        boolean databaseAlreadyExists = LyricDatabaseHelper.doesDatabaseExist(this);
-
-        // Create a singleton instance of the app database that persists for the app's lifecycle
-        getSongLyricDatabase(this);
-
-        if (!databaseAlreadyExists) {
-            // TODO Refactor Update using AsyncTask
-            LyricDatabaseHelper.writeInitialRecords(this);
+    private void doDatabaseInitializeEvent() {
+        if ( !LyricDatabaseHelper.doesDatabaseExist(this) ) {
+              LyricDatabaseHelper.writeInitialRecords(this);
         }
     }
 

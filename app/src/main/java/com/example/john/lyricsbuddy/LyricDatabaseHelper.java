@@ -15,6 +15,7 @@ import android.arch.persistence.room.Room;
 import android.arch.persistence.room.RoomDatabase;
 import android.arch.persistence.room.Update;
 import android.content.Context;
+import android.os.AsyncTask;
 import android.support.annotation.Nullable;
 
 import java.io.File;
@@ -235,13 +236,13 @@ public class LyricDatabaseHelper {
          Searches
          */
         @Query("SELECT uid, album, track_title, artist FROM SongLyrics WHERE artist LIKE :artist")
-        List<SongLyricsListItem> findByArtist(String artist);
+        LiveData<List<SongLyricsListItem>> findByArtist(String artist);
 
         @Query("SELECT uid, album, track_title, artist FROM SongLyrics WHERE album LIKE :album")
-        List<SongLyricsListItem> findByAlbum(String album);
+        LiveData<List<SongLyricsListItem>> findByAlbum(String album);
 
         @Query("SELECT uid, album, track_title, artist FROM SongLyrics WHERE track_title LIKE :track")
-        List<SongLyricsListItem> findByTrackTitle(String track);
+        LiveData<List<SongLyricsListItem>> findByTrackTitle(String track);
 
         /*
         Population
@@ -253,7 +254,7 @@ public class LyricDatabaseHelper {
         void delete(SongLyrics songLyrics);
 
         @Update
-        void updateSongLyrics(SongLyrics songLyrics);
+        void update(SongLyrics songLyrics);
     }
 
     @Database(entities = {SongLyrics.class}, version = 6)
@@ -265,11 +266,8 @@ public class LyricDatabaseHelper {
 
     static SongLyricDatabase getSongLyricDatabase(final Context context) {
         if (songLyricDatabase == null) {
-
-            // TODO remove main thread queries
             songLyricDatabase = Room.databaseBuilder(context,
                     SongLyricDatabase.class, DATABASE_NAME)
-                    .allowMainThreadQueries()
                     .build();
         }
         return songLyricDatabase;
@@ -281,25 +279,57 @@ public class LyricDatabaseHelper {
     }
 
     static void writeInitialRecords(final Context context) {
-        if (songLyricDatabase != null && context != null) {
+        // Populate the first-time data
+        SongLyricAsyncTask task = new SongLyricAsyncTask(getSongLyricDatabase(context),
+            SongLyricAsyncTask.INSERT_ALL);
+        task.execute(new SongLyrics(context.getString(R.string.ballgame_title),
+                        null,
+                        context.getString(R.string.ballgame_artist),
+                        context.getString(R.string.ballgame_lyrics)),
 
-            // Populate the first-time data
-            songLyricDatabase.songLyricsDao().insertAll(
-                    new SongLyrics(context.getString(R.string.ballgame_title),
-                            null,
-                            context.getString(R.string.ballgame_artist),
-                            context.getString(R.string.ballgame_lyrics)),
+                new SongLyrics(context.getString(R.string.jellyRollBlues_title),
+                        context.getString(R.string.jellyRollBlues_album),
+                        context.getString(R.string.jellyRollBlues_artist),
+                        context.getString(R.string.jellyRollBlues_lyrics)),
 
-                    new SongLyrics(context.getString(R.string.jellyRollBlues_title),
-                            context.getString(R.string.jellyRollBlues_album),
-                            context.getString(R.string.jellyRollBlues_artist),
-                            context.getString(R.string.jellyRollBlues_lyrics)),
+                new SongLyrics(context.getString(R.string.sweetChariot_title),
+                        null,
+                        context.getString(R.string.sweetChariot_artist),
+                        context.getString(R.string.sweetChariot_lyrics))
+        );
+    }
 
-                    new SongLyrics(context.getString(R.string.sweetChariot_title),
-                            null,
-                            context.getString(R.string.sweetChariot_artist),
-                            context.getString(R.string.sweetChariot_lyrics))
-            );
+    static class SongLyricAsyncTask extends AsyncTask<SongLyrics, Void, Void> {
+        private SongLyricDatabase mSongLyricDatabase;
+        private final int mCommand;
+
+        private static final int INSERT_ALL = 0;
+        private static final int DELETE     = 1;
+        private static final int UPDATE     = 2;
+
+        public SongLyricAsyncTask(SongLyricDatabase songLyricDatabase, int command) {
+            mSongLyricDatabase = songLyricDatabase;
+            mCommand = command;
+        }
+
+        @Override
+        protected Void doInBackground(SongLyrics... songLyrics) {
+            if (mSongLyricDatabase != null) {
+                switch (mCommand) {
+                    case INSERT_ALL:
+                        mSongLyricDatabase.songLyricsDao().insertAll(songLyrics);
+                        break;
+
+                    case DELETE:
+                        mSongLyricDatabase.songLyricsDao().delete(songLyrics[0]);
+                        break;
+
+                    case UPDATE:
+                        mSongLyricDatabase.songLyricsDao().update(songLyrics[0]);
+                        break;
+                }
+            }
+            return null;
         }
     }
 }
