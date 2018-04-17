@@ -1,5 +1,7 @@
 package com.example.john.lyricsbuddy;
 
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Color;
@@ -44,6 +46,7 @@ import static com.example.john.lyricsbuddy.LyricDatabaseHelper.SongLyricsListIte
 // https://stackoverflow.com/questions/13941093/how-to-share-entire-android-app-with-share-intent
 public class LyricFragment extends Fragment {
 
+    public static final String DETAIL_FRAGMENT_TAG = "Detail Fragment Tag";
     // Valid reference until next call to OnCreateOptionsMenu
     private Menu menu;
 
@@ -57,7 +60,6 @@ public class LyricFragment extends Fragment {
     private SparseArray<TextView> trackInfo;
     private WrappedEditText lyrics;
     private ScrollView lyricsScroller;
-    private SongLyrics songLyrics;
 
     // Lyric color logic
     private LyricAnalyzer lyricAnalyzer;
@@ -87,12 +89,6 @@ public class LyricFragment extends Fragment {
         random = new Random(System.currentTimeMillis());
     }
 
-    // Call when making the first instance of fragment
-    public static LyricFragment newInstance(@NonNull  SongLyrics songLyrics) {
-        // TODO put songLyrics into setArgs bundle
-        return new LyricFragment();
-    }
-
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -116,6 +112,12 @@ public class LyricFragment extends Fragment {
         }
 
         fetchColorsFromPalette();
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        connectToSongLyricsItem();
     }
 
     @Override
@@ -155,26 +157,27 @@ public class LyricFragment extends Fragment {
         return rootView;
     }
 
-    @Override
-    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
-        super.onViewStateRestored(savedInstanceState);
+    private void connectToSongLyricsItem() {
+        @SuppressWarnings("ConstantConditions") SongLyricDetailItemViewModel songLyricsListViewModel =
+                ViewModelProviders.of(getActivity()).get(SongLyricDetailItemViewModel.class);
 
-        LyricDatabaseHelper.SongLyricDatabase database = LyricDatabaseHelper.getSongLyricDatabase(getActivity().getApplicationContext());
-        LyricDatabaseHelper.SongLyricsDao dao = database.songLyricsDao();
+        songLyricsListViewModel.setSongLyricsDao(LyricDatabaseHelper
+                .getSongLyricDatabase(getActivity())
+                    .songLyricsDao());
 
-        List<SongLyricsListItem> songLyricsList = dao.findByArtist("Jelly%");
-
-        if (!songLyricsList.isEmpty()) {
-            SongLyricsListItem item = songLyricsList.get(0);
-            this.songLyrics = dao.fetchSongLyric(item.getUid());
-
-            Log.d("DataSongLyricsEntity", "Read: uid = "+songLyrics.getUid());
-
-            trackInfo.get(R.id.title).setText(songLyrics.getTrackTitle());
-            trackInfo.get(R.id.album).setText(songLyrics.getAlbum());
-            trackInfo.get(R.id.artist).setText(songLyrics.getArtist());
-            lyrics.setText(new SpannableString(songLyrics.getLyrics()), TextView.BufferType.EDITABLE);
-        }
+        songLyricsListViewModel.getSongLyrics().observe(this, new Observer<SongLyrics>() {
+            @Override
+            public void onChanged(@Nullable SongLyrics songLyrics) {
+                if (songLyrics == null) {
+                    Log.d("Data", "Song lyrics not retrieved for detail view");
+                    return;
+                }
+                trackInfo.get(R.id.title).setText(songLyrics.getTrackTitle());
+                trackInfo.get(R.id.album).setText(songLyrics.getAlbum());
+                trackInfo.get(R.id.artist).setText(songLyrics.getArtist());
+                lyrics.setText(new SpannableString(songLyrics.getLyrics()), TextView.BufferType.EDITABLE);
+            }
+        });
 
         WrappedEditText.ensureUndoStack();
         WrappedEditText.ensureRedoStack();
@@ -215,16 +218,16 @@ public class LyricFragment extends Fragment {
         }
 
         // Save songLyrics to SQLite using Room
-        if (songLyrics != null) {
-            songLyrics.setTrackTitle(trackInfo.get(R.id.title).getText().toString());
-            songLyrics.setAlbum(trackInfo.get(R.id.album).getText().toString());
-            songLyrics.setArtist(trackInfo.get(R.id.artist).getText().toString());
-            songLyrics.setLyrics(lyrics.getText().toString());
-            LyricDatabaseHelper.getSongLyricDatabase(getActivity().getApplicationContext())
-                    .songLyricsDao().updateSongLyrics(songLyrics);
-
-            Log.d("DataSongLyricsEntity", "Write: uid = " + songLyrics.getUid());
-        }
+//        if (songLyrics != null) {
+//            songLyrics.setTrackTitle(trackInfo.get(R.id.title).getText().toString());
+//            songLyrics.setAlbum(trackInfo.get(R.id.album).getText().toString());
+//            songLyrics.setArtist(trackInfo.get(R.id.artist).getText().toString());
+//            songLyrics.setLyrics(lyrics.getText().toString());
+//            LyricDatabaseHelper.getSongLyricDatabase(getActivity().getApplicationContext())
+//                    .songLyricsDao().updateSongLyrics(songLyrics);
+//
+//            Log.d("DataSongLyricsEntity", "Write: uid = " + songLyrics.getUid());
+//        }
     }
 
     @Override

@@ -6,6 +6,7 @@ import android.arch.persistence.room.Dao;
 import android.arch.persistence.room.Database;
 import android.arch.persistence.room.Delete;
 import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.Ignore;
 import android.arch.persistence.room.Index;
 import android.arch.persistence.room.Insert;
 import android.arch.persistence.room.PrimaryKey;
@@ -45,6 +46,12 @@ public class LyricDatabaseHelper {
 
         @ColumnInfo(name = "lyrics")
         private String lyrics;
+
+        @Ignore
+        public static final SongLyrics BLANK = new SongLyrics("",
+            "",
+            "",
+            "");
 
         SongLyrics(String trackTitle, String album, String artist, String lyrics) {
             // Primary key
@@ -222,7 +229,7 @@ public class LyricDatabaseHelper {
         Data detail view
          */
         @Query("SELECT * FROM SongLyrics WHERE uid LIKE :uid LIMIT 1")
-        SongLyrics fetchSongLyric(Long uid);
+        LiveData<SongLyrics> fetchSongLyric(Long uid);
 
         /*
          Searches
@@ -261,7 +268,7 @@ public class LyricDatabaseHelper {
 
             songLyricDatabase = Room.databaseBuilder(context,
                     SongLyricDatabase.class, DATABASE_NAME)
-//                    .allowMainThreadQueries()
+                    .allowMainThreadQueries()
                     .build();
         }
         return songLyricDatabase;

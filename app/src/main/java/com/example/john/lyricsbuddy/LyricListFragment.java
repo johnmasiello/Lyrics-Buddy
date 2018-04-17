@@ -1,5 +1,6 @@
 package com.example.john.lyricsbuddy;
 
+import android.app.Activity;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
@@ -7,6 +8,9 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.recyclerview.extensions.ListAdapter;
 import android.support.v7.util.DiffUtil;
 import android.support.v7.widget.DividerItemDecoration;
@@ -16,26 +20,35 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.List;
 
 import static com.example.john.lyricsbuddy.LyricDatabaseHelper.SongLyricsListItem;
 import static com.example.john.lyricsbuddy.LyricDatabaseHelper.getSongLyricDatabase;
 
+interface ListItemClickCallback {
+    void handleClick(SongLyricsListItem item);
+}
+
 /**
  * A Fragment featuring recyclerView with an underlying listAdapter using Room, LiveData, ViewModel
  * architecture components to implement Reactive Paradigm Pattern
  * Created by john on 4/13/18.
  */
-
-public class LyricListFragment extends Fragment {
+public class LyricListFragment extends Fragment implements ListItemClickCallback {
     static class LyricsListFragmentAdapter extends ListAdapter<SongLyricsListItem,
             LyricsListFragmentAdapter.SongLyricViewHolder> {
 
+        private ListItemClickCallback mListItemClickCallback;
+
         public LyricsListFragmentAdapter() {
+            this(null);
+        }
+
+        public LyricsListFragmentAdapter(ListItemClickCallback listItemClickCallback) {
             super(DIFF_CALLBACK);
             setHasStableIds(true);
+            mListItemClickCallback = listItemClickCallback;
         }
 
         @Override
@@ -56,8 +69,8 @@ public class LyricListFragment extends Fragment {
                 public void onClick(View v) {
                     int position = viewHolder.getAdapterPosition();
 
-                    if (position != RecyclerView.NO_POSITION) {
-                        Toast.makeText(v.getContext(), "UID="+getItemId(position), Toast.LENGTH_SHORT).show();
+                    if (position != RecyclerView.NO_POSITION && mListItemClickCallback != null) {
+                        mListItemClickCallback.handleClick(getItem(position));
                     }
                 }
             });
@@ -102,6 +115,9 @@ public class LyricListFragment extends Fragment {
     }
 
     private RecyclerView recyclerView;
+    private int containerId;
+
+    public static final String DETAIL_BACKSTACK_TAG = "Detail Transaction";
 
     public LyricListFragment() {
         super();
@@ -111,6 +127,7 @@ public class LyricListFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view =  inflater.inflate(R.layout.lyrics_master_layout, container, false);
+        containerId = container == null ? View.NO_ID : container.getId();
 
         recyclerView = view.findViewById(R.id.lyricList);
         Context context = recyclerView.getContext();
@@ -126,7 +143,7 @@ public class LyricListFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
-        LyricsListFragmentAdapter adapter = new LyricsListFragmentAdapter();
+        LyricsListFragmentAdapter adapter = new LyricsListFragmentAdapter(this);
         initializeSongLyricsListItemViewModel(adapter);
         recyclerView.setAdapter(adapter);
     }
@@ -149,5 +166,32 @@ public class LyricListFragment extends Fragment {
                         listAdapter.submitList(songLyricsListItems);
                     }
                 });
+    }
+
+    @Override
+    public void handleClick(SongLyricsListItem item) {
+        FragmentManager fragmentManager = getFragmentManager();
+
+        if (fragmentManager != null && getActivity() != null) {
+            SongLyricDetailItemViewModel detailViewModel =
+                    ViewModelProviders.of(getActivity()).get(SongLyricDetailItemViewModel.class);
+
+            detailViewModel.setId(item.getUid());
+
+            fragmentManager.beginTransaction()
+                    .addToBackStack(DETAIL_BACKSTACK_TAG)
+                    .replace(containerId, new LyricFragment(),
+                            LyricFragment.DETAIL_FRAGMENT_TAG)
+                    .commit();
+
+            // Show the Up button in the action bar.
+            Activity activity = getActivity();
+            if (activity instanceof AppCompatActivity) {
+                ActionBar actionBar = ((AppCompatActivity) activity).getSupportActionBar();
+                if (actionBar != null) {
+                    actionBar.setDisplayHomeAsUpEnabled(true);
+                }
+            }
+        }
     }
 }

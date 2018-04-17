@@ -14,7 +14,7 @@ import static com.example.john.lyricsbuddy.LyricDatabaseHelper.*;
 
 /**
  * Created by john on 4/14/18.
- * ViewModel that holds LiveData that fetches using Room
+ * ViewModel that holds LiveData that fetches song lyric list items using Room
  */
 
 public class SongLyricsListViewModel extends ViewModel {
