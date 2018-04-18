@@ -9,6 +9,7 @@ import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.Ignore;
 import android.arch.persistence.room.Index;
 import android.arch.persistence.room.Insert;
+import android.arch.persistence.room.OnConflictStrategy;
 import android.arch.persistence.room.PrimaryKey;
 import android.arch.persistence.room.Query;
 import android.arch.persistence.room.Room;
@@ -275,7 +276,7 @@ public class LyricDatabaseHelper {
         @Delete
         void delete(SongLyrics songLyrics);
 
-        @Update
+        @Insert(onConflict = OnConflictStrategy.REPLACE)
         void update(SongLyrics songLyrics);
     }
 

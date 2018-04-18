@@ -113,11 +113,15 @@ public class SongLyricDetailItemViewModel extends ViewModel {
      */
     public void newSongLyrics() {
         updateViaRepository();
+        if (mSongLyrics == null) {
+            mSongLyrics = new MediatorLiveData<>();
+        }
         mSongLyrics.setValue(new LyricDatabaseHelper.SongLyrics());
         // Indicate that songLyrics goes in a new record
         newId = oldId = NEW_ID;
     }
 
+    // TODO Use a repository; Update records when app terminates
     private void updateViaRepository() {
         if (songLyricsDirty && mSongLyrics != null && mSongLyricsDao != null) {
             LyricDatabaseHelper.SongLyrics songLyrics = mSongLyrics.getValue();
@@ -126,7 +130,6 @@ public class SongLyricDetailItemViewModel extends ViewModel {
                     !songLyrics.isBlankType1()) {
 
                 LyricDatabaseHelper.SongLyricAsyncTask task;
-                // TODO refactor update to do an 'Insert' with conflict strategy 'REPLACE'
                 task = new LyricDatabaseHelper.SongLyricAsyncTask(mSongLyricsDao,
                         LyricDatabaseHelper.SongLyricAsyncTask.UPDATE);
                 task.execute(songLyrics);

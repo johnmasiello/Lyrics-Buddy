@@ -17,7 +17,6 @@ import android.text.Editable;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
-import android.util.Log;
 import android.util.SparseArray;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -36,7 +35,6 @@ import java.util.List;
 import java.util.Random;
 
 import static com.example.john.lyricsbuddy.LyricDatabaseHelper.SongLyrics;
-import static com.example.john.lyricsbuddy.LyricDatabaseHelper.SongLyricsListItem;
 
 /**
  * Created by john on 3/12/18.
@@ -223,13 +221,18 @@ public class LyricFragment extends Fragment {
                 ((WrappedEditText) t).removeTextWatcher();
             }
         }
+        dumpLyricsIntoViewModel();
+    }
 
-        // TODO write a delegate method with public access, in order to update the ViewModel with transient data in UI
+    public void dumpLyricsIntoViewModel() {
         LiveData<SongLyrics> songLyricsLiveData = songLyricsListViewModel.getSongLyrics();
-        SongLyrics songLyricsOutput = songLyricsLiveData.getValue();
+        SongLyrics songLyrics, songLyricsOutput;
 
-        if (songLyricsOutput == null) {
-            songLyricsOutput = new SongLyrics();
+        songLyrics = songLyricsLiveData.getValue();
+        songLyricsOutput = new SongLyrics();
+
+        if (songLyrics != null) {
+            songLyricsOutput.setUid(songLyrics.getUid());
         }
         // Pull SongLyrics info from the EditTexts in the UI
         songLyricsOutput.setTrackTitle(trackInfo.get(R.id.title).getText().toString());
