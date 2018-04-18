@@ -8,6 +8,9 @@ import android.arch.lifecycle.ViewModel;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+
 /**
  * Created by john on 4/16/18.
  * ViewModel that holds LiveData that fetches song lyric items using Room
@@ -15,7 +18,7 @@ import android.util.Log;
 
 public class SongLyricDetailItemViewModel extends ViewModel {
     private long oldId, newId;
-    private MediatorLiveData<LyricDatabaseHelper.SongLyrics> songLyrics;
+    private MediatorLiveData<LyricDatabaseHelper.SongLyrics> mSongLyrics;
     private MutableLiveData<LyricDatabaseHelper.SongLyricsDao> mSongLyricsDao;
 
     private static final long NO_ID = -1;
@@ -37,8 +40,8 @@ public class SongLyricDetailItemViewModel extends ViewModel {
         boolean needsToQuery = false;
         newId = songId;
 
-        if (songLyrics == null) {
-            songLyrics = new MediatorLiveData<>();
+        if (mSongLyrics == null) {
+            mSongLyrics = new MediatorLiveData<>();
             needsToQuery = true;
         }
         if (newId != oldId) {
@@ -49,21 +52,21 @@ public class SongLyricDetailItemViewModel extends ViewModel {
         if (needsToQuery) {
             //noinspection ConstantConditions
             if (newId == NO_ID) {
-                songLyrics.setValue(LyricDatabaseHelper.SongLyrics.BLANK);
+                mSongLyrics.setValue(LyricDatabaseHelper.SongLyrics.BLANK);
             } else {
                 @SuppressWarnings("ConstantConditions")
                 // Query for the song lyrics
                 final LiveData<LyricDatabaseHelper.SongLyrics> result = mSongLyricsDao.getValue().fetchSongLyric(newId);
-                songLyrics.addSource(result, new Observer<LyricDatabaseHelper.SongLyrics>() {
+                mSongLyrics.addSource(result, new Observer<LyricDatabaseHelper.SongLyrics>() {
                     @Override
                     public void onChanged(@Nullable LyricDatabaseHelper.SongLyrics songLyrics2) {
-                        songLyrics.setValue(songLyrics2);
-                        songLyrics.removeSource(result);
+                        mSongLyrics.setValue(songLyrics2);
+                        mSongLyrics.removeSource(result);
                     }
                 });
             }
         }
-        return songLyrics;
+        return mSongLyrics;
     }
 
     public void setSongLyricsDao(LyricDatabaseHelper.SongLyricsDao songLyricsDao) {
@@ -72,6 +75,12 @@ public class SongLyricDetailItemViewModel extends ViewModel {
             mSongLyricsDao.setValue(songLyricsDao);
         } else {
             Log.d("Database", "song lyric dao already set");
+        }
+    }
+
+    public void setSongLyrics(LyricDatabaseHelper.SongLyrics songLyrics) {
+        if (mSongLyrics != null) {
+            mSongLyrics.setValue(songLyrics);
         }
     }
 }

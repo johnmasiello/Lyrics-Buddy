@@ -1,5 +1,6 @@
 package com.example.john.lyricsbuddy;
 
+import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
@@ -71,10 +72,16 @@ public class LyricFragment extends Fragment {
     private Random random;
     private int highlightPadding;
 
-    // State
+    // UI State
     private int mode = MODE_EDIT;
     private int paletteId = R.id.beach;
     private int colorRotation = DEFAULT_COLOR_ROTATION;
+
+    // SongLyric State
+    private SongLyricDetailItemViewModel songLyricsListViewModel;
+    private Observer<SongLyrics> songLyricsObserver;
+    private boolean ignoreChange = false;
+
 
     private static final int MODE_EDIT = 0;
     private static final int MODE_DISPLAY = 1;
@@ -158,18 +165,17 @@ public class LyricFragment extends Fragment {
     }
 
     private void connectToSongLyricsItem() {
-        @SuppressWarnings("ConstantConditions") SongLyricDetailItemViewModel songLyricsListViewModel =
-                ViewModelProviders.of(getActivity()).get(SongLyricDetailItemViewModel.class);
+        //noinspection ConstantConditions
+        songLyricsListViewModel = ViewModelProviders.of(getActivity()).get(SongLyricDetailItemViewModel.class);
 
         songLyricsListViewModel.setSongLyricsDao(LyricDatabaseHelper
-                .getSongLyricDatabase(getActivity())
+                .getSongLyricDatabase(getActivity().getApplicationContext())
                     .songLyricsDao());
 
-        songLyricsListViewModel.getSongLyrics().observe(this, new Observer<SongLyrics>() {
+        songLyricsObserver = new Observer<SongLyrics>() {
             @Override
             public void onChanged(@Nullable SongLyrics songLyrics) {
-                if (songLyrics == null) {
-                    Log.d("Data", "Song lyrics not retrieved for detail view");
+                if (songLyrics == null || ignoreChange) {
                     return;
                 }
                 trackInfo.get(R.id.title).setText(songLyrics.getTrackTitle());
@@ -177,7 +183,8 @@ public class LyricFragment extends Fragment {
                 trackInfo.get(R.id.artist).setText(songLyrics.getArtist());
                 lyrics.setText(new SpannableString(songLyrics.getLyrics()), TextView.BufferType.EDITABLE);
             }
-        });
+        };
+        songLyricsListViewModel.getSongLyrics().observe(this, songLyricsObserver);
 
         WrappedEditText.ensureUndoStack();
         WrappedEditText.ensureRedoStack();
@@ -217,18 +224,28 @@ public class LyricFragment extends Fragment {
             }
         }
 
-        // TODO save state of lyrics; consider customizing LiveData using onInactive()
-        // Save songLyrics to SQLite using Room
-//        if (songLyrics != null) {
-//            songLyrics.setTrackTitle(trackInfo.get(R.id.title).getText().toString());
-//            songLyrics.setAlbum(trackInfo.get(R.id.album).getText().toString());
-//            songLyrics.setArtist(trackInfo.get(R.id.artist).getText().toString());
-//            songLyrics.setLyrics(lyrics.getText().toString());
-//            LyricDatabaseHelper.getSongLyricDatabase(getActivity().getApplicationContext())
-//                    .songLyricsDao().update(songLyrics);
-//
-//            Log.d("DataSongLyricsEntity", "Write: uid = " + songLyrics.getUid());
-//        }
+        LiveData<SongLyrics> songLyricsLiveData = songLyricsListViewModel.getSongLyrics();
+        SongLyrics songLyricsOutput = songLyricsLiveData.getValue();
+
+        if (songLyricsOutput == null) {
+            songLyricsOutput = new SongLyrics();
+        }
+        // Pull SongLyrics info from the EditTexts in the UI
+        songLyricsOutput.setTrackTitle(trackInfo.get(R.id.title).getText().toString());
+        songLyricsOutput.setAlbum(trackInfo.get(R.id.album).getText().toString());
+        songLyricsOutput.setArtist(trackInfo.get(R.id.artist).getText().toString());
+        songLyricsOutput.setLyrics(lyrics.getText().toString());
+
+        // Update the SongLyrics in the ViewModel with the extracted SongLyrics
+        ignoreChange = true;
+        songLyricsListViewModel.setSongLyrics(songLyricsOutput);
+        ignoreChange = false;
+    }
+
+    @Override
+    public void onDestroy() {
+        songLyricsListViewModel.getSongLyrics().removeObserver(songLyricsObserver);
+        super.onDestroy();
     }
 
     @Override

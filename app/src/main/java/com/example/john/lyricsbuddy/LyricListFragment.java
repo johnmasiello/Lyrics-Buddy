@@ -154,7 +154,8 @@ public class LyricListFragment extends Fragment implements ListItemClickCallback
         SongLyricsListViewModel songLyricsListViewModel =
                 ViewModelProviders.of(this).get(SongLyricsListViewModel.class);
 
-        songLyricsListViewModel.setSongLyricsDao(getSongLyricDatabase(getActivity()).songLyricsDao());
+        //noinspection ConstantConditions
+        songLyricsListViewModel.setSongLyricsDao(getSongLyricDatabase(getActivity().getApplicationContext()).songLyricsDao());
         // Add an observer register changes from LiveData to the adapter backing the recyclerView
         // to reflect changes in the UI
         songLyricsListViewModel

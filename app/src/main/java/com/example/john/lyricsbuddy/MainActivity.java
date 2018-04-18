@@ -62,7 +62,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void doDatabaseInitializeEvent() {
         if ( !LyricDatabaseHelper.doesDatabaseExist(this) ) {
-              LyricDatabaseHelper.writeInitialRecords(this);
+              LyricDatabaseHelper.writeInitialRecords(getApplicationContext());
         }
     }
 

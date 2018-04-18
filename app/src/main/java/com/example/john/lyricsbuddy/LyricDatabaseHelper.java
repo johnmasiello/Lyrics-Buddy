@@ -49,10 +49,40 @@ public class LyricDatabaseHelper {
         private String lyrics;
 
         @Ignore
-        public static final SongLyrics BLANK = new SongLyrics("",
-            "",
-            "",
-            "");
+        public static final SongLyrics BLANK = new SongLyrics() {
+            @Override
+            final long getUid() {
+                return NO_ID;
+            }
+
+            @Override
+            final String getAlbum() {
+                return "";
+            }
+
+            @Override
+            final String getTrackTitle() {
+                return "";
+            }
+
+            @Override
+            final public String getArtist() {
+                return "";
+            }
+
+            @Override
+            final public String getLyrics() {
+                return "";
+            }
+        };
+
+        @Ignore
+        public static final int NO_ID = -1;
+
+        public SongLyrics() {
+            // Primary key
+            this.uid = 0; // This will be treated as not-set by the auto generator
+        }
 
         SongLyrics(String trackTitle, String album, String artist, String lyrics) {
             // Primary key
@@ -280,8 +310,9 @@ public class LyricDatabaseHelper {
 
     static void writeInitialRecords(final Context context) {
         // Populate the first-time data
-        SongLyricAsyncTask task = new SongLyricAsyncTask(getSongLyricDatabase(context),
-            SongLyricAsyncTask.INSERT_ALL);
+        SongLyricAsyncTask task = new SongLyricAsyncTask(
+                getSongLyricDatabase(context).songLyricsDao(),
+                SongLyricAsyncTask.INSERT_ALL);
         task.execute(new SongLyrics(context.getString(R.string.ballgame_title),
                         null,
                         context.getString(R.string.ballgame_artist),
@@ -300,32 +331,32 @@ public class LyricDatabaseHelper {
     }
 
     static class SongLyricAsyncTask extends AsyncTask<SongLyrics, Void, Void> {
-        private SongLyricDatabase mSongLyricDatabase;
+        private SongLyricsDao mSongLyricDao;
         private final int mCommand;
 
-        private static final int INSERT_ALL = 0;
-        private static final int DELETE     = 1;
-        private static final int UPDATE     = 2;
+        public static final int INSERT_ALL = 0;
+        public static final int DELETE     = 1;
+        public static final int UPDATE     = 2;
 
-        public SongLyricAsyncTask(SongLyricDatabase songLyricDatabase, int command) {
-            mSongLyricDatabase = songLyricDatabase;
+        public SongLyricAsyncTask(SongLyricsDao songLyricsDao, int command) {
+            mSongLyricDao = songLyricsDao;
             mCommand = command;
         }
 
         @Override
         protected Void doInBackground(SongLyrics... songLyrics) {
-            if (mSongLyricDatabase != null) {
+            if (mSongLyricDao != null) {
                 switch (mCommand) {
                     case INSERT_ALL:
-                        mSongLyricDatabase.songLyricsDao().insertAll(songLyrics);
+                        mSongLyricDao.insertAll(songLyrics);
                         break;
 
                     case DELETE:
-                        mSongLyricDatabase.songLyricsDao().delete(songLyrics[0]);
+                        mSongLyricDao.delete(songLyrics[0]);
                         break;
 
                     case UPDATE:
-                        mSongLyricDatabase.songLyricsDao().update(songLyrics[0]);
+                        mSongLyricDao.update(songLyrics[0]);
                         break;
                 }
             }
