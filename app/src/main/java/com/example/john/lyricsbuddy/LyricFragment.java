@@ -46,6 +46,7 @@ import static com.example.john.lyricsbuddy.LyricDatabaseHelper.SongLyrics;
 public class LyricFragment extends Fragment {
 
     public static final String DETAIL_FRAGMENT_TAG = "Detail Fragment Tag";
+    public static final String DETAIL_BACK_STACK_TAG = "Detail Transaction";
     // Valid reference until next call to OnCreateOptionsMenu
     private Menu menu;
 

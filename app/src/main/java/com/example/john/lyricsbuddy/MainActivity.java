@@ -1,18 +1,17 @@
 package com.example.john.lyricsbuddy;
 
+import android.arch.lifecycle.ViewModelProviders;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-import static com.example.john.lyricsbuddy.LyricDatabaseHelper.getSongLyricDatabase;
-
 public class MainActivity extends AppCompatActivity {
-    private final String MASTER_TRANSACTION_TAG = "Master Transaction";
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
             = new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -20,11 +19,44 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public boolean onNavigationItemSelected(@NonNull MenuItem item) {
             switch (item.getItemId()) {
-                case R.id.navigation_home:
-                    Toast.makeText(MainActivity.this, getString(R.string.title_home), Toast.LENGTH_SHORT).show();
+                case R.id.navigation_home: {
+                    // TODO: Support 2-pane layout when flowing to detail view
+                    // If 2-pane then do nothing
+                    // Otherwise...
+                    FragmentManager fragmentManager = getSupportFragmentManager();
+                    if (isDetailFragmentInBackStack()) {
+                        removeHomeAsUp();
+                        fragmentManager.popBackStack(LyricFragment.DETAIL_BACK_STACK_TAG,
+                                FragmentManager.POP_BACK_STACK_INCLUSIVE);
+                    }
+                    else if (fragmentManager.findFragmentByTag(LyricListFragment.LYRIC_LIST_FRAGMENT_TAG) == null) {
+                        fragmentManager.beginTransaction().replace(R.id.lyric_master_container,
+                                new LyricListFragment(), LyricListFragment.LYRIC_LIST_FRAGMENT_TAG)
+                                .commit();
+                    }
                     return true;
+                }
+
                 case R.id.new_lyrics:
-                    Toast.makeText(MainActivity.this, getString(R.string.title_new_lyrics), Toast.LENGTH_SHORT).show();
+                    FragmentManager fragmentManager = getSupportFragmentManager();
+                    Fragment detailFragment = fragmentManager
+                            .findFragmentByTag(LyricFragment.DETAIL_FRAGMENT_TAG);
+
+                    if (!(detailFragment instanceof LyricFragment)) {
+                        // TODO: Support 2-pane layout when flowing to detail view
+                        fragmentManager.beginTransaction()
+                                .replace(R.id.lyric_master_container, new LyricFragment(),
+                                        LyricFragment.DETAIL_FRAGMENT_TAG)
+                                .commit();
+                    } else {
+                        removeHomeAsUp();
+                        // Persist the state of the current song lyrics in the detail fragment
+                        ((LyricFragment) detailFragment).dumpLyricsIntoViewModel();
+                        // TODO Update the Live data in Lyric List View model to reflect changes, for example a new item in the list
+                    }
+                    ViewModelProviders.of(MainActivity.this)
+                            .get(SongLyricDetailItemViewModel.class)
+                                    .newSongLyrics();
                     return true;
             }
             return false;
@@ -41,17 +73,17 @@ public class MainActivity extends AppCompatActivity {
 
         doDatabaseInitializeEvent();
 
-        if (savedInstanceState == null) {
-            getSupportFragmentManager().beginTransaction()
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        if (fragmentManager.getFragments().isEmpty()) {
+            fragmentManager.beginTransaction()
                     .add(R.id.lyric_master_container,
-                        new LyricListFragment(),
-                            MASTER_TRANSACTION_TAG)
+                            new LyricListFragment(),
+                            LyricListFragment.LYRIC_LIST_FRAGMENT_TAG)
                     .commit();
         }
         // TODO determine layout configuration: 1 or 2 panes
         boolean isSinglePane = true;
-        if (isSinglePane && getSupportFragmentManager()
-                .findFragmentByTag(LyricFragment.DETAIL_FRAGMENT_TAG) != null) {
+        if (isSinglePane && isDetailFragmentInBackStack()) {
             // Show up navigation on configuration change
             ActionBar actionBar = getSupportActionBar();
             if (actionBar != null) {
@@ -73,7 +105,7 @@ public class MainActivity extends AppCompatActivity {
                 android.support.v4.app.FragmentManager fm = getSupportFragmentManager();
                 if (fm.findFragmentByTag(LyricFragment.DETAIL_FRAGMENT_TAG) != null) {
                     removeHomeAsUp();
-                    fm.popBackStack(LyricListFragment.DETAIL_BACKSTACK_TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+                    fm.popBackStack(LyricFragment.DETAIL_BACK_STACK_TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE);
                 } else {
                     return super.onOptionsItemSelected(item);
                 }
@@ -98,5 +130,18 @@ public class MainActivity extends AppCompatActivity {
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(false);
         }
+    }
+
+    private boolean isDetailFragmentInBackStack() {
+        FragmentManager fm = getSupportFragmentManager();
+        int count = fm.getBackStackEntryCount();
+
+        for (int i = 0; i < count; i++) {
+            if (String.valueOf(fm.getBackStackEntryAt(i).getName())
+                    .equals(LyricFragment.DETAIL_BACK_STACK_TAG)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

@@ -36,6 +36,8 @@ interface ListItemClickCallback {
  * Created by john on 4/13/18.
  */
 public class LyricListFragment extends Fragment implements ListItemClickCallback {
+    public static final String LYRIC_LIST_FRAGMENT_TAG = "Master Transaction";
+
     static class LyricsListFragmentAdapter extends ListAdapter<SongLyricsListItem,
             LyricsListFragmentAdapter.SongLyricViewHolder> {
 
@@ -117,8 +119,6 @@ public class LyricListFragment extends Fragment implements ListItemClickCallback
     private RecyclerView recyclerView;
     private int containerId;
 
-    public static final String DETAIL_BACKSTACK_TAG = "Detail Transaction";
-
     public LyricListFragment() {
         super();
     }
@@ -181,7 +181,7 @@ public class LyricListFragment extends Fragment implements ListItemClickCallback
 
             // TODO: Support 2-pane layout when flowing to detail view
             fragmentManager.beginTransaction()
-                    .addToBackStack(DETAIL_BACKSTACK_TAG)
+                    .addToBackStack(LyricFragment.DETAIL_BACK_STACK_TAG)
                     .replace(containerId, new LyricFragment(),
                             LyricFragment.DETAIL_FRAGMENT_TAG)
                     .commit();
