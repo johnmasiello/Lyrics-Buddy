@@ -169,7 +169,7 @@ public class LyricFragment extends Fragment {
         songLyricsListViewModel = ViewModelProviders.of(getActivity()).get(SongLyricDetailItemViewModel.class);
 
         songLyricsListViewModel.setSongLyricsDao(LyricDatabaseHelper
-                .getSongLyricDatabase(getActivity().getApplicationContext())
+                .getSongLyricDatabase(getActivity())
                     .songLyricsDao());
 
         songLyricsObserver = new Observer<SongLyrics>() {
@@ -224,6 +224,7 @@ public class LyricFragment extends Fragment {
             }
         }
 
+        // TODO write a delegate method with public access, in order to update the ViewModel with transient data in UI
         LiveData<SongLyrics> songLyricsLiveData = songLyricsListViewModel.getSongLyrics();
         SongLyrics songLyricsOutput = songLyricsLiveData.getValue();
 

@@ -48,37 +48,6 @@ public class LyricDatabaseHelper {
         @ColumnInfo(name = "lyrics")
         private String lyrics;
 
-        @Ignore
-        public static final SongLyrics BLANK = new SongLyrics() {
-            @Override
-            final long getUid() {
-                return NO_ID;
-            }
-
-            @Override
-            final String getAlbum() {
-                return "";
-            }
-
-            @Override
-            final String getTrackTitle() {
-                return "";
-            }
-
-            @Override
-            final public String getArtist() {
-                return "";
-            }
-
-            @Override
-            final public String getLyrics() {
-                return "";
-            }
-        };
-
-        @Ignore
-        public static final int NO_ID = -1;
-
         public SongLyrics() {
             // Primary key
             this.uid = 0; // This will be treated as not-set by the auto generator
@@ -92,6 +61,17 @@ public class LyricDatabaseHelper {
             this.trackTitle = trackTitle;
             this.artist = artist;
             this.lyrics = lyrics;
+        }
+
+        boolean isBlankType1() {
+            return (album == null || album.equals("")) &&
+                    (artist == null || artist.equals("")) &&
+                    (trackTitle == null || trackTitle.equals("")) &&
+                    (lyrics == null || lyrics.equals(""));
+        }
+
+        boolean isBlankType2() {
+            return uid == 0 && isBlankType1();
         }
 
         long getUid() {
@@ -147,7 +127,19 @@ public class LyricDatabaseHelper {
              "\t\t lyrics: "+getLyrics();
         }
 
-
+        /**
+         * An expensive equals that is especially useful for determining
+         * whether an instance is 'dirty'
+         */
+        @Override
+        public boolean equals(Object obj) {
+            return obj instanceof SongLyrics &&
+                getUid() == ((SongLyrics) obj).getUid() &&
+                getAlbum().equals(((SongLyrics) obj).getAlbum()) &&
+                getArtist().equals(((SongLyrics) obj).getArtist()) &&
+                getTrackTitle().equals(((SongLyrics) obj).getTrackTitle()) &&
+                getLyrics().equals(((SongLyrics) obj).getLyrics());
+        }
     }
 
     public static class SongLyricsListItem {
