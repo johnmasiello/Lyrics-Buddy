@@ -117,7 +117,6 @@ public class LyricListFragment extends Fragment implements ListItemClickCallback
     }
 
     private RecyclerView recyclerView;
-    private int containerId;
 
     public LyricListFragment() {
         super();
@@ -127,7 +126,6 @@ public class LyricListFragment extends Fragment implements ListItemClickCallback
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view =  inflater.inflate(R.layout.lyrics_master_layout, container, false);
-        containerId = container == null ? View.NO_ID : container.getId();
 
         recyclerView = view.findViewById(R.id.lyricList);
         Context context = recyclerView.getContext();
@@ -179,21 +177,33 @@ public class LyricListFragment extends Fragment implements ListItemClickCallback
 
             detailViewModel.setId(item.getUid());
 
-            // TODO: Support 2-pane layout when flowing to detail view
-            fragmentManager.beginTransaction()
-                    .addToBackStack(LyricFragment.DETAIL_BACK_STACK_TAG)
-                    .replace(containerId, new LyricFragment(),
-                            LyricFragment.DETAIL_FRAGMENT_TAG)
-                    .commit();
+            MainActivityViewModel activityViewModel = ViewModelProviders.of(getActivity())
+                    .get(MainActivityViewModel.class);
 
-            // Show the Up button in the action bar.
-            Activity activity = getActivity();
-            if (activity instanceof AppCompatActivity) {
-                ActionBar actionBar = ((AppCompatActivity) activity).getSupportActionBar();
-                if (actionBar != null) {
-                    actionBar.setDisplayHomeAsUpEnabled(true);
+            if (activityViewModel.isTwoPane()) {
+                if (fragmentManager.findFragmentById(R.id.lyric_detail_container) == null) {
+                    fragmentManager.beginTransaction()
+                            .add(R.id.lyric_detail_container, new LyricFragment(),
+                                    LyricFragment.DETAIL_FRAGMENT_TAG)
+                            .commit();
+                }
+            } else {
+                fragmentManager.beginTransaction()
+                        .replace(R.id.lyric_master_container, new LyricFragment(),
+                                LyricFragment.DETAIL_FRAGMENT_TAG)
+                        .commit();
+
+                // Show the Up button in the action bar.
+                Activity activity = getActivity();
+                if (activity instanceof AppCompatActivity) {
+                    ActionBar actionBar = ((AppCompatActivity) activity).getSupportActionBar();
+                    if (actionBar != null) {
+                        actionBar.setDisplayHomeAsUpEnabled(true);
+                    }
                 }
             }
+
+
         }
     }
 }

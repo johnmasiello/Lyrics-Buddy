@@ -2,92 +2,72 @@ package com.example.john.lyricsbuddy;
 
 import android.arch.lifecycle.ViewModelProviders;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
-
-    private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
-            = new BottomNavigationView.OnNavigationItemSelectedListener() {
-
-        @Override
-        public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-            switch (item.getItemId()) {
-                case R.id.navigation_home: {
-                    // TODO: Support 2-pane layout when flowing to detail view
-                    // If 2-pane then do nothing
-                    // Otherwise...
-                    FragmentManager fragmentManager = getSupportFragmentManager();
-                    if (isDetailFragmentInBackStack()) {
-                        removeHomeAsUp();
-                        fragmentManager.popBackStack(LyricFragment.DETAIL_BACK_STACK_TAG,
-                                FragmentManager.POP_BACK_STACK_INCLUSIVE);
-                    }
-                    else if (fragmentManager.findFragmentByTag(LyricListFragment.LYRIC_LIST_FRAGMENT_TAG) == null) {
-                        fragmentManager.beginTransaction().replace(R.id.lyric_master_container,
-                                new LyricListFragment(), LyricListFragment.LYRIC_LIST_FRAGMENT_TAG)
-                                .commit();
-                    }
-                    return true;
-                }
-
-                case R.id.new_lyrics:
-                    FragmentManager fragmentManager = getSupportFragmentManager();
-                    Fragment detailFragment = fragmentManager
-                            .findFragmentByTag(LyricFragment.DETAIL_FRAGMENT_TAG);
-
-                    if (!(detailFragment instanceof LyricFragment)) {
-                        // TODO: Support 2-pane layout when flowing to detail view
-                        fragmentManager.beginTransaction()
-                                .replace(R.id.lyric_master_container, new LyricFragment(),
-                                        LyricFragment.DETAIL_FRAGMENT_TAG)
-                                .commit();
-                    } else {
-                        removeHomeAsUp();
-                        // Persist the state of the current song lyrics in the detail fragment
-                        ((LyricFragment) detailFragment).dumpLyricsIntoViewModel();
-                        // TODO Update the Live data in Lyric List View model to reflect changes, for example a new item in the list
-                    }
-                    ViewModelProviders.of(MainActivity.this)
-                            .get(SongLyricDetailItemViewModel.class)
-                                    .newSongLyrics();
-                    return true;
-            }
-            return false;
-        }
-    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        BottomNavigationView navigation = findViewById(R.id.navigation);
-        navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
-
         doDatabaseInitializeEvent();
 
+        MainActivityViewModel model = ViewModelProviders.of(this).get(MainActivityViewModel.class);
+        model.setTwoPane(findViewById(R.id.lyric_detail_container) != null);
         FragmentManager fragmentManager = getSupportFragmentManager();
-        if (fragmentManager.getFragments().isEmpty()) {
-            fragmentManager.beginTransaction()
-                    .add(R.id.lyric_master_container,
-                            new LyricListFragment(),
-                            LyricListFragment.LYRIC_LIST_FRAGMENT_TAG)
-                    .commit();
-        }
-        // TODO determine layout configuration: 1 or 2 panes
-        boolean isSinglePane = true;
-        if (isSinglePane && isDetailFragmentInBackStack()) {
-            // Show up navigation on configuration change
-            ActionBar actionBar = getSupportActionBar();
-            if (actionBar != null) {
-                actionBar.setDisplayHomeAsUpEnabled(true);
+
+        if (model.isTwoPane()) {
+            // Two pane layout does not have up navigation
+            removeHomeAsUp();
+            Fragment fragment = fragmentManager.findFragmentById(R.id.lyric_master_container);
+
+            if (fragment instanceof LyricFragment) {
+                fragmentManager.beginTransaction()
+                        .replace(R.id.lyric_master_container, new LyricListFragment(),
+                                LyricListFragment.LYRIC_LIST_FRAGMENT_TAG)
+                        .add(R.id.lyric_detail_container, fragment,
+                                LyricFragment.DETAIL_FRAGMENT_TAG)
+                        .commit();
+            } else if (fragment == null) {
+                fragmentManager.beginTransaction()
+                        .replace(R.id.lyric_master_container, new LyricListFragment(),
+                                LyricListFragment.LYRIC_LIST_FRAGMENT_TAG)
+                        .add(R.id.lyric_detail_container, new LyricFragment(),
+                                LyricFragment.DETAIL_FRAGMENT_TAG)
+                        .commit();
+            } else if (fragmentManager.findFragmentById(R.id.lyric_detail_container) == null) {
+                fragmentManager.beginTransaction()
+                        .add(R.id.lyric_detail_container, new LyricFragment(),
+                                LyricFragment.DETAIL_FRAGMENT_TAG)
+                        .commit();
+            }
+        } else {
+            Fragment fragment = fragmentManager.findFragmentById(R.id.lyric_detail_container);
+
+            if (fragment != null) {
+                addHomeAsUp();
+                fragmentManager.beginTransaction()
+                        .remove(fragment)
+                        .replace(R.id.lyric_master_container, new LyricFragment(),
+                                LyricFragment.DETAIL_FRAGMENT_TAG)
+                        .commit();
+            } else {
+                fragment = fragmentManager.findFragmentById(R.id.lyric_master_container);
+
+                if (fragment instanceof LyricFragment) {
+                    addHomeAsUp();
+                } else if (fragment == null) {
+                    fragmentManager.beginTransaction()
+                            .add(R.id.lyric_master_container, new LyricListFragment(),
+                                    LyricListFragment.LYRIC_LIST_FRAGMENT_TAG)
+                            .commit();
+                }
             }
         }
     }
@@ -99,28 +79,61 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                android.support.v4.app.FragmentManager fm = getSupportFragmentManager();
-                if (fm.findFragmentByTag(LyricFragment.DETAIL_FRAGMENT_TAG) != null) {
-                    removeHomeAsUp();
-                    fm.popBackStack(LyricFragment.DETAIL_BACK_STACK_TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE);
-                } else {
-                    return super.onOptionsItemSelected(item);
-                }
-
-            default:
-                return super.onOptionsItemSelected(item);
-        }
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main, menu);
+        return true;
     }
 
     @Override
-    public void onBackPressed() {
-        super.onBackPressed();
-        if (getSupportFragmentManager()
-                .findFragmentByTag(LyricFragment.DETAIL_FRAGMENT_TAG) == null) {
-            removeHomeAsUp();
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                removeHomeAsUp();
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.lyric_master_container, new LyricListFragment(),
+                                LyricListFragment.LYRIC_LIST_FRAGMENT_TAG)
+                        .commit();
+                return true;
+
+            case R.id.new_lyrics: {
+                FragmentManager fragmentManager = getSupportFragmentManager();
+                Fragment detail = fragmentManager.findFragmentByTag(LyricFragment.DETAIL_FRAGMENT_TAG);
+
+                if (detail instanceof LyricFragment) {
+                    // Pull the lyrics from the UI
+                    ((LyricFragment) detail).dumpLyricsIntoViewModel();
+                }
+
+                // Show the detail fragment, or list/detail layout
+                MainActivityViewModel activityViewModel = ViewModelProviders.of(this)
+                        .get(MainActivityViewModel.class);
+
+                if (activityViewModel.isTwoPane()) {
+                    if (fragmentManager.findFragmentById(R.id.lyric_detail_container) == null) {
+                        fragmentManager.beginTransaction()
+                                .add(R.id.lyric_detail_container, new LyricFragment(),
+                                        LyricFragment.DETAIL_FRAGMENT_TAG)
+                                .commit();
+                    }
+                } else {
+                    fragmentManager.beginTransaction()
+                            .replace(R.id.lyric_master_container, new LyricFragment(),
+                                    LyricFragment.DETAIL_FRAGMENT_TAG)
+                            .commit();
+
+                    // Show the Up Navigation button in the action bar
+                    addHomeAsUp();
+                }
+
+                // Update the view model to own a blank song lyrics object
+                ViewModelProviders.of(MainActivity.this)
+                        .get(SongLyricDetailItemViewModel.class)
+                        .newSongLyrics();
+                return true;
+            }
+
+            default:
+                return super.onOptionsItemSelected(item);
         }
     }
 
@@ -132,16 +145,11 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private boolean isDetailFragmentInBackStack() {
-        FragmentManager fm = getSupportFragmentManager();
-        int count = fm.getBackStackEntryCount();
-
-        for (int i = 0; i < count; i++) {
-            if (String.valueOf(fm.getBackStackEntryAt(i).getName())
-                    .equals(LyricFragment.DETAIL_BACK_STACK_TAG)) {
-                return true;
-            }
+    private void addHomeAsUp() {
+        // Show the Up button in the action bar.
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
         }
-        return false;
     }
 }

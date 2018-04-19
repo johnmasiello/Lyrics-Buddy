@@ -23,7 +23,7 @@ public class SongLyricDetailItemViewModel extends ViewModel {
     private MediatorLiveData<LyricDatabaseHelper.SongLyrics> mSongLyrics;
     private LyricDatabaseHelper.SongLyricsDao mSongLyricsDao;
 
-    private static final long NO_ID     = -1;
+    public  static final long NO_ID     = -1;
     private static final long NEW_ID    = -2;
 
     public SongLyricDetailItemViewModel() {

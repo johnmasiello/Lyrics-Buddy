@@ -46,7 +46,6 @@ import static com.example.john.lyricsbuddy.LyricDatabaseHelper.SongLyrics;
 public class LyricFragment extends Fragment {
 
     public static final String DETAIL_FRAGMENT_TAG = "Detail Fragment Tag";
-    public static final String DETAIL_BACK_STACK_TAG = "Detail Transaction";
     // Valid reference until next call to OnCreateOptionsMenu
     private Menu menu;
 
@@ -249,7 +248,9 @@ public class LyricFragment extends Fragment {
 
     @Override
     public void onDestroy() {
-        songLyricsListViewModel.getSongLyrics().removeObserver(songLyricsObserver);
+        if (songLyricsListViewModel != null) {
+            songLyricsListViewModel.getSongLyrics().removeObserver(songLyricsObserver);
+        }
         super.onDestroy();
     }
 
@@ -262,6 +263,11 @@ public class LyricFragment extends Fragment {
         MenuItem item = menu.findItem(paletteId);
         if (item != null) {
             item.setIcon(menuItemIcon(paletteId, true));
+        }
+
+        MenuItem itemNew = menu.findItem(R.id.new_lyrics);
+        if (itemNew != null) {
+            itemNew.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
         }
 
         // Update the lyrics
