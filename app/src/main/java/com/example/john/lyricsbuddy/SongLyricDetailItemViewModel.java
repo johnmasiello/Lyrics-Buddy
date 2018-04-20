@@ -2,15 +2,12 @@ package com.example.john.lyricsbuddy;
 
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MediatorLiveData;
-import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModel;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v7.util.ListUpdateCallback;
 import android.util.Log;
-
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 /**
  * Created by john on 4/16/18.
@@ -61,7 +58,7 @@ public class SongLyricDetailItemViewModel extends ViewModel {
 
         if (needsToUpdate) {
             if (oldId != NO_ID) {
-                updateViaRepository();
+                updateDatabase();
             }
 
             //noinspection ConstantConditions
@@ -120,7 +117,7 @@ public class SongLyricDetailItemViewModel extends ViewModel {
      * Then in either case set a new blank song lyrics to the view members
      */
     public void newSongLyrics() {
-        updateViaRepository();
+        updateDatabase();
         if (mSongLyrics == null) {
             mSongLyrics = new MediatorLiveData<>();
         }
@@ -129,22 +126,33 @@ public class SongLyricDetailItemViewModel extends ViewModel {
         newId = oldId = NEW_ID;
     }
 
-    // TODO Use a repository; Update records when app terminates
-    private void updateViaRepository() {
-        if (songLyricsDirty && mSongLyrics != null && mSongLyricsDao != null) {
-            LyricDatabaseHelper.SongLyrics songLyrics = mSongLyrics.getValue();
+    private void updateDatabase() {
+        updateDatabase(false);
+    }
 
-            if (songLyrics != null &&
-                    !songLyrics.isBlankType1()) {
+    private void updateDatabase(boolean immediate) {
+        LyricDatabaseHelper.SongLyrics songLyrics = getSongLyricsInstantly();
 
+        if (songLyricsDirty &&
+                mSongLyricsDao != null &&
+                songLyrics != null && !songLyrics.isBlankType1()) {
+
+            if (!immediate) {
                 LyricDatabaseHelper.SongLyricAsyncTask task;
                 task = new LyricDatabaseHelper.SongLyricAsyncTask(mSongLyricsDao,
                         LyricDatabaseHelper.SongLyricAsyncTask.UPDATE);
                 task.execute(songLyrics);
-
-                // Update state
-                songLyricsDirty = false;
+            } else {
+                // Update on the main thread
+                mSongLyricsDao.update(songLyrics);
             }
+
+            // Update state
+            songLyricsDirty = false;
         }
+    }
+
+    public void updateDatabaseImmediate() {
+        updateDatabase(true);
     }
 }

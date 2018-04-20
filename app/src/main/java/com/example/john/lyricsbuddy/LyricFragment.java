@@ -17,6 +17,7 @@ import android.text.Editable;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
+import android.util.Log;
 import android.util.SparseArray;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -222,6 +223,11 @@ public class LyricFragment extends Fragment {
             }
         }
         dumpLyricsIntoViewModel();
+        // Persist the data
+        if (getActivity() != null) {
+            ViewModelProviders.of(getActivity()).get(SongLyricDetailItemViewModel.class)
+                    .updateDatabaseImmediate();
+        }
     }
 
     public void dumpLyricsIntoViewModel() {

@@ -310,6 +310,7 @@ public class LyricDatabaseHelper {
         if (songLyricDatabase == null) {
             songLyricDatabase = Room.databaseBuilder(context,
                     SongLyricDatabase.class, DATABASE_NAME)
+                    .allowMainThreadQueries()
                     .build();
         }
         return songLyricDatabase;
