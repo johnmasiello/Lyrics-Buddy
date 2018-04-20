@@ -32,7 +32,8 @@ public class SongLyricDetailItemViewModel extends ViewModel {
     }
 
     public void setId(long songId) {
-        newId = songId;
+        if (songId != LyricDatabaseHelper.SongLyrics.UNSET_ID)
+            newId = songId;
     }
 
     @Nullable
@@ -40,12 +41,15 @@ public class SongLyricDetailItemViewModel extends ViewModel {
         return mSongLyrics != null ? mSongLyrics.getValue() : null;
     }
 
+    /**
+     * Precondition: {@link #setId(long)}
+     */
     public LiveData<LyricDatabaseHelper.SongLyrics> getSongLyrics() {
         //noinspection ConstantConditions
         return getSongLyrics(newId);
     }
 
-    public LiveData<LyricDatabaseHelper.SongLyrics> getSongLyrics(long songId) {
+    private LiveData<LyricDatabaseHelper.SongLyrics> getSongLyrics(long songId) {
         boolean needsToUpdate = false;
         newId = songId;
 

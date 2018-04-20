@@ -50,14 +50,17 @@ public class LyricDatabaseHelper {
         @ColumnInfo(name = "lyrics")
         private String lyrics;
 
+        @Ignore
+        public static final long UNSET_ID = 0;
+
         public SongLyrics() {
             // Primary key
-            this.uid = 0; // This will be treated as not-set by the auto generator
+            this.uid = UNSET_ID; // This will be treated as not-set by the auto generator
         }
 
         SongLyrics(String trackTitle, String album, String artist, String lyrics) {
             // Primary key
-            this.uid = 0; // This will be treated as not-set by the auto generator
+            this.uid = UNSET_ID; // This will be treated as not-set by the auto generator
 
             this.album = album;
             this.trackTitle = trackTitle;
