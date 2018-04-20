@@ -17,6 +17,7 @@ import android.arch.persistence.room.RoomDatabase;
 import android.arch.persistence.room.Update;
 import android.content.Context;
 import android.os.AsyncTask;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import java.io.File;
@@ -156,6 +157,21 @@ public class LyricDatabaseHelper {
         @ColumnInfo(name = "artist")
         private String artist;
 
+        public SongLyricsListItem(long uid, String album, String trackTitle, String artist) {
+            this.uid = uid;
+            this.album = album;
+            this.trackTitle = trackTitle;
+            this.artist = artist;
+        }
+
+        @Ignore
+        public SongLyricsListItem(@NonNull SongLyrics src) {
+            uid = src.uid;
+            album = src.album;
+            trackTitle = src.trackTitle;
+            artist = src.artist;
+        }
+
         public long getUid() {
             return uid;
         }
@@ -232,9 +248,9 @@ public class LyricDatabaseHelper {
         /*
         Data Adapters
          */
-
+        // DESC will put the most recently added records at the top of the list
         @Query("SELECT uid, album, track_title, artist FROM SongLyrics " +
-                "ORDER BY uid ASC")
+                "ORDER BY uid DESC")
         LiveData<List<SongLyricsListItem>> fetchListItems_NaturalOrder();
 
         @Query("SELECT uid, album, track_title, artist FROM SongLyrics " +

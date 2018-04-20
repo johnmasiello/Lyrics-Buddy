@@ -35,6 +35,11 @@ public class SongLyricDetailItemViewModel extends ViewModel {
         newId = songId;
     }
 
+    @Nullable
+    public LyricDatabaseHelper.SongLyrics getSongLyricsInstantly() {
+        return mSongLyrics != null ? mSongLyrics.getValue() : null;
+    }
+
     public LiveData<LyricDatabaseHelper.SongLyrics> getSongLyrics() {
         //noinspection ConstantConditions
         return getSongLyrics(newId);
@@ -59,8 +64,7 @@ public class SongLyricDetailItemViewModel extends ViewModel {
             if (newId == NO_ID) {
                 // Create a blank song lyric
                 mSongLyrics.setValue(new LyricDatabaseHelper.SongLyrics());
-            } else {
-                @SuppressWarnings("ConstantConditions")
+            } else if (mSongLyricsDao != null) {
                 // Query for the song lyrics
                 final LiveData<LyricDatabaseHelper.SongLyrics> result = mSongLyricsDao.fetchSongLyric(newId);
                 mSongLyrics.addSource(result, new Observer<LyricDatabaseHelper.SongLyrics>() {

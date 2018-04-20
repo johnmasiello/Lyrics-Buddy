@@ -2,9 +2,9 @@ package com.example.john.lyricsbuddy;
 
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MediatorLiveData;
-import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModel;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
@@ -15,28 +15,36 @@ import static com.example.john.lyricsbuddy.LyricDatabaseHelper.*;
 /**
  * Created by john on 4/14/18.
  * ViewModel that holds LiveData that fetches song lyric list items using Room
+ * This ViewModel works in tandem with SongLyricDetailItemViewModel; as such, they
+ * should be given the context of the same activity
  */
 
 public class SongLyricsListViewModel extends ViewModel {
-    private MutableLiveData<SongLyricsDao> mSongLyricsDao;
+    private SongLyricsDao mSongLyricsDao;
     private MediatorLiveData<List<SongLyricsListItem>> mSongLyricListItems;
-    private MutableLiveData<Integer> mSortOrder;
+    private int mSortOrder;
+    /**
+     * Allows this view model to listen to changes in liveData in the detail view model
+     */
+    private SongLyricDetailItemViewModel mSongLyricViewModel;
+    /**
+     * Flag to indicating LiveData&lt;SongLyric> has been set as source {@link #mSongLyricListItems}
+     */
+    private boolean songLyricsSourcedToListItems;
 
-    public static final int ORDER_NATURAL   = 0;
+    public static final int ORDER_RECENT    = 0;
     public static final int ORDER_ARTIST    = 1;
     public static final int ORDER_ALBUM     = 2;
     public static final int ORDER_TRACK     = 3;
 
     public SongLyricsListViewModel() {
-        if (mSortOrder == null) {
-            mSortOrder = new MutableLiveData<>();
-            mSortOrder.setValue(ORDER_NATURAL);
-        }
+        mSortOrder = ORDER_RECENT;
+        songLyricsSourcedToListItems = false;
     }
 
     @SuppressWarnings("ConstantConditions")
     public LiveData<List<SongLyricsListItem>> getLyricList() {
-        return getLyricList(mSortOrder.getValue());
+        return getLyricList(mSortOrder);
     }
 
     @SuppressWarnings("ConstantConditions")
@@ -47,8 +55,8 @@ public class SongLyricsListViewModel extends ViewModel {
             mSongLyricListItems = new MediatorLiveData<>();
             needsToFetchItems = true;
         }
-        if (!mSortOrder.getValue().equals(sortOrder)) {
-            mSortOrder.setValue(sortOrder);
+        if (mSortOrder != sortOrder) {
+            mSortOrder = sortOrder;
             needsToFetchItems = true;
         }
         if (needsToFetchItems) {
@@ -61,12 +69,7 @@ public class SongLyricsListViewModel extends ViewModel {
     }
 
     public void setSongLyricsDao(SongLyricsDao songLyricsDao) {
-        if (mSongLyricsDao == null) {
-            mSongLyricsDao = new MutableLiveData<>();
-            mSongLyricsDao.setValue(songLyricsDao);
-        } else {
-            Log.d("Database", "song lyric dao already set");
-        }
+        mSongLyricsDao = songLyricsDao;
     }
 
     /**
@@ -74,13 +77,13 @@ public class SongLyricsListViewModel extends ViewModel {
      */
     @SuppressWarnings("ConstantConditions")
     private void loadSongLyricListItems() {
-        SongLyricsDao songLyricsDao = mSongLyricsDao.getValue();
+        SongLyricsDao songLyricsDao = mSongLyricsDao;
 
         if (songLyricsDao == null) {
             throw new IllegalStateException("SongLyricDao unset");
         }
         LiveData<List<SongLyricsListItem>> query;
-        switch (mSortOrder.getValue()) {
+        switch (mSortOrder) {
             case ORDER_ARTIST:
                 query = songLyricsDao.fetchListItems_Artist();
                 break;
@@ -93,20 +96,94 @@ public class SongLyricsListViewModel extends ViewModel {
                 query = songLyricsDao.fetchListItems_Track();
                 break;
 
-            case ORDER_NATURAL:
+            case ORDER_RECENT:
             default:
                 query = songLyricsDao.fetchListItems_NaturalOrder();
         }
 
         final LiveData<List<SongLyricsListItem>> query_sorted =
                 query;
+        final LiveData<SongLyrics> songLyricsLiveData =
+                mSongLyricViewModel != null ? mSongLyricViewModel.getSongLyrics() :
+                        null;
+        final SongLyrics staticSongLyrics =
+                mSongLyricViewModel != null ? mSongLyricViewModel.getSongLyricsInstantly() : null;
+
         mSongLyricListItems.addSource(query_sorted,
                 new Observer<List<SongLyricsListItem>>() {
                     @Override
                     public void onChanged(@Nullable List<SongLyricsListItem> songLyricsListItems) {
                         mSongLyricListItems.removeSource(query_sorted);
+
+                        // Apply value of static value of SongLyrics; its value in the viewModel
+                        // has since changed, but it is not updated back to the database on
+                        // which query occurred
+                        if (staticSongLyrics != null && songLyricsListItems != null) {
+                            long uid = staticSongLyrics.getUid();
+                            MATCHING_LIST_ITEM:
+                            {
+                                for (SongLyricsListItem listItem : songLyricsListItems) {
+                                    if (listItem != null &&
+                                            updateListItem(listItem, staticSongLyrics, uid)) {
+                                        break MATCHING_LIST_ITEM;
+                                    }
+                                }
+                                if (!staticSongLyrics.isBlankType1()) {
+                                    songLyricsListItems.add(0,
+                                            new SongLyricsListItem(staticSongLyrics));
+                                }
+                            }
+                        }
                         mSongLyricListItems.setValue(songLyricsListItems);
                     }
                 });
+        if (!songLyricsSourcedToListItems && songLyricsLiveData != null) {
+            songLyricsSourcedToListItems = true;
+            mSongLyricListItems.addSource(songLyricsLiveData, new Observer<SongLyrics>() {
+                @Override
+                public void onChanged(@Nullable SongLyrics songLyrics) {
+                    List<SongLyricsListItem> items = mSongLyricListItems.getValue();
+
+                    if (songLyrics != null && items != null) {
+                        long uid = songLyrics.getUid();
+                        MATCHING_LIST_ITEM:
+                        {
+                            for (SongLyricsListItem listItem : items) {
+                                if (listItem != null &&
+                                        updateListItem(listItem, songLyrics, uid)) {
+                                    break MATCHING_LIST_ITEM;
+                                }
+                            }
+                            if (!songLyrics.isBlankType1()) {
+                                items.add(0, new SongLyricsListItem(songLyrics));
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    /**
+     *
+     * @param listItem The list item that has a subset of the fields in songLyrics
+     * @param songLyrics The songLyrics that should update the same fields in listItem
+     * @param songUid The same as songLyrics.getUid(); Passing the value avoid the dereference
+     * @return true iff songUi == listItem.getUid(). In the case of true, the fields of listItem
+     *  are set to match the fields of songLyrics
+     */
+    private boolean updateListItem(@NonNull SongLyricsListItem listItem,
+                                   @NonNull SongLyrics songLyrics, long songUid) {
+        if (listItem.getUid() == songUid) {
+            listItem.setAlbum(songLyrics.getAlbum());
+            listItem.setArtist(songLyrics.getArtist());
+            listItem.setTrackTitle(songLyrics.getTrackTitle());
+            return true;
+        }
+        return false;
+    }
+
+    public void setSongLyricViewModel(SongLyricDetailItemViewModel songLyricViewModel) {
+        mSongLyricViewModel = songLyricViewModel;
     }
 }

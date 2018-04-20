@@ -146,14 +146,19 @@ public class LyricListFragment extends Fragment implements ListItemClickCallback
         recyclerView.setAdapter(adapter);
     }
 
+
+    @SuppressWarnings("ConstantConditions")
     private void initializeSongLyricsListItemViewModel(final ListAdapter<SongLyricsListItem,
             LyricsListFragmentAdapter.SongLyricViewHolder> listAdapter) {
+
+        SongLyricDetailItemViewModel songLyricDetailItemViewModel =
+                ViewModelProviders.of(getActivity()).get(SongLyricDetailItemViewModel.class);
 
         SongLyricsListViewModel songLyricsListViewModel =
                 ViewModelProviders.of(this).get(SongLyricsListViewModel.class);
 
-        //noinspection ConstantConditions
         songLyricsListViewModel.setSongLyricsDao(getSongLyricDatabase(getActivity()).songLyricsDao());
+        songLyricsListViewModel.setSongLyricViewModel(songLyricDetailItemViewModel);
         // Add an observer register changes from LiveData to the adapter backing the recyclerView
         // to reflect changes in the UI
         songLyricsListViewModel
@@ -202,8 +207,6 @@ public class LyricListFragment extends Fragment implements ListItemClickCallback
                     }
                 }
             }
-
-
         }
     }
 }
