@@ -1,13 +1,20 @@
 package com.example.john.lyricsbuddy;
 
 import android.arch.lifecycle.ViewModelProviders;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+
+import java.lang.ref.WeakReference;
+
+import static com.example.john.lyricsbuddy.LyricDatabaseHelper.getSongLyricDatabase;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -15,9 +22,33 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        setUpViewFragments();
 
         doDatabaseInitializeEvent();
+        handleIntent();
+    }
 
+    private void handleIntent() {
+        Intent intent   = getIntent();
+        String action   = intent.getAction();
+        String type     = intent.getType();
+
+        if (Intent.ACTION_VIEW.equals(action)) {
+            if (type != null && type.startsWith(getString(R.string.mimeTypePrefix))) {
+                String jsonString = intent.getStringExtra(Intent.EXTRA_TEXT);
+
+                if (jsonString != null) {
+                    // TODO parse the jsonString
+                    Log.d("Intent", jsonString);
+                } else {
+                    Uri uri = intent.getData();
+                    Log.d("Intent", "Uri is null = "+(uri==null));
+                }
+            }
+        }
+    }
+
+    private void setUpViewFragments() {
         MainActivityViewModel model = ViewModelProviders.of(this).get(MainActivityViewModel.class);
         model.setTwoPane(findViewById(R.id.lyric_detail_container) != null);
         FragmentManager fragmentManager = getSupportFragmentManager();
@@ -74,7 +105,8 @@ public class MainActivity extends AppCompatActivity {
 
     private void doDatabaseInitializeEvent() {
         if ( !LyricDatabaseHelper.doesDatabaseExist(this) ) {
-              LyricDatabaseHelper.writeInitialRecords(this);
+              LyricDatabaseHelper.writeInitialRecords(this,
+                      new EventPopulateSongLyricDatabaseHelper(this));
         }
     }
 
@@ -150,6 +182,29 @@ public class MainActivity extends AppCompatActivity {
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
+        }
+    }
+
+    private static class EventPopulateSongLyricDatabaseHelper
+            implements SongLyricAsyncTaskCallback {
+
+        final private WeakReference<MainActivity> mActivityWeakReference;
+
+        public EventPopulateSongLyricDatabaseHelper(MainActivity mainActivity) {
+            mActivityWeakReference = new WeakReference<>(mainActivity);
+        }
+
+        @Override
+        public void onSuccess() {
+            MainActivity mainActivity = mActivityWeakReference.get();
+
+            if (mainActivity != null) {
+                SongLyricsListViewModel viewModel =
+                    ViewModelProviders.of(mainActivity).get(SongLyricsListViewModel.class);
+
+                viewModel.setSongLyricsDao(getSongLyricDatabase(mainActivity).songLyricsDao());
+                viewModel.getLyricList(true);
+            }
         }
     }
 }

@@ -27,17 +27,24 @@ import org.json.JSONObject;
 import java.io.File;
 import java.util.List;
 
+
+/**
+ * Callback for when the async task finishes
+ */
+interface SongLyricAsyncTaskCallback {
+    void onSuccess();
+}
 /**
  * Created by john on 3/21/18.
  *
  * Singleton to manage the database of lyrics
  */
-
 public class LyricDatabaseHelper {
 
     private static final String DATABASE_NAME = "lyricDatabase";
 
-    @Entity(indices = {@Index("album"), @Index("track_title"), @Index("artist")})
+    @Entity(indices = {@Index("album"), @Index("track_title"), @Index("artist"),
+            @Index(value = {"album", "track_title", "artist"}, unique = true)})
     public static class SongLyrics {
         @PrimaryKey(autoGenerate = true)
         private long uid;
@@ -185,6 +192,8 @@ public class LyricDatabaseHelper {
                                     builder.append(context.getString(
                                             R.string.share_intent_subject_line_multiple));
                                 }
+                                builder.append(context.getString(
+                                        R.string.share_intent_subject_line_ext));
                                 break;
                             }
                         }
@@ -352,7 +361,7 @@ public class LyricDatabaseHelper {
         /*
         Population
          */
-        @Insert
+        @Insert(onConflict = OnConflictStrategy.IGNORE)
         void insertAll(SongLyrics... songLyrics);
 
         @Delete
@@ -362,7 +371,7 @@ public class LyricDatabaseHelper {
         void update(SongLyrics songLyrics);
     }
 
-    @Database(entities = {SongLyrics.class}, version = 6)
+    @Database(entities = {SongLyrics.class}, version = 7)
     public abstract static class SongLyricDatabase extends RoomDatabase {
         public abstract SongLyricsDao songLyricsDao();
     }
@@ -383,11 +392,12 @@ public class LyricDatabaseHelper {
         return dbFile.exists();
     }
 
-    static void writeInitialRecords(final Context context) {
+    static void writeInitialRecords(Context context, SongLyricAsyncTaskCallback callback) {
         // Populate the first-time data
         SongLyricAsyncTask task = new SongLyricAsyncTask(
                 getSongLyricDatabase(context).songLyricsDao(),
-                SongLyricAsyncTask.INSERT_ALL);
+                SongLyricAsyncTask.INSERT_ALL,
+                callback);
         task.execute(new SongLyrics(context.getString(R.string.ballgame_title),
                         null,
                         context.getString(R.string.ballgame_artist),
@@ -408,6 +418,7 @@ public class LyricDatabaseHelper {
     static class SongLyricAsyncTask extends AsyncTask<SongLyrics, Void, Void> {
         private SongLyricsDao mSongLyricDao;
         private final int mCommand;
+        private final SongLyricAsyncTaskCallback mCallback;
 
         public static final int INSERT_ALL = 0;
         public static final int DELETE     = 1;
@@ -416,6 +427,14 @@ public class LyricDatabaseHelper {
         public SongLyricAsyncTask(SongLyricsDao songLyricsDao, int command) {
             mSongLyricDao = songLyricsDao;
             mCommand = command;
+            mCallback = null;
+        }
+
+        public SongLyricAsyncTask(SongLyricsDao songLyricsDao, int command,
+                                  SongLyricAsyncTaskCallback callback) {
+            mSongLyricDao = songLyricsDao;
+            mCommand = command;
+            mCallback = callback;
         }
 
         @Override
@@ -436,6 +455,14 @@ public class LyricDatabaseHelper {
                 }
             }
             return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            if (mCallback != null) {
+                mCallback.onSuccess();
+            }
+            super.onPostExecute(aVoid);
         }
     }
 }

@@ -42,13 +42,15 @@ public class SongLyricsListViewModel extends ViewModel {
         songLyricsSourcedToListItems = false;
     }
 
-    @SuppressWarnings("ConstantConditions")
     public LiveData<List<SongLyricsListItem>> getLyricList() {
-        return getLyricList(mSortOrder);
+        return getLyricList(mSortOrder, false);
     }
 
-    @SuppressWarnings("ConstantConditions")
-    public LiveData<List<SongLyricsListItem>> getLyricList(int sortOrder) {
+    public LiveData<List<SongLyricsListItem>> getLyricList(boolean forceRefresh) {
+        return getLyricList(mSortOrder, forceRefresh);
+    }
+
+    public LiveData<List<SongLyricsListItem>> getLyricList(int sortOrder, boolean forceRefresh) {
         boolean needsToFetchItems = false;
 
         if (mSongLyricListItems == null) {
@@ -59,7 +61,7 @@ public class SongLyricsListViewModel extends ViewModel {
             mSortOrder = sortOrder;
             needsToFetchItems = true;
         }
-        if (needsToFetchItems) {
+        if (needsToFetchItems || forceRefresh) {
             Log.d("Database", "Need to fetch LyricListItems as LiveData");
             loadSongLyricListItems();
         } else {

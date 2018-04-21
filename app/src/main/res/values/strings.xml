@@ -125,4 +125,7 @@
     <string name="share_intent_message">Share Lyrics</string>
     <string name="share_intent_fail_message">Share Unavailable</string>
     <string name="share_intent_subject_line_multiple"> - and other lyrics</string>
+    <string name="share_intent_subject_line_ext">.txt</string>
+    <string name="mimeType">text/*</string>
+    <string name="mimeTypePrefix">text</string>
 </resources>
