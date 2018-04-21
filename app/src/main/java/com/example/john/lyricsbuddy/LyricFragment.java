@@ -226,7 +226,7 @@ public class LyricFragment extends Fragment {
         // Persist the data
         if (getActivity() != null) {
             ViewModelProviders.of(getActivity()).get(SongLyricDetailItemViewModel.class)
-                    .updateDatabaseImmediate();
+                    .updateDatabase();
         }
     }
 

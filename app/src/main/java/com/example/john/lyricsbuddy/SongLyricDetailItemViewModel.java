@@ -126,33 +126,20 @@ public class SongLyricDetailItemViewModel extends ViewModel {
         newId = oldId = NEW_ID;
     }
 
-    private void updateDatabase() {
-        updateDatabase(false);
-    }
-
-    private void updateDatabase(boolean immediate) {
+    public void updateDatabase() {
         LyricDatabaseHelper.SongLyrics songLyrics = getSongLyricsInstantly();
 
         if (songLyricsDirty &&
                 mSongLyricsDao != null &&
                 songLyrics != null && !songLyrics.isBlankType1()) {
 
-            if (!immediate) {
-                LyricDatabaseHelper.SongLyricAsyncTask task;
-                task = new LyricDatabaseHelper.SongLyricAsyncTask(mSongLyricsDao,
-                        LyricDatabaseHelper.SongLyricAsyncTask.UPDATE);
-                task.execute(songLyrics);
-            } else {
-                // Update on the main thread
-                mSongLyricsDao.update(songLyrics);
-            }
+            LyricDatabaseHelper.SongLyricAsyncTask task;
+            task = new LyricDatabaseHelper.SongLyricAsyncTask(mSongLyricsDao,
+                    LyricDatabaseHelper.SongLyricAsyncTask.UPDATE);
+            task.execute(songLyrics);
 
             // Update state
             songLyricsDirty = false;
         }
-    }
-
-    public void updateDatabaseImmediate() {
-        updateDatabase(true);
     }
 }
