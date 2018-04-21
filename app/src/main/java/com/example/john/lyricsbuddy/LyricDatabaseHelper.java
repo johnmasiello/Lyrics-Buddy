@@ -14,7 +14,6 @@ import android.arch.persistence.room.PrimaryKey;
 import android.arch.persistence.room.Query;
 import android.arch.persistence.room.Room;
 import android.arch.persistence.room.RoomDatabase;
-import android.arch.persistence.room.Update;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
@@ -27,13 +26,6 @@ import org.json.JSONObject;
 import java.io.File;
 import java.util.List;
 
-
-/**
- * Callback for when the async task finishes
- */
-interface SongLyricAsyncTaskCallback {
-    void onSuccess();
-}
 /**
  * Created by john on 3/21/18.
  *
@@ -359,16 +351,19 @@ public class LyricDatabaseHelper {
         LiveData<List<SongLyricsListItem>> findByTrackTitle(String track);
 
         /*
-        Population
+        Population; should be run from a background thread
          */
         @Insert(onConflict = OnConflictStrategy.IGNORE)
         void insertAll(SongLyrics... songLyrics);
 
         @Delete
-        void delete(SongLyrics songLyrics);
+        void delete(SongLyrics... songLyrics);
 
         @Insert(onConflict = OnConflictStrategy.REPLACE)
         void update(SongLyrics songLyrics);
+
+        @Query("SELECT * FROM SongLyrics")
+        List<SongLyricsListItem> getAll();
     }
 
     @Database(entities = {SongLyrics.class}, version = 7)
@@ -382,6 +377,7 @@ public class LyricDatabaseHelper {
         if (songLyricDatabase == null) {
             songLyricDatabase = Room.databaseBuilder(context,
                     SongLyricDatabase.class, DATABASE_NAME)
+//                    .allowMainThreadQueries()
                     .build();
         }
         return songLyricDatabase;
@@ -392,12 +388,11 @@ public class LyricDatabaseHelper {
         return dbFile.exists();
     }
 
-    static void writeInitialRecords(Context context, SongLyricAsyncTaskCallback callback) {
+    static void writeInitialRecords(Context context) {
         // Populate the first-time data
         SongLyricAsyncTask task = new SongLyricAsyncTask(
                 getSongLyricDatabase(context).songLyricsDao(),
-                SongLyricAsyncTask.INSERT_ALL,
-                callback);
+                SongLyricAsyncTask.INSERT_ALL);
         task.execute(new SongLyrics(context.getString(R.string.ballgame_title),
                         null,
                         context.getString(R.string.ballgame_artist),
@@ -418,7 +413,6 @@ public class LyricDatabaseHelper {
     static class SongLyricAsyncTask extends AsyncTask<SongLyrics, Void, Void> {
         private SongLyricsDao mSongLyricDao;
         private final int mCommand;
-        private final SongLyricAsyncTaskCallback mCallback;
 
         public static final int INSERT_ALL = 0;
         public static final int DELETE     = 1;
@@ -427,14 +421,6 @@ public class LyricDatabaseHelper {
         public SongLyricAsyncTask(SongLyricsDao songLyricsDao, int command) {
             mSongLyricDao = songLyricsDao;
             mCommand = command;
-            mCallback = null;
-        }
-
-        public SongLyricAsyncTask(SongLyricsDao songLyricsDao, int command,
-                                  SongLyricAsyncTaskCallback callback) {
-            mSongLyricDao = songLyricsDao;
-            mCommand = command;
-            mCallback = callback;
         }
 
         @Override
@@ -455,14 +441,6 @@ public class LyricDatabaseHelper {
                 }
             }
             return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            if (mCallback != null) {
-                mCallback.onSuccess();
-            }
-            super.onPostExecute(aVoid);
         }
     }
 }

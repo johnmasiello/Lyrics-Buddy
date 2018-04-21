@@ -12,20 +12,17 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import java.lang.ref.WeakReference;
-
-import static com.example.john.lyricsbuddy.LyricDatabaseHelper.getSongLyricDatabase;
-
 public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        setUpViewFragments();
+        firstInitializationOfDatabaseEvent();
 
-        doDatabaseInitializeEvent();
+        setContentView(R.layout.activity_main);
         handleIntent();
+
+        setUpViewFragments();
     }
 
     private void handleIntent() {
@@ -103,10 +100,14 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void doDatabaseInitializeEvent() {
+    /**
+     * CAUTION: This must be called before any other access to the database, which
+     * will bypass detection of whether the database already existed
+     */
+    private void firstInitializationOfDatabaseEvent() {
         if ( !LyricDatabaseHelper.doesDatabaseExist(this) ) {
-              LyricDatabaseHelper.writeInitialRecords(this,
-                      new EventPopulateSongLyricDatabaseHelper(this));
+              LyricDatabaseHelper.writeInitialRecords(this
+              );
         }
     }
 
@@ -182,29 +183,6 @@ public class MainActivity extends AppCompatActivity {
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
-        }
-    }
-
-    private static class EventPopulateSongLyricDatabaseHelper
-            implements SongLyricAsyncTaskCallback {
-
-        final private WeakReference<MainActivity> mActivityWeakReference;
-
-        public EventPopulateSongLyricDatabaseHelper(MainActivity mainActivity) {
-            mActivityWeakReference = new WeakReference<>(mainActivity);
-        }
-
-        @Override
-        public void onSuccess() {
-            MainActivity mainActivity = mActivityWeakReference.get();
-
-            if (mainActivity != null) {
-                SongLyricsListViewModel viewModel =
-                    ViewModelProviders.of(mainActivity).get(SongLyricsListViewModel.class);
-
-                viewModel.setSongLyricsDao(getSongLyricDatabase(mainActivity).songLyricsDao());
-                viewModel.getLyricList(true);
-            }
         }
     }
 }
