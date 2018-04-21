@@ -20,6 +20,10 @@ import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.File;
 import java.util.List;
 
@@ -130,6 +134,65 @@ public class LyricDatabaseHelper {
              "\t\t album: "+getAlbum()      +
              "\t\t artist: "+getArtist()    +
              "\t\t lyrics: "+getLyrics();
+        }
+
+        public JSONObject toJSON() {
+            JSONObject jObj = new JSONObject();
+
+            try {
+                jObj.put("track", getTrackTitle());
+                jObj.put("album", getAlbum());
+                jObj.put("artist", getArtist());
+                jObj.put("lyrics", getLyrics());
+
+                return jObj;
+            } catch (JSONException ignore) {
+                return null;
+            }
+        }
+
+        public static JSONArray toJSONArray(SongLyrics... array) {
+            JSONArray jArray = new JSONArray();
+            for (SongLyrics lyrics : array) {
+                if (lyrics != null) {
+                    jArray.put(lyrics.toJSON());
+                }
+            }
+            return jArray;
+        }
+
+        public static String extractSubjectLine(@NonNull Context context, JSONArray jArray) {
+            StringBuilder builder = new StringBuilder(context.getString(R.string.app_label));
+
+            if (jArray != null) {
+                int length = jArray.length();
+
+                JSONObject obj;
+                String trackTitle;
+
+                for (int i = 0; i < length; i++) {
+                    try {
+                        obj = jArray.getJSONObject(i);
+
+                        if (obj != null) {
+                            trackTitle = obj.getString("track");
+
+                            if (trackTitle.length() > 0) {
+                                builder.append(" - ")
+                                        .append(trackTitle);
+
+                                if (length > 1) {
+                                    builder.append(context.getString(
+                                            R.string.share_intent_subject_line_multiple));
+                                }
+                                break;
+                            }
+                        }
+                    } catch (JSONException ignore) {
+                    }
+                }
+            }
+            return builder.toString();
         }
 
         /**

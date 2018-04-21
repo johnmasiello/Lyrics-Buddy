@@ -47,16 +47,17 @@ public class SongLyricDetailItemViewModel extends ViewModel {
     }
 
     private LiveData<LyricDatabaseHelper.SongLyrics> getSongLyrics(long songId) {
-        boolean needsToUpdate = false;
+        boolean needsToFetch = false;
         newId = songId;
 
         if (mSongLyrics == null) {
             mSongLyrics = new MediatorLiveData<>();
-            needsToUpdate = true;
+            needsToFetch = true;
         }
-        needsToUpdate |= newId != oldId;
+        needsToFetch |= newId != oldId;
 
-        if (needsToUpdate) {
+        if (needsToFetch) {
+            WrappedEditText.resetUndoStack();
             if (oldId != NO_ID) {
                 updateDatabase();
             }
@@ -117,6 +118,8 @@ public class SongLyricDetailItemViewModel extends ViewModel {
      * Then in either case set a new blank song lyrics to the view members
      */
     public void newSongLyrics() {
+        // Reset the undo stack so the content in the editTexts will be synchronized with the undo stack
+        WrappedEditText.resetUndoStack();
         updateDatabase();
         if (mSongLyrics == null) {
             mSongLyrics = new MediatorLiveData<>();

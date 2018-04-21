@@ -4,6 +4,7 @@ import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.os.Build;
@@ -17,7 +18,6 @@ import android.text.Editable;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
-import android.util.Log;
 import android.util.SparseArray;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -32,6 +32,8 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONArray;
+
 import java.util.List;
 import java.util.Random;
 
@@ -41,9 +43,6 @@ import static com.example.john.lyricsbuddy.LyricDatabaseHelper.SongLyrics;
  * Created by john on 3/12/18.
  * Content Fragment that displays lyrics
  */
-// Menu
-// TODO: Put in an intent for the share menu item
-// https://stackoverflow.com/questions/13941093/how-to-share-entire-android-app-with-share-intent
 public class LyricFragment extends Fragment {
 
     public static final String DETAIL_FRAGMENT_TAG = "Detail Fragment Tag";
@@ -77,10 +76,9 @@ public class LyricFragment extends Fragment {
     private int colorRotation = DEFAULT_COLOR_ROTATION;
 
     // SongLyric State
-    private SongLyricDetailItemViewModel songLyricsListViewModel;
+    private SongLyricDetailItemViewModel songLyricsDetailViewModel;
     private Observer<SongLyrics> songLyricsObserver;
     private boolean ignoreChange = false;
-
 
     private static final int MODE_EDIT = 0;
     private static final int MODE_DISPLAY = 1;
@@ -112,9 +110,6 @@ public class LyricFragment extends Fragment {
             mode = savedInstanceState.getInt(MODE_KEY, MODE_EDIT);
             paletteId = savedInstanceState.getInt(PALETTE_KEY, R.id.beach);
             colorRotation = savedInstanceState.getInt(COLOR_ROTATION_KEY, DEFAULT_COLOR_ROTATION);
-        } else {
-            // Reset the undo stack so the content in the editTexts will be synchronized with the undo stack
-            WrappedEditText.resetUndoStack();
         }
 
         fetchColorsFromPalette();
@@ -123,7 +118,7 @@ public class LyricFragment extends Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        connectToSongLyricsItem();
+        connectToSongLyricsItemViewModel();
     }
 
     @Override
@@ -163,11 +158,11 @@ public class LyricFragment extends Fragment {
         return rootView;
     }
 
-    private void connectToSongLyricsItem() {
+    private void connectToSongLyricsItemViewModel() {
         //noinspection ConstantConditions
-        songLyricsListViewModel = ViewModelProviders.of(getActivity()).get(SongLyricDetailItemViewModel.class);
+        songLyricsDetailViewModel = ViewModelProviders.of(getActivity()).get(SongLyricDetailItemViewModel.class);
 
-        songLyricsListViewModel.setSongLyricsDao(LyricDatabaseHelper
+        songLyricsDetailViewModel.setSongLyricsDao(LyricDatabaseHelper
                 .getSongLyricDatabase(getActivity())
                     .songLyricsDao());
 
@@ -175,15 +170,18 @@ public class LyricFragment extends Fragment {
             @Override
             public void onChanged(@Nullable SongLyrics songLyrics) {
                 if (songLyrics == null || ignoreChange) {
+                    ignoreChange = false;
                     return;
                 }
+                setTextWatcherEnabled(false);
                 trackInfo.get(R.id.title).setText(songLyrics.getTrackTitle());
                 trackInfo.get(R.id.album).setText(songLyrics.getAlbum());
                 trackInfo.get(R.id.artist).setText(songLyrics.getArtist());
                 lyrics.setText(new SpannableString(songLyrics.getLyrics()), TextView.BufferType.EDITABLE);
+                setTextWatcherEnabled(true);
             }
         };
-        songLyricsListViewModel.getSongLyrics().observe(this, songLyricsObserver);
+        songLyricsDetailViewModel.getSongLyrics().observe(this, songLyricsObserver);
 
         WrappedEditText.ensureUndoStack();
         WrappedEditText.ensureRedoStack();
@@ -197,41 +195,44 @@ public class LyricFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        lyrics.addTextWatcher(-1);
-
-        TextView t;
-        for (int i = 0; i < textViewIDs.length; i++) {
-            t = trackInfo.get(textViewIDs[i]);
-
-            if (t instanceof WrappedEditText) {
-                ((WrappedEditText) t).addTextWatcher(i);
-            }
-        }
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        lyrics.removeTextWatcher();
-
-        TextView t;
-        for (int textViewID : textViewIDs) {
-            t = trackInfo.get(textViewID);
-
-            if (t instanceof WrappedEditText) {
-                ((WrappedEditText) t).removeTextWatcher();
-            }
-        }
         dumpLyricsIntoViewModel();
         // Persist the data
-        if (getActivity() != null) {
-            ViewModelProviders.of(getActivity()).get(SongLyricDetailItemViewModel.class)
-                    .updateDatabase();
+        songLyricsDetailViewModel.updateDatabase();
+    }
+
+    private void setTextWatcherEnabled(boolean enabled) {
+        if (enabled) {
+            lyrics.addTextWatcher(-1);
+
+            TextView t;
+            for (int i = 0; i < textViewIDs.length; i++) {
+                t = trackInfo.get(textViewIDs[i]);
+
+                if (t instanceof WrappedEditText) {
+                    ((WrappedEditText) t).addTextWatcher(i);
+                }
+            }
+        } else {
+            lyrics.removeTextWatcher();
+
+            TextView t;
+            for (int textViewID : textViewIDs) {
+                t = trackInfo.get(textViewID);
+
+                if (t instanceof WrappedEditText) {
+                    ((WrappedEditText) t).removeTextWatcher();
+                }
+            }
         }
     }
 
     public void dumpLyricsIntoViewModel() {
-        LiveData<SongLyrics> songLyricsLiveData = songLyricsListViewModel.getSongLyrics();
+        LiveData<SongLyrics> songLyricsLiveData = songLyricsDetailViewModel.getSongLyrics();
         SongLyrics songLyrics, songLyricsOutput;
 
         songLyrics = songLyricsLiveData.getValue();
@@ -248,14 +249,13 @@ public class LyricFragment extends Fragment {
 
         // Update the SongLyrics in the ViewModel with the extracted SongLyrics
         ignoreChange = true;
-        songLyricsListViewModel.setSongLyrics(songLyricsOutput);
-        ignoreChange = false;
+        songLyricsDetailViewModel.setSongLyrics(songLyricsOutput);
     }
 
     @Override
     public void onDestroy() {
-        if (songLyricsListViewModel != null) {
-            songLyricsListViewModel.getSongLyrics().removeObserver(songLyricsObserver);
+        if (songLyricsDetailViewModel != null) {
+            songLyricsDetailViewModel.getSongLyrics().removeObserver(songLyricsObserver);
         }
         super.onDestroy();
     }
@@ -309,7 +309,26 @@ public class LyricFragment extends Fragment {
                     break;
 
                 case R.id.share_lyrics:
-                    Toast.makeText(getActivity(), "Share Stella Lyrics", Toast.LENGTH_SHORT).show();
+                    // Fetch song lyrics
+                    dumpLyricsIntoViewModel();
+                    SongLyrics songLyrics = songLyricsDetailViewModel.getSongLyricsInstantly();
+                    JSONArray jsonArray = SongLyrics.toJSONArray(songLyrics);
+
+                    if (songLyrics != null) {
+                        Intent intent = new Intent(Intent.ACTION_SEND);
+                        intent.setType("text/*");
+                        intent.putExtra(Intent.EXTRA_TEXT, String.valueOf(jsonArray));
+                        if (getContext() != null) {
+                            intent.putExtra(Intent.EXTRA_SUBJECT,
+                                    SongLyrics.extractSubjectLine(getContext(), jsonArray));
+                        }
+                        startActivity(Intent.createChooser(intent,
+                                getString(R.string.share_intent_message)));
+                    } else {
+                        Toast.makeText(getActivity(),
+                                getString(R.string.share_intent_fail_message),
+                                Toast.LENGTH_SHORT).show();
+                    }
                     break;
 
                 case R.id.shuffle_colors:
