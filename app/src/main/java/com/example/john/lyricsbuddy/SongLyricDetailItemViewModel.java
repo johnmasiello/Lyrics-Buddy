@@ -8,6 +8,8 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import java.lang.ref.WeakReference;
+
 /**
  * Created by john on 4/16/18.
  * ViewModel that holds LiveData that fetches song lyric items using Room
@@ -18,8 +20,7 @@ public class SongLyricDetailItemViewModel extends ViewModel {
     private boolean songLyricsDirty;
     private MediatorLiveData<LyricDatabaseHelper.SongLyrics> mSongLyrics;
     private LyricDatabaseHelper.SongLyricsDao mSongLyricsDao;
-    // TODO make LyricListCallback, to use with asyncTask > Update
-//    private LyricListCallback lyricListCallback;
+    private WeakReference<SongLyricsListViewModel> mListViewModel;
 
     public  static final long NO_ID     = -1;
     private static final long NEW_ID    = -2;
@@ -83,6 +84,12 @@ public class SongLyricDetailItemViewModel extends ViewModel {
         return mSongLyrics;
     }
 
+    public void setSongLyricsListViewModel(SongLyricsListViewModel lyricsListViewModel) {
+        if (mListViewModel == null) {
+            mListViewModel = new WeakReference<>(lyricsListViewModel);
+        }
+    }
+
     public void setSongLyricsDao(LyricDatabaseHelper.SongLyricsDao songLyricsDao) {
         if (mSongLyricsDao == null) {
             mSongLyricsDao = songLyricsDao;
@@ -139,13 +146,32 @@ public class SongLyricDetailItemViewModel extends ViewModel {
 
             LyricDatabaseHelper.SongLyricAsyncTask task;
 
-            // TODO make a callback to the task to refreshListItems if parameter is true; consider holding a weakReference to the LyricListViewModel
             task = new LyricDatabaseHelper.SongLyricAsyncTask(mSongLyricsDao,
-                    LyricDatabaseHelper.SongLyricAsyncTask.UPDATE);
+                    LyricDatabaseHelper.SongLyricAsyncTask.UPDATE,
+                    refreshListItems ? new RefreshListItemsOnUpdateCallback(mListViewModel) :
+                            null);
             task.execute(songLyrics);
 
             // Update state
             songLyricsDirty = false;
+        }
+    }
+
+    private static class RefreshListItemsOnUpdateCallback implements
+            SongLyricAsyncTaskCallback {
+        private final WeakReference<SongLyricsListViewModel> mListViewModel;
+
+        public RefreshListItemsOnUpdateCallback(WeakReference<SongLyricsListViewModel> listViewModel) {
+            mListViewModel = listViewModel;
+        }
+
+        @Override
+        public void onSuccess() {
+            SongLyricsListViewModel listViewModel = mListViewModel.get();
+
+            if (listViewModel != null) {
+                listViewModel.getLyricList(true);
+            }
         }
     }
 }

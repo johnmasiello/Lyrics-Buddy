@@ -8,6 +8,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import java.lang.ref.WeakReference;
 import java.util.List;
 
 import static com.example.john.lyricsbuddy.LyricDatabaseHelper.*;
@@ -26,7 +27,7 @@ public class SongLyricsListViewModel extends ViewModel {
     /**
      * Allows this view model to listen to changes in liveData in the detail view model
      */
-    private SongLyricDetailItemViewModel mSongLyricViewModel;
+    private WeakReference<SongLyricDetailItemViewModel> mSongLyricViewModel;
     /**
      * Flag to indicating LiveData&lt;SongLyric> has been set as source {@link #mSongLyricListItems}
      */
@@ -46,7 +47,6 @@ public class SongLyricsListViewModel extends ViewModel {
         return getLyricList(mSortOrder, false);
     }
 
-    // TODO re-fetch the lyric list for updates to the lyric record, in certain cases
     public LiveData<List<SongLyricsListItem>> getLyricList(boolean forceRefresh) {
         return getLyricList(mSortOrder, forceRefresh);
     }
@@ -106,11 +106,14 @@ public class SongLyricsListViewModel extends ViewModel {
 
         final LiveData<List<SongLyricsListItem>> query_sorted =
                 query;
+
+        SongLyricDetailItemViewModel lyricsViewModel = mSongLyricViewModel != null ?
+                mSongLyricViewModel.get() : null;
         final LiveData<SongLyrics> songLyricsLiveData =
-                mSongLyricViewModel != null ? mSongLyricViewModel.getSongLyrics() :
+                lyricsViewModel != null ? lyricsViewModel.getSongLyrics() :
                         null;
         final SongLyrics staticSongLyrics =
-                mSongLyricViewModel != null ? mSongLyricViewModel.getSongLyricsInstantly() : null;
+                lyricsViewModel != null ? lyricsViewModel.getSongLyricsInstantly() : null;
 
         mSongLyricListItems.addSource(query_sorted,
                 new Observer<List<SongLyricsListItem>>() {
@@ -187,6 +190,8 @@ public class SongLyricsListViewModel extends ViewModel {
     }
 
     public void setSongLyricViewModel(SongLyricDetailItemViewModel songLyricViewModel) {
-        mSongLyricViewModel = songLyricViewModel;
+        if (mSongLyricViewModel == null) {
+            mSongLyricViewModel = new WeakReference<>(songLyricViewModel);
+        }
     }
 }

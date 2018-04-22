@@ -27,6 +27,12 @@ import java.io.File;
 import java.util.List;
 
 /**
+ * Callback for when the async task finishes
+ */
+interface SongLyricAsyncTaskCallback {
+    void onSuccess();
+}
+/**
  * Created by john on 3/21/18.
  *
  * Singleton to manage the database of lyrics
@@ -361,9 +367,6 @@ public class LyricDatabaseHelper {
 
         @Insert(onConflict = OnConflictStrategy.REPLACE)
         void update(SongLyrics songLyrics);
-
-        @Query("SELECT * FROM SongLyrics")
-        List<SongLyricsListItem> getAll();
     }
 
     @Database(entities = {SongLyrics.class}, version = 7)
@@ -377,7 +380,6 @@ public class LyricDatabaseHelper {
         if (songLyricDatabase == null) {
             songLyricDatabase = Room.databaseBuilder(context,
                     SongLyricDatabase.class, DATABASE_NAME)
-//                    .allowMainThreadQueries()
                     .build();
         }
         return songLyricDatabase;
@@ -413,6 +415,7 @@ public class LyricDatabaseHelper {
     static class SongLyricAsyncTask extends AsyncTask<SongLyrics, Void, Void> {
         private SongLyricsDao mSongLyricDao;
         private final int mCommand;
+        private final SongLyricAsyncTaskCallback mCallback;
 
         public static final int INSERT_ALL = 0;
         public static final int DELETE     = 1;
@@ -421,6 +424,14 @@ public class LyricDatabaseHelper {
         public SongLyricAsyncTask(SongLyricsDao songLyricsDao, int command) {
             mSongLyricDao = songLyricsDao;
             mCommand = command;
+            mCallback = null;
+        }
+
+        public SongLyricAsyncTask(SongLyricsDao songLyricsDao, int command,
+                                  SongLyricAsyncTaskCallback callback) {
+            mSongLyricDao = songLyricsDao;
+            mCommand = command;
+            mCallback = callback;
         }
 
         @Override
@@ -441,6 +452,14 @@ public class LyricDatabaseHelper {
                 }
             }
             return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            if (mCallback != null) {
+                mCallback.onSuccess();
+            }
+            super.onPostExecute(aVoid);
         }
     }
 }
