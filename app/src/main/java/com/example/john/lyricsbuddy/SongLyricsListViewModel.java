@@ -44,7 +44,7 @@ public class SongLyricsListViewModel extends ViewModel {
     }
 
     public LiveData<List<SongLyricsListItem>> getLyricList() {
-        return getLyricList(mSortOrder, false);
+        return getLyricList(false);
     }
 
     public LiveData<List<SongLyricsListItem>> getLyricList(boolean forceRefresh) {
@@ -73,6 +73,10 @@ public class SongLyricsListViewModel extends ViewModel {
 
     public void setSongLyricsDao(SongLyricsDao songLyricsDao) {
         mSongLyricsDao = songLyricsDao;
+    }
+
+    public SongLyricsDao getSongLyricsDao() {
+        return mSongLyricsDao;
     }
 
     /**

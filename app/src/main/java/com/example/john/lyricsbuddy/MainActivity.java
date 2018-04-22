@@ -1,6 +1,7 @@
 package com.example.john.lyricsbuddy;
 
 import android.arch.lifecycle.ViewModelProviders;
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -8,9 +9,10 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+
+import static com.example.john.lyricsbuddy.LyricDatabaseHelper.*;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -29,19 +31,23 @@ public class MainActivity extends AppCompatActivity {
         Intent intent   = getIntent();
         String action   = intent.getAction();
         String type     = intent.getType();
+        Uri uri = intent.getData();
+        String scheme = intent.getScheme();
 
-        if (Intent.ACTION_VIEW.equals(action)) {
-            if (type != null && type.startsWith(getString(R.string.mimeTypePrefix))) {
-                String jsonString = intent.getStringExtra(Intent.EXTRA_TEXT);
+        if (Intent.ACTION_VIEW.equals(action) &&
+                type != null && type.startsWith(getString(R.string.mimeTypePrefix)) &&
+                (ContentResolver.SCHEME_CONTENT.equals(scheme) ||
+                    ContentResolver.SCHEME_FILE.equals(scheme))) {
 
-                if (jsonString != null) {
-                    // TODO parse the jsonString, in an asyncTask
-                    Log.d("Intent", jsonString);
-                } else {
-                    Uri uri = intent.getData();
-                    Log.d("Intent", "Uri is null = "+(uri==null));
-                }
-            }
+            SongLyricsListViewModel lvm =
+                    ViewModelProviders.of(MainActivity.this)
+                    .get(SongLyricsListViewModel.class);
+
+            // Ensure lvm has access to the SongLyricsDao
+            SongLyricsDao songLyricsDao = getSongLyricDatabase(this).songLyricsDao();
+            lvm.setSongLyricsDao(songLyricsDao);
+
+            new ActionImportContentTask(this, lvm).execute(uri);
         }
     }
 
@@ -105,8 +111,8 @@ public class MainActivity extends AppCompatActivity {
      * will bypass detection of whether the database already existed
      */
     private void firstInitializationOfDatabaseEvent() {
-        if ( !LyricDatabaseHelper.doesDatabaseExist(this) ) {
-              LyricDatabaseHelper.writeInitialRecords(this
+        if ( !doesDatabaseExist(this) ) {
+              writeInitialRecords(this
               );
         }
     }
@@ -186,4 +192,5 @@ public class MainActivity extends AppCompatActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
     }
+
 }

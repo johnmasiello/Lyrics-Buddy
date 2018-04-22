@@ -137,6 +137,12 @@ public class SongLyricDetailItemViewModel extends ViewModel {
         newId = oldId = NEW_ID;
     }
 
+    /**
+     *
+     * **********************************************
+     * The point of Song Lyric Creation, using the UI
+     * **********************************************
+     */
     public void updateDatabase(boolean refreshListItems) {
         LyricDatabaseHelper.SongLyrics songLyrics = getSongLyricsInstantly();
 
@@ -157,7 +163,7 @@ public class SongLyricDetailItemViewModel extends ViewModel {
         }
     }
 
-    private static class RefreshListItemsOnUpdateCallback implements
+    static class RefreshListItemsOnUpdateCallback implements
             SongLyricAsyncTaskCallback {
         private final WeakReference<SongLyricsListViewModel> mListViewModel;
 

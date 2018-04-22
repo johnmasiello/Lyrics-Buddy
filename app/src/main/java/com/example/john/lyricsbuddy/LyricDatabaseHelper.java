@@ -459,7 +459,6 @@ public class LyricDatabaseHelper {
             if (mCallback != null) {
                 mCallback.onSuccess();
             }
-            super.onPostExecute(aVoid);
         }
     }
 }
