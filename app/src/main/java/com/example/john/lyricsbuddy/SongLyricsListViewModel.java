@@ -46,6 +46,7 @@ public class SongLyricsListViewModel extends ViewModel {
         return getLyricList(mSortOrder, false);
     }
 
+    // TODO re-fetch the lyric list for updates to the lyric record, in certain cases
     public LiveData<List<SongLyricsListItem>> getLyricList(boolean forceRefresh) {
         return getLyricList(mSortOrder, forceRefresh);
     }

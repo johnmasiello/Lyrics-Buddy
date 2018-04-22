@@ -35,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
                 String jsonString = intent.getStringExtra(Intent.EXTRA_TEXT);
 
                 if (jsonString != null) {
-                    // TODO parse the jsonString
+                    // TODO parse the jsonString, in an asyncTask
                     Log.d("Intent", jsonString);
                 } else {
                     Uri uri = intent.getData();
@@ -137,6 +137,11 @@ public class MainActivity extends AppCompatActivity {
                     ((LyricFragment) detail).dumpLyricsIntoViewModel();
                 }
 
+                // Update the view model to own a blank song lyrics object
+                ViewModelProviders.of(MainActivity.this)
+                        .get(SongLyricDetailItemViewModel.class)
+                        .newSongLyrics();
+
                 // Show the detail fragment, or list/detail layout
                 MainActivityViewModel activityViewModel = ViewModelProviders.of(this)
                         .get(MainActivityViewModel.class);
@@ -157,13 +162,9 @@ public class MainActivity extends AppCompatActivity {
                     // Show the Up Navigation button in the action bar
                     addHomeAsUp();
                 }
-
-                // Update the view model to own a blank song lyrics object
-                ViewModelProviders.of(MainActivity.this)
-                        .get(SongLyricDetailItemViewModel.class)
-                        .newSongLyrics();
                 return true;
             }
+            // TODO LyricListFragment allow sorts on list > using queries
 
             default:
                 return super.onOptionsItemSelected(item);

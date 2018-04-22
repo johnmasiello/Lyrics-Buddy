@@ -155,7 +155,7 @@ public class LyricListFragment extends Fragment implements ListItemClickCallback
                 ViewModelProviders.of(getActivity()).get(SongLyricDetailItemViewModel.class);
 
         SongLyricsListViewModel songLyricsListViewModel =
-                ViewModelProviders.of(this).get(SongLyricsListViewModel.class);
+                ViewModelProviders.of(getActivity()).get(SongLyricsListViewModel.class);
 
         songLyricsListViewModel.setSongLyricsDao(getSongLyricDatabase(getActivity()).songLyricsDao());
         songLyricsListViewModel.setSongLyricViewModel(songLyricDetailItemViewModel);

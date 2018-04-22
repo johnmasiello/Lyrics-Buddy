@@ -193,16 +193,12 @@ public class LyricFragment extends Fragment {
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-    }
-
-    @Override
     public void onPause() {
         super.onPause();
+        ignoreChange = true;
         dumpLyricsIntoViewModel();
         // Persist the data
-        songLyricsDetailViewModel.updateDatabase();
+        songLyricsDetailViewModel.updateDatabase(false);
     }
 
     private void setTextWatcherEnabled(boolean enabled) {
@@ -231,6 +227,11 @@ public class LyricFragment extends Fragment {
         }
     }
 
+    /**
+     * Has the side-effect of causing observers to reload the song lyrics from the view model.
+     * Since the dump is triggered by the view controller and clicks, generally events
+     * independent of the underlying live data, an infinite loop is thus avoided.
+     */
     public void dumpLyricsIntoViewModel() {
         LiveData<SongLyrics> songLyricsLiveData = songLyricsDetailViewModel.getSongLyrics();
         SongLyrics songLyrics, songLyricsOutput;
@@ -248,7 +249,6 @@ public class LyricFragment extends Fragment {
         songLyricsOutput.setLyrics(lyrics.getText().toString());
 
         // Update the SongLyrics in the ViewModel with the extracted SongLyrics
-        ignoreChange = true;
         songLyricsDetailViewModel.setSongLyrics(songLyricsOutput);
     }
 

@@ -6,7 +6,6 @@ import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModel;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v7.util.ListUpdateCallback;
 import android.util.Log;
 
 /**
@@ -19,6 +18,8 @@ public class SongLyricDetailItemViewModel extends ViewModel {
     private boolean songLyricsDirty;
     private MediatorLiveData<LyricDatabaseHelper.SongLyrics> mSongLyrics;
     private LyricDatabaseHelper.SongLyricsDao mSongLyricsDao;
+    // TODO make LyricListCallback, to use with asyncTask > Update
+//    private LyricListCallback lyricListCallback;
 
     public  static final long NO_ID     = -1;
     private static final long NEW_ID    = -2;
@@ -59,7 +60,7 @@ public class SongLyricDetailItemViewModel extends ViewModel {
         if (needsToFetch) {
             WrappedEditText.resetUndoStack();
             if (oldId != NO_ID) {
-                updateDatabase();
+                updateDatabase(true);
             }
 
             //noinspection ConstantConditions
@@ -120,7 +121,7 @@ public class SongLyricDetailItemViewModel extends ViewModel {
     public void newSongLyrics() {
         // Reset the undo stack so the content in the editTexts will be synchronized with the undo stack
         WrappedEditText.resetUndoStack();
-        updateDatabase();
+        updateDatabase(true);
         if (mSongLyrics == null) {
             mSongLyrics = new MediatorLiveData<>();
         }
@@ -129,7 +130,7 @@ public class SongLyricDetailItemViewModel extends ViewModel {
         newId = oldId = NEW_ID;
     }
 
-    public void updateDatabase() {
+    public void updateDatabase(boolean refreshListItems) {
         LyricDatabaseHelper.SongLyrics songLyrics = getSongLyricsInstantly();
 
         if (songLyricsDirty &&
@@ -137,6 +138,8 @@ public class SongLyricDetailItemViewModel extends ViewModel {
                 songLyrics != null && !songLyrics.isBlankType1()) {
 
             LyricDatabaseHelper.SongLyricAsyncTask task;
+
+            // TODO make a callback to the task to refreshListItems if parameter is true; consider holding a weakReference to the LyricListViewModel
             task = new LyricDatabaseHelper.SongLyricAsyncTask(mSongLyricsDao,
                     LyricDatabaseHelper.SongLyricAsyncTask.UPDATE);
             task.execute(songLyrics);
