@@ -8,6 +8,20 @@
     android:paddingBottom="12dp"
     android:paddingTop="12dp">
 
+    <CheckBox
+        android:id="@+id/checkbox"
+        style="@android:style/Widget.DeviceDefault.CompoundButton.CheckBox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/row_item_checkbox_margin"
+        android:layout_marginLeft="@dimen/row_item_checkbox_margin"
+        android:clickable="false"
+        android:visibility="visible"
+        app:layout_constraintEnd_toStartOf="@+id/track"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <TextView
         android:id="@+id/track"
         android:layout_width="wrap_content"
@@ -20,7 +34,7 @@
         android:textStyle="bold"
         app:layout_constraintEnd_toStartOf="@+id/track_artist_separator"
         app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/checkbox"
         app:layout_constraintTop_toTopOf="parent"
         tools:text="Track" />
 

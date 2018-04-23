@@ -1,9 +1,11 @@
 package com.example.john.lyricsbuddy;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -19,15 +21,22 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.TextView;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 import static com.example.john.lyricsbuddy.LyricDatabaseHelper.SongLyricsListItem;
 import static com.example.john.lyricsbuddy.LyricDatabaseHelper.getSongLyricDatabase;
 
 interface ListItemClickCallback {
     void handleClick(SongLyricsListItem item);
+
+    boolean isSelectMode();
+
+    void setSelectMode(boolean selected);
 }
 
 /**
@@ -41,16 +50,60 @@ public class LyricListFragment extends Fragment implements ListItemClickCallback
     static class LyricsListFragmentAdapter extends ListAdapter<SongLyricsListItem,
             LyricsListFragmentAdapter.SongLyricViewHolder> {
 
+        @SuppressLint("UseSparseArrays")
+        private static final HashMap<Long, Boolean> mIsSelected = new HashMap<>(500);
+        private static final String PAYLOAD_CHECKBOX = "Checkbox";
         private ListItemClickCallback mListItemClickCallback;
-
-        public LyricsListFragmentAdapter() {
-            this(null);
-        }
+        /**
+         * Does not change data or view state of a single list item
+         */
+        private View.OnLongClickListener mLongClickListener;
 
         public LyricsListFragmentAdapter(ListItemClickCallback listItemClickCallback) {
             super(DIFF_CALLBACK);
             setHasStableIds(true);
             mListItemClickCallback = listItemClickCallback;
+
+            mLongClickListener = new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    if (mListItemClickCallback == null)
+                        return false;
+
+                    if (mListItemClickCallback.isSelectMode())
+                        return true;
+
+                    // Deselect any prior selections, even though they are not visible in the UI
+                    setSelectionAll(false);
+                    int count = getItemCount();
+
+                    if (count > 0)
+                        notifyItemRangeChanged(0, count, PAYLOAD_CHECKBOX);
+
+                    // Set the callback to select mode
+                    mListItemClickCallback.setSelectMode(true);
+                    return true;
+                }
+            };
+        }
+
+        private static synchronized void toggleSelected(long id) {
+            Boolean isSelected = mIsSelected.get(id);
+            mIsSelected.put(id, isSelected == null || !isSelected);
+        }
+
+        // TODO make a button to deselect all, a done button, and a custom action view to put this all in the actionbar; Consider making changes to the action bar using the ListItemCallback
+        private static synchronized void setSelectionAll(boolean isSelected) {
+            Set<Long> keys = mIsSelected.keySet();
+
+            for (long key : keys) {
+                mIsSelected.put(key, isSelected);
+            }
+        }
+
+        private static boolean getSelected(long id) {
+            Boolean isSelected = mIsSelected.get(id);
+            return isSelected != null && isSelected;
         }
 
         @Override
@@ -71,33 +124,70 @@ public class LyricListFragment extends Fragment implements ListItemClickCallback
                 public void onClick(View v) {
                     int position = viewHolder.getAdapterPosition();
 
-                    if (position != RecyclerView.NO_POSITION && mListItemClickCallback != null) {
-                        mListItemClickCallback.handleClick(getItem(position));
+                    if (position != RecyclerView.NO_POSITION &&
+                            mListItemClickCallback != null) {
+                        if (mListItemClickCallback.isSelectMode()) {
+                            toggleSelected(getItemId(position));
+                            notifyItemChanged(position, PAYLOAD_CHECKBOX);
+                        } else {
+                            mListItemClickCallback.handleClick(getItem(position));
+                        }
                     }
                 }
             });
+            view.setOnLongClickListener(mLongClickListener);
             return viewHolder;
         }
 
         @Override
+        public void onBindViewHolder(@NonNull SongLyricViewHolder holder, int position, @NonNull List<Object> payloads) {
+            for (Object obj : payloads) {
+                if (obj instanceof String && PAYLOAD_CHECKBOX.equals(obj)) {
+                    holder.bindCheckBox(getSelected(getItemId(position)),
+                            mListItemClickCallback != null &&
+                                    mListItemClickCallback.isSelectMode());
+                    return;
+                }
+            }
+            super.onBindViewHolder(holder, position, payloads);
+        }
+
+        @Override
         public void onBindViewHolder(@NonNull SongLyricViewHolder holder, int position) {
-            holder.bindTo(getItem(position));
+            holder.bindTo(getItem(position),
+                    getSelected(getItemId(position)),
+                    isSelectionMode());
+        }
+
+        private boolean isSelectionMode() {
+            return mListItemClickCallback != null && mListItemClickCallback.isSelectMode();
         }
 
         static class SongLyricViewHolder extends RecyclerView.ViewHolder {
             TextView artist, album, track;
+            CheckBox checkBox;
 
             SongLyricViewHolder(View itemView) {
                 super(itemView);
                 artist = itemView.findViewById(R.id.artist);
                 album = itemView.findViewById(R.id.album);
                 track = itemView.findViewById(R.id.track);
+                checkBox = itemView.findViewById(R.id.checkbox);
             }
 
-            public void bindTo(SongLyricsListItem item) {
+            public void bindTo(SongLyricsListItem item, boolean isSelected, boolean isSelectable) {
                 artist.setText(item.getArtist());
                 album.setText(item.getAlbum());
                 track.setText(item.getTrackTitle());
+                bindCheckBox(isSelected, isSelectable);
+            }
+
+            public void bindCheckBox(boolean isSelected, boolean isSelectable) {
+                checkBox.setChecked(isSelected);
+                checkBox.setVisibility(isSelectable ? View.VISIBLE : View.GONE);
+                itemView.setBackgroundColor(isSelectable && isSelected ?
+                        itemView.getResources().getColor(R.color.lyricListItemSelectedColor) :
+                        Color.TRANSPARENT);
             }
         }
 
@@ -117,6 +207,9 @@ public class LyricListFragment extends Fragment implements ListItemClickCallback
     }
 
     private RecyclerView recyclerView;
+    private boolean mSelectMode = false;
+
+    private static final String SELECT_MODE_KEY = "SELECT_MODE";
 
     public LyricListFragment() {
         super();
@@ -133,6 +226,9 @@ public class LyricListFragment extends Fragment implements ListItemClickCallback
                 DividerItemDecoration.VERTICAL);
         itemDecor.setDrawable(getResources().getDrawable(R.drawable.list_item_divider));
         recyclerView.addItemDecoration(itemDecor);
+
+        mSelectMode = savedInstanceState != null &&
+                savedInstanceState.getBoolean(SELECT_MODE_KEY, false);
         return view;
     }
 
@@ -146,6 +242,11 @@ public class LyricListFragment extends Fragment implements ListItemClickCallback
         recyclerView.setAdapter(adapter);
     }
 
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putBoolean(SELECT_MODE_KEY, mSelectMode);
+    }
 
     @SuppressWarnings("ConstantConditions")
     private void initializeSongLyricsListItemViewModel(final ListAdapter<SongLyricsListItem,
@@ -209,5 +310,15 @@ public class LyricListFragment extends Fragment implements ListItemClickCallback
                 }
             }
         }
+    }
+
+    @Override
+    public boolean isSelectMode() {
+        return mSelectMode;
+    }
+
+    @Override
+    public void setSelectMode(boolean selected) {
+        mSelectMode = selected;
     }
 }

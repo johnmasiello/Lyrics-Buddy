@@ -9,4 +9,5 @@
     <color name="navigationFocused">#FFFFFFFF</color>
     <color name="navigationUnfocused">#7FFFFFFF</color>
     <color name="lyricListItemTextColor">#000000</color>
+    <color name="lyricListItemSelectedColor">#e7e7e7</color>
 </resources>
