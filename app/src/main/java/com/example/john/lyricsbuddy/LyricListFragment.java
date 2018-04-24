@@ -15,10 +15,14 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.recyclerview.extensions.ListAdapter;
 import android.support.v7.util.DiffUtil;
+import android.support.v7.view.ActionMode;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
@@ -31,12 +35,16 @@ import java.util.Set;
 import static com.example.john.lyricsbuddy.LyricDatabaseHelper.SongLyricsListItem;
 import static com.example.john.lyricsbuddy.LyricDatabaseHelper.getSongLyricDatabase;
 
-interface ListItemClickCallback {
+interface ListItemClickCallback extends ActionMode.Callback{
     void handleClick(SongLyricsListItem item);
 
     boolean isSelectMode();
 
-    void setSelectMode(boolean selected);
+    /**
+     *
+     * @return Action mode is set to selection mode and it is started
+     */
+    boolean startSelectionMode();
 }
 
 /**
@@ -44,11 +52,11 @@ interface ListItemClickCallback {
  * architecture components to implement Reactive Paradigm Pattern
  * Created by john on 4/13/18.
  */
-public class LyricListFragment extends Fragment implements ListItemClickCallback {
+public class LyricListFragment extends Fragment {
     public static final String LYRIC_LIST_FRAGMENT_TAG = "Master Transaction";
 
-    static class LyricsListFragmentAdapter extends ListAdapter<SongLyricsListItem,
-            LyricsListFragmentAdapter.SongLyricViewHolder> {
+    static class LyricsListAdapter extends ListAdapter<SongLyricsListItem,
+            LyricsListAdapter.SongLyricViewHolder> {
 
         @SuppressLint("UseSparseArrays")
         private static final HashMap<Long, Boolean> mIsSelected = new HashMap<>(500);
@@ -59,7 +67,7 @@ public class LyricListFragment extends Fragment implements ListItemClickCallback
          */
         private View.OnLongClickListener mLongClickListener;
 
-        public LyricsListFragmentAdapter(ListItemClickCallback listItemClickCallback) {
+        public LyricsListAdapter(ListItemClickCallback listItemClickCallback) {
             super(DIFF_CALLBACK);
             setHasStableIds(true);
             mListItemClickCallback = listItemClickCallback;
@@ -67,22 +75,8 @@ public class LyricListFragment extends Fragment implements ListItemClickCallback
             mLongClickListener = new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
-                    if (mListItemClickCallback == null)
-                        return false;
-
-                    if (mListItemClickCallback.isSelectMode())
-                        return true;
-
-                    // Deselect any prior selections, even though they are not visible in the UI
-                    setSelectionAll(false);
-                    int count = getItemCount();
-
-                    if (count > 0)
-                        notifyItemRangeChanged(0, count, PAYLOAD_CHECKBOX);
-
-                    // Set the callback to select mode
-                    mListItemClickCallback.setSelectMode(true);
-                    return true;
+                    return mListItemClickCallback != null &&
+                            mListItemClickCallback.startSelectionMode();
                 }
             };
         }
@@ -104,6 +98,30 @@ public class LyricListFragment extends Fragment implements ListItemClickCallback
         private static boolean getSelected(long id) {
             Boolean isSelected = mIsSelected.get(id);
             return isSelected != null && isSelected;
+        }
+
+        public void selectAll() {
+            _selectAll(true);
+        }
+
+        public void deselectAll() {
+            _selectAll(false);
+        }
+
+        public void invalidateSelection() {
+            int count = getItemCount();
+
+            if (count > 0)
+                notifyItemRangeChanged(0, count, PAYLOAD_CHECKBOX);
+        }
+
+        /**
+         *
+         * @param actionSelect true -> select all items; false -> deselect all items
+         */
+        private void _selectAll(boolean actionSelect) {
+            setSelectionAll(actionSelect);
+            invalidateSelection();
         }
 
         @Override
@@ -207,9 +225,136 @@ public class LyricListFragment extends Fragment implements ListItemClickCallback
     }
 
     private RecyclerView recyclerView;
+    private LyricsListAdapter lyricListAdapter;
+    /**
+     * selectMode is the only action mode for the activity
+     */
     private boolean mSelectMode = false;
 
     private static final String SELECT_MODE_KEY = "SELECT_MODE";
+    private final ListItemClickCallback mListItemClickCallback = new ListItemClickCallback() {
+        @Override
+        public void handleClick(SongLyricsListItem item) {
+            FragmentManager fragmentManager = getFragmentManager();
+
+            if (fragmentManager != null && getActivity() != null) {
+                SongLyricDetailItemViewModel detailViewModel =
+                        ViewModelProviders.of(getActivity()).get(SongLyricDetailItemViewModel.class);
+
+                // Give the view model the id of the item...
+                // so it can fetch the item for the detail view
+                detailViewModel.setId(item.getUid());
+
+                MainActivityViewModel activityViewModel = ViewModelProviders.of(getActivity())
+                        .get(MainActivityViewModel.class);
+
+                if (activityViewModel.isTwoPane()) {
+                    if (fragmentManager.findFragmentById(R.id.lyric_detail_container) == null) {
+                        fragmentManager.beginTransaction()
+                                .add(R.id.lyric_detail_container, new LyricFragment(),
+                                        LyricFragment.DETAIL_FRAGMENT_TAG)
+                                .commit();
+                    }
+                } else {
+                    fragmentManager.beginTransaction()
+                            .replace(R.id.lyric_master_container, new LyricFragment(),
+                                    LyricFragment.DETAIL_FRAGMENT_TAG)
+                            .commit();
+
+                    // Show the Up button in the action bar.
+                    Activity activity = getActivity();
+                    if (activity instanceof AppCompatActivity) {
+                        ActionBar actionBar = ((AppCompatActivity) activity).getSupportActionBar();
+                        if (actionBar != null) {
+                            actionBar.setDisplayHomeAsUpEnabled(true);
+                        }
+                    }
+                }
+            }
+        }
+
+        @Override
+        public boolean isSelectMode() {
+            return mSelectMode;
+        }
+
+        @Override
+        public boolean startSelectionMode() {
+            if (mSelectMode)
+                return false;
+
+            Activity activity = getActivity();
+
+            if (activity instanceof AppCompatActivity) {
+                ((AppCompatActivity) getActivity()).startSupportActionMode(this);
+            }
+            return true;
+        }
+
+        @Override
+        public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+            MenuInflater inflater = mode.getMenuInflater();
+            inflater.inflate(R.menu.lyric_list_action_select, menu);
+            return true;
+        }
+
+        @Override
+        public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+            if (mSelectMode || lyricListAdapter == null)
+                return false;
+
+            mSelectMode = true;
+            lyricListAdapter.deselectAll();
+            return true;
+        }
+
+        @Override
+        public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+            switch (item.getItemId()) {
+                case R.id.multiple_done:
+                    mode.finish();
+                    lyricListAdapter.invalidateSelection();
+                    break;
+
+                case R.id.multiple_selectAll:
+                    lyricListAdapter.selectAll();
+                    item.setVisible(false);
+                    {
+                        MenuItem item2 = mode.getMenu().findItem(R.id.multiple_deselectAll);
+                        if (item2 != null) {
+                            item2.setVisible(true);
+                        }
+                    }
+                    break;
+
+                case R.id.multiple_deselectAll:
+                    lyricListAdapter.deselectAll();
+                    item.setVisible(false);
+                    {
+                        MenuItem item2 = mode.getMenu().findItem(R.id.multiple_selectAll);
+                        if (item2 != null) {
+                            item2.setVisible(true);
+                        }
+                    }
+                    break;
+
+                case R.id.multiple_share:
+                    break;
+
+                case R.id.multiple_trash:
+                    break;
+
+                default:
+                    return false;
+            }
+            return true;
+        }
+
+        @Override
+        public void onDestroyActionMode(ActionMode mode) {
+            mSelectMode = false;
+        }
+    };
 
     public LyricListFragment() {
         super();
@@ -237,9 +382,9 @@ public class LyricListFragment extends Fragment implements ListItemClickCallback
         super.onActivityCreated(savedInstanceState);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
-        LyricsListFragmentAdapter adapter = new LyricsListFragmentAdapter(this);
-        initializeSongLyricsListItemViewModel(adapter);
-        recyclerView.setAdapter(adapter);
+        lyricListAdapter = new LyricsListAdapter(mListItemClickCallback);
+        initializeSongLyricsListItemViewModel();
+        recyclerView.setAdapter(lyricListAdapter);
     }
 
     @Override
@@ -249,8 +394,7 @@ public class LyricListFragment extends Fragment implements ListItemClickCallback
     }
 
     @SuppressWarnings("ConstantConditions")
-    private void initializeSongLyricsListItemViewModel(final ListAdapter<SongLyricsListItem,
-            LyricsListFragmentAdapter.SongLyricViewHolder> listAdapter) {
+    private void initializeSongLyricsListItemViewModel() {
 
         SongLyricDetailItemViewModel songLyricDetailItemViewModel =
                 ViewModelProviders.of(getActivity()).get(SongLyricDetailItemViewModel.class);
@@ -269,56 +413,8 @@ public class LyricListFragment extends Fragment implements ListItemClickCallback
 
                     @Override
                     public void onChanged(@Nullable List<SongLyricsListItem> songLyricsListItems) {
-                        listAdapter.submitList(songLyricsListItems);
+                        lyricListAdapter.submitList(songLyricsListItems);
                     }
                 });
-    }
-
-    @Override
-    public void handleClick(SongLyricsListItem item) {
-        FragmentManager fragmentManager = getFragmentManager();
-
-        if (fragmentManager != null && getActivity() != null) {
-            SongLyricDetailItemViewModel detailViewModel =
-                    ViewModelProviders.of(getActivity()).get(SongLyricDetailItemViewModel.class);
-
-            detailViewModel.setId(item.getUid());
-
-            MainActivityViewModel activityViewModel = ViewModelProviders.of(getActivity())
-                    .get(MainActivityViewModel.class);
-
-            if (activityViewModel.isTwoPane()) {
-                if (fragmentManager.findFragmentById(R.id.lyric_detail_container) == null) {
-                    fragmentManager.beginTransaction()
-                            .add(R.id.lyric_detail_container, new LyricFragment(),
-                                    LyricFragment.DETAIL_FRAGMENT_TAG)
-                            .commit();
-                }
-            } else {
-                fragmentManager.beginTransaction()
-                        .replace(R.id.lyric_master_container, new LyricFragment(),
-                                LyricFragment.DETAIL_FRAGMENT_TAG)
-                        .commit();
-
-                // Show the Up button in the action bar.
-                Activity activity = getActivity();
-                if (activity instanceof AppCompatActivity) {
-                    ActionBar actionBar = ((AppCompatActivity) activity).getSupportActionBar();
-                    if (actionBar != null) {
-                        actionBar.setDisplayHomeAsUpEnabled(true);
-                    }
-                }
-            }
-        }
-    }
-
-    @Override
-    public boolean isSelectMode() {
-        return mSelectMode;
-    }
-
-    @Override
-    public void setSelectMode(boolean selected) {
-        mSelectMode = selected;
     }
 }
