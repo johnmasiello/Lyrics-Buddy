@@ -2,14 +2,17 @@ package com.example.john.lyricsbuddy;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.graphics.Color;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -28,6 +31,8 @@ import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.TextView;
 
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
@@ -86,7 +91,6 @@ public class LyricListFragment extends Fragment {
             mIsSelected.put(id, isSelected == null || !isSelected);
         }
 
-        // TODO make a button to deselect all, a done button, and a custom action view to put this all in the actionbar; Consider making changes to the action bar using the ListItemCallback
         private static synchronized void setSelectionAll(boolean isSelected) {
             Set<Long> keys = mIsSelected.keySet();
 
@@ -95,33 +99,57 @@ public class LyricListFragment extends Fragment {
             }
         }
 
+        /**
+         * <p>Invariant: mIsSelected.get(id) == null implies mIsSelected.put(id, false)</p>
+         * @param id from listAdapter.getId(), derived from list item. The adapter must use stable ids
+         * @return mIsSelected.get(id) or vacuously false if null is returned
+         */
         private static boolean getSelected(long id) {
             Boolean isSelected = mIsSelected.get(id);
-            return isSelected != null && isSelected;
+            if (isSelected == null) {
+                mIsSelected.put(id, false);
+                return false;
+            } else
+                return isSelected;
+        }
+
+        /**
+         * This method is static because it relies on a data source external to the adapter
+         */
+        public static long[] getSelectedIds(List<SongLyricsListItem> items) {
+            List<Long> ids = new ArrayList<>();
+
+            long id;
+            for (SongLyricsListItem item : items) {
+                if (getSelected(id = item.getUid())) {
+                    ids.add(id);
+                }
+            }
+            int length = ids.size();
+            long[] results = new long[length];
+
+            for (int i = 0; i < length; i++)
+                results[i] = ids.get(i);
+
+            return results;
         }
 
         public void selectAll() {
-            _selectAll(true);
+            setSelectionAll(true);
+            invalidateSelection();
         }
 
-        public void deselectAll() {
-            _selectAll(false);
+        public void deselectAll(){
+            setSelectionAll(false);
+            invalidateSelection();
         }
+
 
         public void invalidateSelection() {
             int count = getItemCount();
 
             if (count > 0)
                 notifyItemRangeChanged(0, count, PAYLOAD_CHECKBOX);
-        }
-
-        /**
-         *
-         * @param actionSelect true -> select all items; false -> deselect all items
-         */
-        private void _selectAll(boolean actionSelect) {
-            setSelectionAll(actionSelect);
-            invalidateSelection();
         }
 
         @Override
@@ -278,14 +306,17 @@ public class LyricListFragment extends Fragment {
             return mSelectMode;
         }
 
+        // TODO update SongLyrics in Detail View Model and call Refresh in the List View Model, if SongLyrics was not already in db
         @Override
         public boolean startSelectionMode() {
-            if (mSelectMode)
+            if (mSelectMode || lyricListAdapter == null)
                 return false;
 
             Activity activity = getActivity();
 
             if (activity instanceof AppCompatActivity) {
+                mSelectMode = true;
+                lyricListAdapter.deselectAll();
                 ((AppCompatActivity) getActivity()).startSupportActionMode(this);
             }
             return true;
@@ -300,22 +331,14 @@ public class LyricListFragment extends Fragment {
 
         @Override
         public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
-            if (mSelectMode || lyricListAdapter == null)
-                return false;
-
-            mSelectMode = true;
-            lyricListAdapter.deselectAll();
-            return true;
+            return false;
         }
 
         @Override
         public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-            switch (item.getItemId()) {
-                case R.id.multiple_done:
-                    mode.finish();
-                    lyricListAdapter.invalidateSelection();
-                    break;
+            final int menuId = item.getItemId();
 
+            switch (menuId) {
                 case R.id.multiple_selectAll:
                     lyricListAdapter.selectAll();
                     item.setVisible(false);
@@ -339,9 +362,53 @@ public class LyricListFragment extends Fragment {
                     break;
 
                 case R.id.multiple_share:
-                    break;
-
                 case R.id.multiple_trash:
+                    final FragmentActivity activity = getActivity();
+                    final Fragment fragment = LyricListFragment.this;
+                    if (activity != null) {
+
+                        final SongLyricsListViewModel viewModel =
+                                ViewModelProviders.of(activity)
+                                        .get(SongLyricsListViewModel.class);
+
+                        List<SongLyricsListItem> staticLiveItems =
+                                viewModel.getLyricList().getValue();
+
+                        long[] ids = LyricsListAdapter.getSelectedIds(staticLiveItems);
+                        viewModel.getSongLyricsDao().fetchSongLyrics(ids)
+                            .observe(menuId == R.id.multiple_share ? fragment : activity,
+                                    new Observer<List<LyricDatabaseHelper.SongLyrics>>() {
+
+                                // TODO Stop reentry into onChanged?
+                                @Override
+                                public void onChanged(@Nullable List<LyricDatabaseHelper.SongLyrics> list) {
+                                    LyricDatabaseHelper.SongLyrics[] args = toArgs(list);
+
+                                    if (menuId == R.id.multiple_share) {
+                                        if (args != null) {
+                                            LyricActionHelperKt.share(fragment, args);
+                                        } else {
+                                            LyricActionHelperKt.failShare(fragment.getContext(), R.string.share_intent_fail_message);
+                                        }
+                                    } else {
+                                        if (args != null) {
+                                            SongLyricDetailItemViewModel.RefreshListItemsOnUpdateCallback callback;
+                                            callback = new SongLyricDetailItemViewModel.RefreshListItemsOnUpdateCallback(
+                                                    new WeakReference<>(viewModel));
+
+                                            new LyricDatabaseHelper.SongLyricAsyncTask(
+                                                    viewModel.getSongLyricsDao(),
+                                                    LyricDatabaseHelper.SongLyricAsyncTask.DELETE,
+                                                    callback)
+                                                            .execute(args);
+                                        } else {
+                                            LyricActionHelperKt.failShare(activity, R.string.share_trash_fail_message);
+                                        }
+                                    }
+
+                                }
+                            });
+                    }
                     break;
 
                 default:
@@ -350,9 +417,19 @@ public class LyricListFragment extends Fragment {
             return true;
         }
 
+        private LyricDatabaseHelper.SongLyrics[] toArgs(@Nullable List<LyricDatabaseHelper.SongLyrics> list) {
+            LyricDatabaseHelper.SongLyrics[] args = null;
+
+            if (list != null && !list.isEmpty()) {
+                args = list.toArray(new LyricDatabaseHelper.SongLyrics[list.size()]);
+            }
+            return args;
+        }
+
         @Override
         public void onDestroyActionMode(ActionMode mode) {
             mSelectMode = false;
+            lyricListAdapter.invalidateSelection();
         }
     };
 

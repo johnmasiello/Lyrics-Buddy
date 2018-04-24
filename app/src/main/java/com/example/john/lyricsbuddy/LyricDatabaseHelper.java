@@ -342,7 +342,13 @@ public class LyricDatabaseHelper {
         Data detail view
          */
         @Query("SELECT * FROM SongLyrics WHERE uid LIKE :uid LIMIT 1")
-        LiveData<SongLyrics> fetchSongLyric(Long uid);
+        LiveData<SongLyrics> fetchSongLyric(long uid);
+
+        /*
+        Batch Processing
+         */
+        @Query("SELECT * FROM SongLyrics WHERE uid IN (:uids)")
+        LiveData<List<SongLyrics>> fetchSongLyrics(long... uids);
 
         /*
          Searches
@@ -443,7 +449,7 @@ public class LyricDatabaseHelper {
                         break;
 
                     case DELETE:
-                        mSongLyricDao.delete(songLyrics[0]);
+                        mSongLyricDao.delete(songLyrics);
                         break;
 
                     case UPDATE:

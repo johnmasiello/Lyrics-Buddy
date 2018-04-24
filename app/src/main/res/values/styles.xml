@@ -5,6 +5,7 @@
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="actionButtonStyle">@style/AppTheme.Widget.ActionButton</item>
     </style>
 
     <style name="TrackInfo_Subordinate" parent="@android:style/TextAppearance">
@@ -16,6 +17,10 @@
 
     <style name="TrackInfo" parent="@style/TrackInfo_Subordinate">
         <item name="android:textSize">18sp</item>
+    </style>
+
+    <style name="AppTheme.Widget.ActionButton" parent="@style/Widget.AppCompat.ActionButton">
+        <item name="textAllCaps">false</item>
     </style>
 
 </resources>

@@ -29,7 +29,7 @@ public class SongLyricsListViewModel extends ViewModel {
      */
     private WeakReference<SongLyricDetailItemViewModel> mSongLyricViewModel;
     /**
-     * Flag to indicating LiveData&lt;SongLyric> has been set as source {@link #mSongLyricListItems}
+     * Flag to indicate LiveData&lt;SongLyric> has been set as source {@link #mSongLyricListItems}
      */
     private boolean songLyricsSourcedToListItems;
 

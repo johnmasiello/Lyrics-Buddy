@@ -312,22 +312,11 @@ public class LyricFragment extends Fragment {
                     // Fetch song lyrics
                     dumpLyricsIntoViewModel();
                     SongLyrics songLyrics = songLyricsDetailViewModel.getSongLyricsInstantly();
-                    JSONArray jsonArray = SongLyrics.toJSONArray(songLyrics);
 
                     if (songLyrics != null) {
-                        Intent intent = new Intent(Intent.ACTION_SEND);
-                        intent.setType("text/*");
-                        intent.putExtra(Intent.EXTRA_TEXT, String.valueOf(jsonArray));
-                        if (getContext() != null) {
-                            intent.putExtra(Intent.EXTRA_SUBJECT,
-                                    SongLyrics.extractSubjectLine(getContext(), jsonArray));
-                        }
-                        startActivity(Intent.createChooser(intent,
-                                getString(R.string.share_intent_message)));
+                        LyricActionHelperKt.share(this, songLyrics);
                     } else {
-                        Toast.makeText(getActivity(),
-                                getString(R.string.share_intent_fail_message),
-                                Toast.LENGTH_SHORT).show();
+                        LyricActionHelperKt.failShare(getContext(), R.string.share_intent_fail_message);
                     }
                     break;
 

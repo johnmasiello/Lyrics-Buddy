@@ -1,13 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
-    <group>
-        <item
-            android:id="@+id/multiple_done"
-            android:title="Done"
-            app:showAsAction="always"
-            />
-    </group>
 
     <group>
         <item
@@ -27,7 +20,7 @@
     <group>
         <item
             android:id="@+id/multiple_share"
-            android:title="Share"
+            android:title="@string/lyric_options_share"
             android:icon="@drawable/ic_share_22dp"
             app:showAsAction="always"
             />
@@ -35,7 +28,8 @@
         <item
             android:id="@+id/multiple_trash"
             android:title="Trash"
-            app:showAsAction="ifRoom"
+            android:icon="@drawable/ic_trash_24dp"
+            app:showAsAction="always"
             />
     </group>
 
