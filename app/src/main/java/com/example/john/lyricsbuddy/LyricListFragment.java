@@ -2,6 +2,7 @@ package com.example.john.lyricsbuddy;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.arch.lifecycle.LifecycleOwner;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
@@ -22,6 +23,7 @@ import android.support.v7.view.ActionMode;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -33,6 +35,7 @@ import android.widget.TextView;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
@@ -375,39 +378,43 @@ public class LyricListFragment extends Fragment {
                                 viewModel.getLyricList().getValue();
 
                         long[] ids = LyricsListAdapter.getSelectedIds(staticLiveItems);
-                        viewModel.getSongLyricsDao().fetchSongLyrics(ids)
-                            .observe(menuId == R.id.multiple_share ? fragment : activity,
-                                    new Observer<List<LyricDatabaseHelper.SongLyrics>>() {
+                        Log.d("delete", "fetch ids to delete: "+Arrays.toString(staticLiveItems.toArray()));
+                        final LifecycleOwner owner = menuId == R.id.multiple_share ? fragment :
+                                activity;
 
-                                // TODO Stop reentry into onChanged?
-                                @Override
-                                public void onChanged(@Nullable List<LyricDatabaseHelper.SongLyrics> list) {
-                                    LyricDatabaseHelper.SongLyrics[] args = toArgs(list);
+                        final LiveData<List<LyricDatabaseHelper.SongLyrics>> liveData =
+                                viewModel.getSongLyricsDao().fetchSongLyrics(ids);
 
-                                    if (menuId == R.id.multiple_share) {
-                                        if (args != null) {
-                                            LyricActionHelperKt.share(fragment, args);
+                        liveData.observe(owner,
+                            new Observer<List<LyricDatabaseHelper.SongLyrics>>() {
+                                    @Override
+                                    public void onChanged(@Nullable List<LyricDatabaseHelper.SongLyrics> list) {
+                                        liveData.removeObservers(owner);
+                                        LyricDatabaseHelper.SongLyrics[] args = toArgs(list);
+
+                                        if (menuId == R.id.multiple_share) {
+                                            if (args != null) {
+                                                LyricActionHelperKt.share(fragment, args);
+                                            } else {
+                                                LyricActionHelperKt.failShare(fragment.getContext(), R.string.share_intent_fail_message);
+                                            }
                                         } else {
-                                            LyricActionHelperKt.failShare(fragment.getContext(), R.string.share_intent_fail_message);
-                                        }
-                                    } else {
-                                        if (args != null) {
-                                            SongLyricDetailItemViewModel.RefreshListItemsOnUpdateCallback callback;
-                                            callback = new SongLyricDetailItemViewModel.RefreshListItemsOnUpdateCallback(
-                                                    new WeakReference<>(viewModel));
+                                            if (args != null) {
+                                                SongLyricDetailItemViewModel.RefreshListItemsOnUpdateCallback callback;
+                                                callback = new SongLyricDetailItemViewModel.RefreshListItemsOnUpdateCallback(
+                                                        new WeakReference<>(viewModel));
 
-                                            new LyricDatabaseHelper.SongLyricAsyncTask(
-                                                    viewModel.getSongLyricsDao(),
-                                                    LyricDatabaseHelper.SongLyricAsyncTask.DELETE,
-                                                    callback)
-                                                            .execute(args);
-                                        } else {
-                                            LyricActionHelperKt.failShare(activity, R.string.share_trash_fail_message);
+                                                new LyricDatabaseHelper.SongLyricAsyncTask(
+                                                        viewModel.getSongLyricsDao(),
+                                                        LyricDatabaseHelper.SongLyricAsyncTask.DELETE,
+                                                        callback)
+                                                        .execute(args);
+                                            } else {
+                                                LyricActionHelperKt.failShare(activity, R.string.share_trash_fail_message);
+                                            }
                                         }
                                     }
-
-                                }
-                            });
+                                });
                     }
                     break;
 
@@ -491,6 +498,7 @@ public class LyricListFragment extends Fragment {
                     @Override
                     public void onChanged(@Nullable List<SongLyricsListItem> songLyricsListItems) {
                         lyricListAdapter.submitList(songLyricsListItems);
+                        Log.d("delete", "submit list: songLyricsListItems; size="+songLyricsListItems.size());
                     }
                 });
     }

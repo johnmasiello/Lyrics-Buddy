@@ -253,14 +253,6 @@ public class LyricFragment extends Fragment {
     }
 
     @Override
-    public void onDestroy() {
-        if (songLyricsDetailViewModel != null) {
-            songLyricsDetailViewModel.getSongLyrics().removeObserver(songLyricsObserver);
-        }
-        super.onDestroy();
-    }
-
-    @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.lyric_content_options, menu);
         this.menu = menu;

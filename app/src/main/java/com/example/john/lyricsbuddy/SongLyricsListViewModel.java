@@ -127,7 +127,8 @@ public class SongLyricsListViewModel extends ViewModel {
 
                         // Apply value of static value of SongLyrics; its value in the viewModel
                         // has since changed, but it is not updated back to the database on
-                        // which query occurred
+                        // which query occurred;
+                        // This is to refresh the UI
                         if (staticSongLyrics != null && songLyricsListItems != null) {
                             long uid = staticSongLyrics.getUid();
                             MATCHING_LIST_ITEM:
@@ -154,6 +155,8 @@ public class SongLyricsListViewModel extends ViewModel {
                 public void onChanged(@Nullable SongLyrics songLyrics) {
                     List<SongLyricsListItem> items = mSongLyricListItems.getValue();
 
+                    // Update the list to show the changes on the item that occurred while in detail view
+                    // This is just to refresh the UI
                     if (songLyrics != null && items != null) {
                         long uid = songLyrics.getUid();
                         MATCHING_LIST_ITEM:

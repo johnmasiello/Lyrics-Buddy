@@ -281,6 +281,9 @@ public class LyricDatabaseHelper {
         @Override
         public boolean equals(Object obj) {
             SongLyricsListItem l2 = (SongLyricsListItem) obj;
+            if (uid != l2.uid)
+                return false;
+
             if (album != null) {
                 if (!album.equals(l2.album)) {
                     return false;
