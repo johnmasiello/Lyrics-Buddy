@@ -8,6 +8,7 @@ import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.graphics.Color;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -305,7 +306,6 @@ public class LyricListFragment extends Fragment {
             return mSelectMode;
         }
 
-        // TODO update SongLyrics in Detail View Model and call Refresh in the List View Model, if SongLyrics was not already in db
         @Override
         public boolean startSelectionMode() {
             if (mSelectMode || lyricListAdapter == null)
@@ -318,6 +318,9 @@ public class LyricListFragment extends Fragment {
                 lyricListAdapter.deselectAll();
                 ((AppCompatActivity) getActivity()).startSupportActionMode(this);
             }
+            // Handle the edge case that data in the detail UI has not been synchronized to the
+            // data source yet, such as may occur in two-pane mode
+            LyricActionHelperKt.updateDetailOnSelectionMode(getFragmentManager(), mDetailViewModel);
             return true;
         }
 
@@ -398,11 +401,14 @@ public class LyricListFragment extends Fragment {
                                                 callback = new SongLyricDetailItemViewModel.RefreshListItemsOnUpdateCallback(
                                                         new WeakReference<>(viewModel));
 
+                                                // Construct the task and execute on a serial executor
+                                                // in order to ensure that a preliminary update to the
+                                                // repository has completed before it will handle this action
                                                 new LyricDatabaseHelper.SongLyricAsyncTask(
                                                         viewModel.getSongLyricsDao(),
                                                         LyricDatabaseHelper.SongLyricAsyncTask.DELETE,
                                                         callback)
-                                                        .execute(args);
+                                                        .executeOnExecutor(AsyncTask.SERIAL_EXECUTOR, args);
                                             } else {
                                                 LyricActionHelperKt.failShare(activity, R.string.share_trash_fail_message);
                                             }

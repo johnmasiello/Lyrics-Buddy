@@ -2,7 +2,9 @@ package com.example.john.lyricsbuddy
 
 import android.content.Context
 import android.content.Intent
+import android.os.AsyncTask
 import android.support.v4.app.Fragment
+import android.support.v4.app.FragmentManager
 import android.widget.Toast
 
 /**
@@ -36,4 +38,16 @@ fun failShare(context: Context?, msgId: Int) {
 
 fun test(a: Int?):Int {
     return a?.let { a + 1 } ?: 0
+}
+
+/**
+ * If a task is performed on an executor on the repository in selection mode, it should use
+ * AsyncTask.SERIAL_EXECUTOR, in order to guarantee that this update finishes
+ */
+fun updateDetailOnSelectionMode(fragmentManager: FragmentManager?,
+                                songLyricDetailItemViewModel: SongLyricDetailItemViewModel?) {
+    (fragmentManager?.findFragmentByTag(LyricFragment.DETAIL_FRAGMENT_TAG) as? LyricFragment)?.let {
+        it.dumpLyricsIntoViewModel()
+        songLyricDetailItemViewModel!!.updateDatabase(true, AsyncTask.SERIAL_EXECUTOR)
+    }
 }

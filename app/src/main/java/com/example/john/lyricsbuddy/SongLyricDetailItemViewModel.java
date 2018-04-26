@@ -9,6 +9,7 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import java.lang.ref.WeakReference;
+import java.util.concurrent.Executor;
 
 /**
  * Created by john on 4/16/18.
@@ -155,6 +156,10 @@ public class SongLyricDetailItemViewModel extends ViewModel {
      * ******************************************************************
      */
     public void updateDatabase(boolean refreshListItems) {
+        updateDatabase(refreshListItems, null);
+    }
+
+    public void updateDatabase(boolean refreshListItems, @Nullable Executor executor) {
         LyricDatabaseHelper.SongLyrics songLyrics = getSongLyricsInstantly();
 
         if (songLyricsDirty &&
@@ -167,7 +172,11 @@ public class SongLyricDetailItemViewModel extends ViewModel {
                     LyricDatabaseHelper.SongLyricAsyncTask.UPDATE,
                     refreshListItems ? new RefreshListItemsOnUpdateCallback(mListViewModel) :
                             null);
-            task.execute(songLyrics);
+            if (executor != null) {
+                task.executeOnExecutor(executor, songLyrics);
+            } else {
+                task.execute(songLyrics);
+            }
 
             // Update state
             songLyricsDirty = false;
