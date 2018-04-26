@@ -27,12 +27,6 @@ import java.io.File;
 import java.util.List;
 
 /**
- * Callback for when the async task finishes
- */
-interface SongLyricAsyncTaskCallback {
-    void onSuccess();
-}
-/**
  * Created by john on 3/21/18.
  *
  * Singleton to manage the database of lyrics
@@ -41,8 +35,7 @@ public class LyricDatabaseHelper {
 
     private static final String DATABASE_NAME = "lyricDatabase";
 
-    @Entity(indices = {@Index("album"), @Index("track_title"), @Index("artist"),
-            @Index(value = {"album", "track_title", "artist"}, unique = true)})
+    @Entity(indices = {@Index("album"), @Index("track_title"), @Index("artist")})
     public static class SongLyrics {
         @PrimaryKey(autoGenerate = true)
         private long uid;
@@ -62,6 +55,7 @@ public class LyricDatabaseHelper {
         @Ignore
         public static final long UNSET_ID = 0;
 
+        @Ignore
         public SongLyrics() {
             // Primary key
             this.uid = UNSET_ID; // This will be treated as not-set by the auto generator
@@ -75,17 +69,6 @@ public class LyricDatabaseHelper {
             this.trackTitle = trackTitle;
             this.artist = artist;
             this.lyrics = lyrics;
-        }
-
-        boolean isBlankType1() {
-            return (album == null || album.equals("")) &&
-                    (artist == null || artist.equals("")) &&
-                    (trackTitle == null || trackTitle.equals("")) &&
-                    (lyrics == null || lyrics.equals(""));
-        }
-
-        boolean isBlankType2() {
-            return uid == 0 && isBlankType1();
         }
 
         long getUid() {
@@ -277,34 +260,35 @@ public class LyricDatabaseHelper {
             this.artist = artist;
         }
 
-        @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
         @Override
         public boolean equals(Object obj) {
-            SongLyricsListItem l2 = (SongLyricsListItem) obj;
-            if (uid != l2.uid)
-                return false;
+            return obj instanceof SongLyricsListItem &&
+                    ((SongLyricsListItem) obj).getUid() == uid &&
+                    areContentsTheSame((SongLyricsListItem) obj);
+        }
 
+        public boolean areContentsTheSame(@NonNull SongLyricsListItem item) {
             if (album != null) {
-                if (!album.equals(l2.album)) {
+                if (!album.equals(item.album)) {
                     return false;
                 }
-            } else if (l2.album != null) {
+            } else if (item.album != null) {
                 return false;
             }
 
             if (artist != null) {
-                if (!artist.equals(l2.artist)) {
+                if (!artist.equals(item.artist)) {
                     return false;
                 }
-            } else if (l2.artist != null) {
+            } else if (item.artist != null) {
                 return false;
             }
 
             if (trackTitle != null) {
-                if (!trackTitle.equals(l2.trackTitle)) {
+                if (!trackTitle.equals(item.trackTitle)) {
                     return false;
                 }
-            } else if (l2.trackTitle != null) {
+            } else if (item.trackTitle != null) {
                 return false;
             }
             return true;
@@ -375,10 +359,10 @@ public class LyricDatabaseHelper {
         void delete(SongLyrics... songLyrics);
 
         @Insert(onConflict = OnConflictStrategy.REPLACE)
-        void update(SongLyrics songLyrics);
+        Long update(SongLyrics songLyrics);
     }
 
-    @Database(entities = {SongLyrics.class}, version = 7)
+    @Database(entities = {SongLyrics.class}, version = 8)
     public abstract static class SongLyricDatabase extends RoomDatabase {
         public abstract SongLyricsDao songLyricsDao();
     }
@@ -421,7 +405,7 @@ public class LyricDatabaseHelper {
         );
     }
 
-    static class SongLyricAsyncTask extends AsyncTask<SongLyrics, Void, Void> {
+    static class SongLyricAsyncTask extends AsyncTask<SongLyrics, Void, Object> {
         private SongLyricsDao mSongLyricDao;
         private final int mCommand;
         private final SongLyricAsyncTaskCallback mCallback;
@@ -444,7 +428,7 @@ public class LyricDatabaseHelper {
         }
 
         @Override
-        protected Void doInBackground(SongLyrics... songLyrics) {
+        protected Object doInBackground(SongLyrics... songLyrics) {
             if (mSongLyricDao != null) {
                 switch (mCommand) {
                     case INSERT_ALL:
@@ -456,17 +440,23 @@ public class LyricDatabaseHelper {
                         break;
 
                     case UPDATE:
-                        mSongLyricDao.update(songLyrics[0]);
-                        break;
+                        return mSongLyricDao.update(songLyrics[0]);
                 }
             }
             return null;
         }
 
         @Override
-        protected void onPostExecute(Void aVoid) {
+        protected void onPostExecute(Object o) {
             if (mCallback != null) {
-                mCallback.onSuccess();
+                mCallback.onSuccess(o);
+            }
+        }
+
+        @Override
+        protected void onCancelled(Object o) {
+            if (mCallback != null) {
+                mCallback.onCancel(o);
             }
         }
     }

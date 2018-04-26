@@ -250,7 +250,7 @@ public class LyricListFragment extends Fragment {
                     @Override
                     public boolean areContentsTheSame(@NonNull SongLyricsListItem oldItem,
                                                       @NonNull SongLyricsListItem newItem) {
-                        return oldItem.equals(newItem);
+                        return oldItem.areContentsTheSame(newItem);
                     }
                 };
     }

@@ -18,9 +18,15 @@ import java.lang.ref.WeakReference;
 public class SongLyricDetailItemViewModel extends ViewModel {
     private long oldId, newId;
     private boolean songLyricsDirty;
+    /**
+     * A helper variable to store newly created Song Lyrics Items before setting it to
+     * mSongLyrics
+     */
+    private LyricDatabaseHelper.SongLyrics mNewSongLyrics;
     private MediatorLiveData<LyricDatabaseHelper.SongLyrics> mSongLyrics;
     private LyricDatabaseHelper.SongLyricsDao mSongLyricsDao;
     private WeakReference<SongLyricsListViewModel> mListViewModel;
+    private final WeakReference<SongLyricDetailItemViewModel> self;
 
     public  static final long NO_ID     = -1;
     private static final long NEW_ID    = -2;
@@ -28,11 +34,17 @@ public class SongLyricDetailItemViewModel extends ViewModel {
     public SongLyricDetailItemViewModel() {
         oldId = NO_ID;
         songLyricsDirty = false;
+        self = new WeakReference<>(this);
     }
 
     public void setId(long songId) {
-        if (songId != LyricDatabaseHelper.SongLyrics.UNSET_ID)
+        if (songId != LyricDatabaseHelper.SongLyrics.UNSET_ID) {
             newId = songId;
+            Log.d("delete", "detail: id set="+songId);
+        }
+        else {
+            Log.d("delete", "detail: id set="+songId);
+        }
     }
 
     @Nullable
@@ -105,7 +117,6 @@ public class SongLyricDetailItemViewModel extends ViewModel {
      */
     public boolean setSongLyrics(@NonNull LyricDatabaseHelper.SongLyrics songLyrics) {
         if (mSongLyrics != null &&
-                !songLyrics.isBlankType1() &&
                 !songLyrics.equals(mSongLyrics.getValue())) {
 
             mSongLyrics.setValue(songLyrics);
@@ -128,27 +139,27 @@ public class SongLyricDetailItemViewModel extends ViewModel {
     public void newSongLyrics() {
         // Reset the undo stack so the content in the editTexts will be synchronized with the undo stack
         WrappedEditText.resetUndoStack();
-        updateDatabase(true);
+        updateDatabase(false);
         if (mSongLyrics == null) {
             mSongLyrics = new MediatorLiveData<>();
         }
-        mSongLyrics.setValue(new LyricDatabaseHelper.SongLyrics());
-        // Indicate that songLyrics goes in a new record
-        newId = oldId = NEW_ID;
+        // Create new song lyrics; do not put it into LiveData yet
+        mNewSongLyrics = new LyricDatabaseHelper.SongLyrics();
+        updateDatabaseWithNewSong();
     }
 
     /**
      *
-     * **********************************************
-     * The point of Song Lyric Creation, using the UI
-     * **********************************************
+     * ******************************************************************
+     * Updates the SongLyrics entity in the database with the matching id
+     * ******************************************************************
      */
     public void updateDatabase(boolean refreshListItems) {
         LyricDatabaseHelper.SongLyrics songLyrics = getSongLyricsInstantly();
 
         if (songLyricsDirty &&
                 mSongLyricsDao != null &&
-                songLyrics != null && !songLyrics.isBlankType1()) {
+                songLyrics != null) {
 
             LyricDatabaseHelper.SongLyricAsyncTask task;
 
@@ -157,6 +168,27 @@ public class SongLyricDetailItemViewModel extends ViewModel {
                     refreshListItems ? new RefreshListItemsOnUpdateCallback(mListViewModel) :
                             null);
             task.execute(songLyrics);
+
+            // Update state
+            songLyricsDirty = false;
+        }
+    }
+
+    /**
+     * <p>Precondition: mNewSongLyrics contains the new song lyrics object, with its id unset</p>
+     * <br>
+     * <p>Creates updates SongLyric Database with a new SongLyrics entity, which upon success
+     * will have its id set</p>
+     */
+    private void updateDatabaseWithNewSong() {
+        if (mSongLyricsDao != null) {
+
+            LyricDatabaseHelper.SongLyricAsyncTask task;
+
+            task = new LyricDatabaseHelper.SongLyricAsyncTask(mSongLyricsDao,
+                    LyricDatabaseHelper.SongLyricAsyncTask.UPDATE,
+                    new RefreshListItemsAndRefreshItemIdCallback(mListViewModel, self));
+            task.execute(mNewSongLyrics);
 
             // Update state
             songLyricsDirty = false;
@@ -172,11 +204,62 @@ public class SongLyricDetailItemViewModel extends ViewModel {
         }
 
         @Override
-        public void onSuccess() {
+        public void onSuccess(Object result) {
             SongLyricsListViewModel listViewModel = mListViewModel.get();
 
             if (listViewModel != null) {
                 listViewModel.getLyricList(true);
+            }
+        }
+
+        @Override
+        public void onCancel(Object result) {
+        }
+    }
+
+    /**
+     * Used for creating new items and re-fetching the items list
+     */
+    private static class RefreshListItemsAndRefreshItemIdCallback extends
+            RefreshListItemsOnUpdateCallback {
+
+        private final WeakReference<SongLyricDetailItemViewModel> mDetailViewModel;
+
+        public RefreshListItemsAndRefreshItemIdCallback(WeakReference<SongLyricsListViewModel> listViewModel,
+                                                        WeakReference<SongLyricDetailItemViewModel> mDetailViewModel) {
+            super(listViewModel);
+            this.mDetailViewModel = mDetailViewModel;
+        }
+
+        @Override
+        public void onSuccess(Object result) {
+            SongLyricDetailItemViewModel itemViewModel = mDetailViewModel.get();
+            Log.d("NEW", "result" + result);
+            if (result instanceof Long && itemViewModel != null) {
+                itemViewModel.oldId = itemViewModel.newId = (Long) result;
+                itemViewModel.mNewSongLyrics.setUid((Long)result);
+
+                // Set the live data, to push through the changes
+                itemViewModel.mSongLyrics.setValue(itemViewModel.mNewSongLyrics);
+            }
+
+            super.onSuccess(result);
+        }
+
+        /**
+         * This will call itemViewModel.mSongLyrics.setValue, which will trigger the observers
+         * to refresh the UI with a blank Song Lyrics Item, to maintain consistency despite
+         * the case the new entry was not created in the database
+         */
+        @Override
+        public void onCancel(Object result) {
+            SongLyricDetailItemViewModel itemViewModel = mDetailViewModel.get();
+            Log.d("NEW", "result" + result);
+            if (itemViewModel != null) {
+                itemViewModel.oldId = itemViewModel.newId = SongLyricDetailItemViewModel.NEW_ID;
+
+                // Set the live data, to push through the changes
+                itemViewModel.mSongLyrics.setValue(itemViewModel.mNewSongLyrics);
             }
         }
     }

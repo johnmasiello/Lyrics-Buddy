@@ -131,17 +131,11 @@ public class SongLyricsListViewModel extends ViewModel {
                         // This is to refresh the UI
                         if (staticSongLyrics != null && songLyricsListItems != null) {
                             long uid = staticSongLyrics.getUid();
-                            MATCHING_LIST_ITEM:
-                            {
-                                for (SongLyricsListItem listItem : songLyricsListItems) {
-                                    if (listItem != null &&
-                                            updateListItem(listItem, staticSongLyrics, uid)) {
-                                        break MATCHING_LIST_ITEM;
-                                    }
-                                }
-                                if (!staticSongLyrics.isBlankType1()) {
-                                    songLyricsListItems.add(0,
-                                            new SongLyricsListItem(staticSongLyrics));
+
+                            for (SongLyricsListItem listItem : songLyricsListItems) {
+                                if (listItem != null &&
+                                        updateListItem(listItem, staticSongLyrics, uid)) {
+                                    break;
                                 }
                             }
                         }
@@ -159,16 +153,11 @@ public class SongLyricsListViewModel extends ViewModel {
                     // This is just to refresh the UI
                     if (songLyrics != null && items != null) {
                         long uid = songLyrics.getUid();
-                        MATCHING_LIST_ITEM:
-                        {
-                            for (SongLyricsListItem listItem : items) {
-                                if (listItem != null &&
-                                        updateListItem(listItem, songLyrics, uid)) {
-                                    break MATCHING_LIST_ITEM;
-                                }
-                            }
-                            if (!songLyrics.isBlankType1()) {
-                                items.add(0, new SongLyricsListItem(songLyrics));
+
+                        for (SongLyricsListItem listItem : items) {
+                            if (listItem != null &&
+                                    updateListItem(listItem, songLyrics, uid)) {
+                                break;
                             }
                         }
                     }
