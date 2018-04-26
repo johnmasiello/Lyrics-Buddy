@@ -23,7 +23,6 @@ import android.support.v7.view.ActionMode;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -35,7 +34,6 @@ import android.widget.TextView;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
@@ -375,7 +373,6 @@ public class LyricListFragment extends Fragment {
                                 viewModel.getLyricList().getValue();
 
                         long[] ids = LyricsListAdapter.getSelectedIds(staticLiveItems);
-                        Log.d("delete", "fetch ids to delete: "+Arrays.toString(staticLiveItems.toArray()));
                         final LifecycleOwner owner = menuId == R.id.multiple_share ? fragment :
                                 activity;
 
@@ -498,7 +495,6 @@ public class LyricListFragment extends Fragment {
                     @Override
                     public void onChanged(@Nullable List<SongLyricsListItem> songLyricsListItems) {
                         lyricListAdapter.submitList(songLyricsListItems);
-                        Log.d("delete", "submit list: songLyricsListItems; size="+songLyricsListItems.size());
                     }
                 });
     }

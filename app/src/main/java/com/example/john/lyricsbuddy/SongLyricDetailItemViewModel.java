@@ -6,7 +6,6 @@ import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModel;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.util.Log;
 
 import java.lang.ref.WeakReference;
 import java.util.concurrent.Executor;
@@ -41,10 +40,6 @@ public class SongLyricDetailItemViewModel extends ViewModel {
     public void setId(long songId) {
         if (songId != LyricDatabaseHelper.SongLyrics.UNSET_ID) {
             newId = songId;
-            Log.d("delete", "detail: id set="+songId);
-        }
-        else {
-            Log.d("delete", "detail: id set="+songId);
         }
     }
 
@@ -106,8 +101,6 @@ public class SongLyricDetailItemViewModel extends ViewModel {
     public void setSongLyricsDao(LyricDatabaseHelper.SongLyricsDao songLyricsDao) {
         if (mSongLyricsDao == null) {
             mSongLyricsDao = songLyricsDao;
-        } else {
-            Log.d("Database", "song lyric dao already set");
         }
     }
 
@@ -243,7 +236,7 @@ public class SongLyricDetailItemViewModel extends ViewModel {
         @Override
         public void onSuccess(Object result) {
             SongLyricDetailItemViewModel itemViewModel = mDetailViewModel.get();
-            Log.d("NEW", "result" + result);
+
             if (result instanceof Long && itemViewModel != null) {
                 itemViewModel.oldId = itemViewModel.newId = (Long) result;
                 itemViewModel.mNewSongLyrics.setUid((Long)result);
@@ -263,7 +256,7 @@ public class SongLyricDetailItemViewModel extends ViewModel {
         @Override
         public void onCancel(Object result) {
             SongLyricDetailItemViewModel itemViewModel = mDetailViewModel.get();
-            Log.d("NEW", "result" + result);
+
             if (itemViewModel != null) {
                 itemViewModel.oldId = itemViewModel.newId = SongLyricDetailItemViewModel.NEW_ID;
 

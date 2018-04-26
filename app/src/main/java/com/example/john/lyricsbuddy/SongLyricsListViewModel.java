@@ -6,12 +6,13 @@ import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModel;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.util.Log;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
 
-import static com.example.john.lyricsbuddy.LyricDatabaseHelper.*;
+import static com.example.john.lyricsbuddy.LyricDatabaseHelper.SongLyrics;
+import static com.example.john.lyricsbuddy.LyricDatabaseHelper.SongLyricsDao;
+import static com.example.john.lyricsbuddy.LyricDatabaseHelper.SongLyricsListItem;
 
 /**
  * Created by john on 4/14/18.
@@ -63,10 +64,7 @@ public class SongLyricsListViewModel extends ViewModel {
             needsToFetchItems = true;
         }
         if (needsToFetchItems || forceRefresh) {
-            Log.d("Database", "Need to fetch LyricListItems as LiveData");
             loadSongLyricListItems();
-        } else {
-            Log.d("Database", "Song lyric list items already populated");
         }
         return mSongLyricListItems;
     }

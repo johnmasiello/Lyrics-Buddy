@@ -10,15 +10,15 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 
-import java.util.List;
-
-import static com.example.john.lyricsbuddy.LyricDatabaseHelper.*;
+import static com.example.john.lyricsbuddy.LyricDatabaseHelper.SongLyricsDao;
+import static com.example.john.lyricsbuddy.LyricDatabaseHelper.doesDatabaseExist;
+import static com.example.john.lyricsbuddy.LyricDatabaseHelper.getSongLyricDatabase;
+import static com.example.john.lyricsbuddy.LyricDatabaseHelper.writeInitialRecords;
 
 public class MainActivity extends AppCompatActivity {
 
