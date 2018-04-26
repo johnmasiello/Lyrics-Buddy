@@ -198,7 +198,7 @@ public class LyricFragment extends Fragment {
         ignoreChange = true;
         dumpLyricsIntoViewModel();
         // Persist the data
-        songLyricsDetailViewModel.updateDatabase(false);
+        songLyricsDetailViewModel.updateDatabase(true);
     }
 
     private void setTextWatcherEnabled(boolean enabled) {

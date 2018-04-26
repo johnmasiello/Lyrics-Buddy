@@ -502,4 +502,10 @@ public class LyricListFragment extends Fragment {
                     }
                 });
     }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // TODO LyricListFragment allow sorts on list > using queries
+        return super.onOptionsItemSelected(item);
+    }
 }

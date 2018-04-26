@@ -2,6 +2,7 @@ package com.example.john.lyricsbuddy;
 
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -12,6 +13,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 
 import java.util.List;
 
@@ -135,6 +138,14 @@ public class MainActivity extends AppCompatActivity {
                         .replace(R.id.lyric_master_container, new LyricListFragment(),
                                 LyricListFragment.LYRIC_LIST_FRAGMENT_TAG)
                         .commit();
+                // Hide the keyboard
+                View view = this.getCurrentFocus();
+                if (view != null) {
+                    InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                    if (imm != null) {
+                        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+                    }
+                }
                 return true;
 
             case R.id.new_lyrics: {
@@ -174,7 +185,6 @@ public class MainActivity extends AppCompatActivity {
                 }
                 return true;
             }
-            // TODO LyricListFragment allow sorts on list > using queries
 
             default:
                 return super.onOptionsItemSelected(item);
