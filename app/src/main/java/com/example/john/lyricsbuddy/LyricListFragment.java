@@ -8,7 +8,6 @@ import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.graphics.Color;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -257,6 +256,9 @@ public class LyricListFragment extends Fragment {
 
     private RecyclerView recyclerView;
     private LyricsListAdapter lyricListAdapter;
+    private SongLyricsListViewModel mListViewModel;
+    private SongLyricDetailItemViewModel mDetailViewModel;
+    private MainActivityViewModel mActivityViewModel;
     /**
      * selectMode is the only action mode for the activity
      */
@@ -269,17 +271,11 @@ public class LyricListFragment extends Fragment {
             FragmentManager fragmentManager = getFragmentManager();
 
             if (fragmentManager != null && getActivity() != null) {
-                SongLyricDetailItemViewModel detailViewModel =
-                        ViewModelProviders.of(getActivity()).get(SongLyricDetailItemViewModel.class);
-
                 // Give the view model the id of the item...
                 // so it can fetch the item for the detail view
-                detailViewModel.setId(item.getUid());
+                mDetailViewModel.setId(item.getUid());
 
-                MainActivityViewModel activityViewModel = ViewModelProviders.of(getActivity())
-                        .get(MainActivityViewModel.class);
-
-                if (activityViewModel.isTwoPane()) {
+                if (mActivityViewModel.isTwoPane()) {
                     if (fragmentManager.findFragmentById(R.id.lyric_detail_container) == null) {
                         fragmentManager.beginTransaction()
                                 .add(R.id.lyric_detail_container, new LyricFragment(),
@@ -370,9 +366,7 @@ public class LyricListFragment extends Fragment {
                     final Fragment fragment = LyricListFragment.this;
                     if (activity != null) {
 
-                        final SongLyricsListViewModel viewModel =
-                                ViewModelProviders.of(activity)
-                                        .get(SongLyricsListViewModel.class);
+                        final SongLyricsListViewModel viewModel = mListViewModel;
 
                         List<SongLyricsListItem> staticLiveItems =
                                 viewModel.getLyricList().getValue();
@@ -479,19 +473,19 @@ public class LyricListFragment extends Fragment {
 
     @SuppressWarnings("ConstantConditions")
     private void initializeSongLyricsListItemViewModel() {
+        mActivityViewModel = ViewModelProviders.of(getActivity()).get(MainActivityViewModel.class);
+        mListViewModel = ViewModelProviders.of(getActivity()).get(SongLyricsListViewModel.class);
+        mDetailViewModel = ViewModelProviders.of(getActivity()).get(SongLyricDetailItemViewModel.class);
 
-        SongLyricDetailItemViewModel songLyricDetailItemViewModel =
-                ViewModelProviders.of(getActivity()).get(SongLyricDetailItemViewModel.class);
-
-        SongLyricsListViewModel songLyricsListViewModel =
-                ViewModelProviders.of(getActivity()).get(SongLyricsListViewModel.class);
-
-        songLyricsListViewModel.setSongLyricsDao(getSongLyricDatabase(getActivity()).songLyricsDao());
-        songLyricsListViewModel.setSongLyricViewModel(songLyricDetailItemViewModel);
-        songLyricDetailItemViewModel.setSongLyricsListViewModel(songLyricsListViewModel);
+        LyricDatabaseHelper.SongLyricsDao dao =
+                getSongLyricDatabase(getActivity()).songLyricsDao();
+        mListViewModel.setSongLyricsDao(dao);
+        mListViewModel.setSongLyricViewModel(mDetailViewModel);
+        mDetailViewModel.setSongLyricsDao(dao);
+        mDetailViewModel.setSongLyricsListViewModel(mListViewModel);
         // Add an observer register changes from LiveData to the adapter backing the recyclerView
         // to reflect changes in the UI
-        songLyricsListViewModel
+        mListViewModel
                 .getLyricList()
                 .observe(this, new Observer<List<SongLyricsListItem>>() {
 

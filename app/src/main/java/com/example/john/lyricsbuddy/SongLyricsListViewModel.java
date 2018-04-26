@@ -116,29 +116,12 @@ public class SongLyricsListViewModel extends ViewModel {
         final LiveData<SongLyrics> songLyricsLiveData =
                 lyricsViewModel != null ? lyricsViewModel.getSongLyrics() :
                         null;
-        final SongLyrics staticSongLyrics =
-                lyricsViewModel != null ? lyricsViewModel.getSongLyricsInstantly() : null;
 
         mSongLyricListItems.addSource(query_sorted,
                 new Observer<List<SongLyricsListItem>>() {
                     @Override
                     public void onChanged(@Nullable List<SongLyricsListItem> songLyricsListItems) {
                         mSongLyricListItems.removeSource(query_sorted);
-
-                        // Apply value of static value of SongLyrics; its value in the viewModel
-                        // has since changed, but it is not updated back to the database on
-                        // which query occurred;
-                        // This is to refresh the UI
-                        if (staticSongLyrics != null && songLyricsListItems != null) {
-                            long uid = staticSongLyrics.getUid();
-
-                            for (SongLyricsListItem listItem : songLyricsListItems) {
-                                if (listItem != null &&
-                                        updateListItem(listItem, staticSongLyrics, uid)) {
-                                    break;
-                                }
-                            }
-                        }
                         mSongLyricListItems.setValue(songLyricsListItems);
                     }
                 });

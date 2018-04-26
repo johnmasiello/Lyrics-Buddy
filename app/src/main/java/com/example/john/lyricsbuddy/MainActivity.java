@@ -142,7 +142,8 @@ public class MainActivity extends AppCompatActivity {
                 Fragment detail = fragmentManager.findFragmentByTag(LyricFragment.DETAIL_FRAGMENT_TAG);
 
                 if (detail instanceof LyricFragment) {
-                    // Pull the lyrics from the UI
+                    // Pull the data from the old lyrics item from the UI,
+                    // to be updated in the repository
                     ((LyricFragment) detail).dumpLyricsIntoViewModel();
                 }
 
