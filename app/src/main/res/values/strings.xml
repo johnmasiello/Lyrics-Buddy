@@ -132,12 +132,18 @@
     <string name="title_lyrics_on_web">Lyrics on Web</string>
 
     <string-array name="song_lyric_site_names">
-        <item>www.azlyrics.com</item>
-        <item>www.songlyrics.com</item>
-        <item>www.lyrics.com</item>
-        <item>genius.com</item>
-        <item>www.ksbj.org/music-search</item>
-        <item>www.lyricsondemand.com</item>
-        <item>www.metrolyrics.com</item>
+        <item>Google Search: \"Song Lyrics\"</item>
+        <item>www.azlyrics.com/</item>
+        <item>www.lyrics.com/</item>
+        <item>genius.com/</item>
+        <item>www.lyricsondemand.com/</item>
+    </string-array>
+
+    <string-array name="secure_song_lyrics_site_urls">
+        <item>Song Lyrics</item>
+        <item>https://www.azlyrics.com/</item>
+        <item>https://www.lyrics.com/</item>
+        <item>https://genius.com/</item>
+        <item>https://www.lyricsondemand.com/</item>
     </string-array>
 </resources>

@@ -1,33 +1,21 @@
 package com.example.john.lyricsbuddy;
 
+import android.app.SearchManager;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.Resources;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.AppCompatSpinner;
-import android.support.v7.widget.ThemedSpinnerAdapter;
-import android.util.Log;
-import android.view.LayoutInflater;
+import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.BaseAdapter;
-import android.widget.Spinner;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import static com.example.john.lyricsbuddy.LyricDatabaseHelper.SongLyricsDao;
@@ -36,6 +24,8 @@ import static com.example.john.lyricsbuddy.LyricDatabaseHelper.getSongLyricDatab
 import static com.example.john.lyricsbuddy.LyricDatabaseHelper.writeInitialRecords;
 
 public class MainActivity extends AppCompatActivity {
+
+    private String[] webUrls, webHostNames;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,6 +36,8 @@ public class MainActivity extends AppCompatActivity {
         handleIntent();
 
         setUpViewFragments();
+        webHostNames = getResources().getStringArray(R.array.song_lyric_site_names);
+        webUrls = getResources().getStringArray(R.array.secure_song_lyrics_site_urls);
     }
 
     private void handleIntent() {
@@ -141,50 +133,13 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main, menu);
-
-        // Initialize action view for searching the web
-        final MenuItem searchWeb = menu.findItem(R.id.searchWeb);
-
-        if (searchWeb != null) {
-            View spinnerView = searchWeb.getActionView();
-
-            if (spinnerView instanceof AppCompatSpinner) {
-                final AppCompatSpinner spinner = ((AppCompatSpinner) spinnerView);
-
-                // Row data
-                String[] items = getResources().getStringArray(R.array.song_lyric_site_names);
-                final String[] response = items;
-
-                WebSearchAdapter<String> adapter =
-                        new WebSearchAdapter<>(this,
-                                R.layout.web_search_list_item_layout,
-                                items);
-
-                spinner.setAdapter(adapter);
-                spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                    int mPrevPosition = -1;
-                    @Override
-                    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                        if (mPrevPosition != -1) {
-                            Toast.makeText(view.getContext(), response[position], Toast.LENGTH_SHORT).show();
-                            searchWeb.collapseActionView();
-                        }
-                        mPrevPosition = position;
-                    }
-
-                    @Override
-                    public void onNothingSelected(AdapterView<?> parent) {
-                    }
-                });
-            }
-        }
         return super.onCreateOptionsMenu(menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case android.R.id.home:
+            case android.R.id.home: {
                 removeHomeAsUp();
                 getSupportFragmentManager().beginTransaction()
                         .replace(R.id.lyric_master_container, new LyricListFragment(),
@@ -193,12 +148,13 @@ public class MainActivity extends AppCompatActivity {
                 // Hide the keyboard
                 View view = this.getCurrentFocus();
                 if (view != null) {
-                    InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                     if (imm != null) {
                         imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
                     }
                 }
                 return true;
+            }
 
             case R.id.new_lyrics: {
                 FragmentManager fragmentManager = getSupportFragmentManager();
@@ -238,9 +194,47 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
 
+            case R.id.searchWeb: {
+                View view = findViewById(android.R.id.content);
+                registerForContextMenu(view);
+                openContextMenu(view);
+                unregisterForContextMenu(view);
+                return true;
+            }
+
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    // TODO Convert to a dialog Fragment, with title
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+        // Create the menu content
+        int id = 1;
+        int order = 0;
+        final int groupId = 66;
+
+        for (String site : webHostNames) {
+             menu.add(groupId, id++, order++, site);
+        }
+    }
+
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+
+        int id = item.getItemId();
+
+        if (1 <= id && id <= webUrls.length) {
+            String url = webUrls[id - 1];
+            Toast.makeText(this, url, Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(Intent.ACTION_WEB_SEARCH);
+            intent.putExtra(SearchManager.QUERY, url);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+        }
+        return super.onContextItemSelected(item);
     }
 
     private void removeHomeAsUp() {
