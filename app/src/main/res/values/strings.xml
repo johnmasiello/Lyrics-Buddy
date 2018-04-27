@@ -130,4 +130,14 @@
     <string name="mimeType">text/*</string>
     <string name="mimeTypePrefix">text</string>
     <string name="title_lyrics_on_web">Lyrics on Web</string>
+
+    <string-array name="song_lyric_site_names">
+        <item>www.azlyrics.com</item>
+        <item>www.songlyrics.com</item>
+        <item>www.lyrics.com</item>
+        <item>genius.com</item>
+        <item>www.ksbj.org/music-search</item>
+        <item>www.lyricsondemand.com</item>
+        <item>www.metrolyrics.com</item>
+    </string-array>
 </resources>
