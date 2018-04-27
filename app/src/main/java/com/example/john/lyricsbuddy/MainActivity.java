@@ -14,6 +14,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Toast;
 
 import static com.example.john.lyricsbuddy.LyricDatabaseHelper.SongLyricsDao;
 import static com.example.john.lyricsbuddy.LyricDatabaseHelper.doesDatabaseExist;
@@ -186,6 +187,10 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
 
+            case R.id.searchWeb:
+                Toast.makeText(this, "Searching the web", Toast.LENGTH_SHORT).show();
+                return true;
+
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -206,5 +211,4 @@ public class MainActivity extends AppCompatActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
     }
-
 }

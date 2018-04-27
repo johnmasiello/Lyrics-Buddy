@@ -49,6 +49,16 @@ public class SongLyricDetailItemViewModel extends ViewModel {
     }
 
     /**
+     *
+     * @param songLyricsReceived The songLyrics that is received by the observer
+     * @return songLyricsReceiver != null and songLyricsReceived.getUid() equals the id set with
+     * {@link #setId(long)}
+     */
+    public boolean songLyricsIsLoaded(@Nullable LyricDatabaseHelper.SongLyrics songLyricsReceived) {
+        return songLyricsReceived != null && songLyricsReceived.getUid() == newId;
+    }
+
+    /**
      * Precondition: {@link #setId(long)}
      */
     public LiveData<LyricDatabaseHelper.SongLyrics> getSongLyrics() {

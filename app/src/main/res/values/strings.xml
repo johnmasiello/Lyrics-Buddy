@@ -129,4 +129,5 @@
     <string name="share_intent_subject_line_ext">.txt</string>
     <string name="mimeType">text/*</string>
     <string name="mimeTypePrefix">text</string>
+    <string name="title_lyrics_on_web">Lyrics on Web</string>
 </resources>

@@ -6,4 +6,10 @@
         android:icon="@drawable/ic_add_24dp"
         android:title="@string/title_new_lyrics"
         app:showAsAction="always"/>
+
+    <item
+        android:id="@+id/searchWeb"
+        android:title="@string/title_lyrics_on_web"
+        app:showAsAction="ifRoom"
+        />
 </menu>

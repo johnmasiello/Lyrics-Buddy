@@ -4,7 +4,6 @@ import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
-import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.os.Build;
@@ -30,9 +29,6 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ScrollView;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import org.json.JSONArray;
 
 import java.util.List;
 import java.util.Random;
@@ -158,6 +154,7 @@ public class LyricFragment extends Fragment {
         return rootView;
     }
 
+    @SuppressWarnings("ConstantConditions")
     private void connectToSongLyricsItemViewModel() {
         //noinspection ConstantConditions
         songLyricsDetailViewModel = ViewModelProviders.of(getActivity()).get(SongLyricDetailItemViewModel.class);
@@ -169,7 +166,8 @@ public class LyricFragment extends Fragment {
         songLyricsObserver = new Observer<SongLyrics>() {
             @Override
             public void onChanged(@Nullable SongLyrics songLyrics) {
-                if (songLyrics == null || ignoreChange) {
+                if (ignoreChange ||
+                        !songLyricsDetailViewModel.songLyricsIsLoaded(songLyrics)) {
                     ignoreChange = false;
                     return;
                 }
