@@ -16,14 +16,17 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatSpinner;
 import android.support.v7.widget.ThemedSpinnerAdapter;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -140,64 +143,39 @@ public class MainActivity extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.main, menu);
 
         // Initialize action view for searching the web
-        MenuItem searchWeb = menu.findItem(R.id.searchWeb);
+        final MenuItem searchWeb = menu.findItem(R.id.searchWeb);
 
         if (searchWeb != null) {
             View spinnerView = searchWeb.getActionView();
 
             if (spinnerView instanceof AppCompatSpinner) {
-                AppCompatSpinner spinner = ((AppCompatSpinner) spinnerView);
+                final AppCompatSpinner spinner = ((AppCompatSpinner) spinnerView);
 
                 // Row data
                 String[] items = getResources().getStringArray(R.array.song_lyric_site_names);
                 final String[] response = items;
 
-                BaseAdapter adapter =
-                        new ArrayAdapter<String>(this,
+                WebSearchAdapter<String> adapter =
+                        new WebSearchAdapter<>(this,
                                 R.layout.web_search_list_item_layout,
-                                items)
-                        {
-                            private final ThemedSpinnerAdapter.Helper mDropDownHelper =
-                                    new ThemedSpinnerAdapter.Helper(MainActivity.this);
-                            private final View.OnClickListener mOnClick = new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    Object position_ = v.getTag();
-                                    int position = position_ instanceof Integer ? ((Integer) position_) : 0;
-
-                                    Toast.makeText(v.getContext(), response[position], Toast.LENGTH_SHORT).show();
-                                }
-                            };
-
-                            @Override
-                            public View getDropDownView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-                                View view;
-                                if (convertView == null) {
-                                    // Inflate the drop down using the helper's LayoutInflater
-                                    LayoutInflater inflater = mDropDownHelper.getDropDownViewInflater();
-                                    view = inflater.inflate(R.layout.support_simple_spinner_dropdown_item, parent, false);
-
-                                    view.setOnClickListener(mOnClick);
-                                } else {
-                                    view = convertView;
-                                }
-                                view.setTag(position);
-                                return view;
-                            }
-
-                            @Override
-                            public void setDropDownViewTheme(@Nullable Resources.Theme theme) {
-                                mDropDownHelper.setDropDownViewTheme(theme);
-                            }
-
-                            @Nullable
-                            @Override
-                            public Resources.Theme getDropDownViewTheme() {
-                                return mDropDownHelper.getDropDownViewTheme();
-                            }
-                        };
+                                items);
 
                 spinner.setAdapter(adapter);
+                spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                    int mPrevPosition = -1;
+                    @Override
+                    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                        if (mPrevPosition != -1) {
+                            Toast.makeText(view.getContext(), response[position], Toast.LENGTH_SHORT).show();
+                            searchWeb.collapseActionView();
+                        }
+                        mPrevPosition = position;
+                    }
+
+                    @Override
+                    public void onNothingSelected(AdapterView<?> parent) {
+                    }
+                });
             }
         }
         return super.onCreateOptionsMenu(menu);
