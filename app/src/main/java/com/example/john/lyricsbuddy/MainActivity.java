@@ -1,22 +1,37 @@
 package com.example.john.lyricsbuddy;
 
+import android.app.Dialog;
 import android.app.SearchManager;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.view.ContextMenu;
+import android.util.DisplayMetrics;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import java.util.zip.Inflater;
 
 import static com.example.john.lyricsbuddy.LyricDatabaseHelper.SongLyricsDao;
 import static com.example.john.lyricsbuddy.LyricDatabaseHelper.doesDatabaseExist;
@@ -25,7 +40,7 @@ import static com.example.john.lyricsbuddy.LyricDatabaseHelper.writeInitialRecor
 
 public class MainActivity extends AppCompatActivity {
 
-    private String[] webUrls, webHostNames;
+    private static final String WEB_SEARCH_DIALOG_TAG = "Web Search Dialog";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,8 +51,6 @@ public class MainActivity extends AppCompatActivity {
         handleIntent();
 
         setUpViewFragments();
-        webHostNames = getResources().getStringArray(R.array.song_lyric_site_names);
-        webUrls = getResources().getStringArray(R.array.secure_song_lyrics_site_urls);
     }
 
     private void handleIntent() {
@@ -195,10 +208,10 @@ public class MainActivity extends AppCompatActivity {
             }
 
             case R.id.searchWeb: {
-                View view = findViewById(android.R.id.content);
-                registerForContextMenu(view);
-                openContextMenu(view);
-                unregisterForContextMenu(view);
+//                if (getSupportFragmentManager().findFragmentByTag(WEB_SEARCH_DIALOG_TAG) == null) {
+                    DialogFragment searchWeb = new WebDialogFragment();
+                    searchWeb.show(getSupportFragmentManager(), WEB_SEARCH_DIALOG_TAG);
+//                }
                 return true;
             }
 
@@ -206,37 +219,6 @@ public class MainActivity extends AppCompatActivity {
                 return super.onOptionsItemSelected(item);
         }
     }
-
-    // TODO Convert to a dialog Fragment, with title
-    @Override
-    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
-        super.onCreateContextMenu(menu, v, menuInfo);
-        // Create the menu content
-        int id = 1;
-        int order = 0;
-        final int groupId = 66;
-
-        for (String site : webHostNames) {
-             menu.add(groupId, id++, order++, site);
-        }
-    }
-
-    @Override
-    public boolean onContextItemSelected(MenuItem item) {
-
-        int id = item.getItemId();
-
-        if (1 <= id && id <= webUrls.length) {
-            String url = webUrls[id - 1];
-            Toast.makeText(this, url, Toast.LENGTH_SHORT).show();
-            Intent intent = new Intent(Intent.ACTION_WEB_SEARCH);
-            intent.putExtra(SearchManager.QUERY, url);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(intent);
-        }
-        return super.onContextItemSelected(item);
-    }
-
     private void removeHomeAsUp() {
         // Hide the Up button in the action bar.
         ActionBar actionBar = getSupportActionBar();
@@ -250,6 +232,100 @@ public class MainActivity extends AppCompatActivity {
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
+        }
+    }
+
+    public static class WebDialogFragment extends DialogFragment {
+
+        @NonNull
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            Context context = getContext();
+
+            LayoutInflater inflater = ((LayoutInflater) context.getSystemService(LAYOUT_INFLATER_SERVICE));
+            assert inflater != null;
+
+            final String[] webHostNames, webUrls;
+
+            // Create a custom ListView, to set to the dialog
+            View root = inflater.inflate(R.layout.web_search_layout, null);
+
+            webHostNames = getResources().getStringArray(R.array.song_lyric_site_names);
+            webUrls = getResources().getStringArray(R.array.secure_song_lyrics_site_urls);
+
+            final View.OnClickListener onClickListener = new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    int position = ((WebAdapter.ViewHolder) v.getTag()).position;
+                    String url = webUrls[position];
+
+                    Context context1 = v.getContext();
+                    Toast.makeText(context1, url, Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(Intent.ACTION_WEB_SEARCH);
+                    intent.putExtra(SearchManager.QUERY, url);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    context1.startActivity(intent);
+
+                    // Dismiss the dialog
+                    dismiss();
+                }
+            };
+            ArrayAdapter<String> adapter = new WebAdapter(context,
+                    R.layout.web_search_list_item_layout,
+                    R.id.web_search_title_text,
+                    webHostNames,
+                    onClickListener
+            );
+
+            ListView listView = root.findViewById(R.id.listView);
+            assert listView != null;
+            listView.setAdapter(adapter);
+
+            return new AlertDialog.Builder(context, android.support.v7.appcompat.R.style.Theme_AppCompat_Light_DialogWhenLarge)
+                    .setView(root)
+                    .setTitle(R.string.dialog_title_lyrics_on_web)
+                    .create();
+        }
+
+        private static class WebAdapter extends ArrayAdapter<String> {
+            private final View.OnClickListener mOnClickListener;
+            private final String[] mItems;
+
+            WebAdapter(@NonNull Context context, int resource, int textViewResourceId,
+                       @NonNull String[] objects, View.OnClickListener onClickListener) {
+                super(context, resource, textViewResourceId, objects);
+                mItems = objects;
+                mOnClickListener = onClickListener;
+            }
+
+            @NonNull
+            @Override
+            public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+                View view = super.getView(position, convertView, parent);
+                TextView textView;
+
+                if (convertView == null) {
+                    textView = view.findViewById(R.id.web_search_title_text);
+                    view.setTag(new ViewHolder(textView, position));
+                    view.setOnClickListener(mOnClickListener);
+                } else {
+                    textView = ((ViewHolder) view.getTag()).textView;
+                }
+                assert textView != null;
+                textView.setText(mItems[position]);
+
+                return view;
+            }
+
+            public static class ViewHolder {
+                public TextView textView;
+                public int position;
+
+                public ViewHolder(TextView textView, int position) {
+                    this.textView = textView;
+                    this.position = position;
+                }
+            }
         }
     }
 }

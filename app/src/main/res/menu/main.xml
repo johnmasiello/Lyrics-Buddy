@@ -10,7 +10,7 @@
     <item
         android:id="@+id/searchWeb"
         android:icon="@drawable/ic_explore_24dp"
-        android:title="@string/title_lyrics_on_web"
+        android:title="@string/menu_title_lyrics_on_web"
         app:showAsAction="ifRoom"
         />
 </menu>
