@@ -17,9 +17,10 @@ class PaddedBackgroundColorSpan implements LineBackgroundSpan {
     private int mBackgroundColor = Color.WHITE;
     private Rect mBgRect;
 
+    public static final float LINE_SPACING_MULTIPLIER = 1.2f;
     private static final int JUSTIFY_CENTER = 0;
     private static final int JUSTIFY_FULL = 1;
-    private final int alignment = JUSTIFY_CENTER;
+    private final int alignment = JUSTIFY_FULL;
 
     PaddedBackgroundColorSpan(int padding, int backgroundColor) {
         this.mPadding = padding;
@@ -34,8 +35,9 @@ class PaddedBackgroundColorSpan implements LineBackgroundSpan {
 
         Paint.FontMetricsInt fmi = p.getFontMetricsInt();
         int inflatePadding = (int) (mPadding * 1.5f);
-        int paddingTop = (int) (mPadding * 0.5f);
-        int paddingBottom = (int) (mPadding * 0.5f);
+        int lesserPadding = (int)((fmi.bottom - fmi.top) * (LINE_SPACING_MULTIPLIER - 1.0f)) >> 1;
+        int paddingTop, paddingBottom;
+        paddingTop = paddingBottom = lesserPadding + 2;
 
         switch (alignment) {
             case JUSTIFY_CENTER:

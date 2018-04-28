@@ -132,8 +132,11 @@ public class LyricFragment extends Fragment {
 
         trackInfo.clear();
 
+        TextView textView;
         for (int id : textViewIDs) {
-            trackInfo.append(id, ((TextView) rootView.findViewById(id)));
+            textView = rootView.findViewById(id);
+            textView.setLineSpacing(highlightPadding, PaddedBackgroundColorSpan.LINE_SPACING_MULTIPLIER);
+            trackInfo.append(id, textView);
         }
         // Get the default ShadowLayer properties
         TextView t1 = trackInfo.get(textViewIDs[0]);
@@ -148,7 +151,7 @@ public class LyricFragment extends Fragment {
         // Force the lyrics to respect the color background padding
         lyrics.setShadowLayer(highlightPadding /* radius */, 0, 0, Color.TRANSPARENT);
         lyrics.setPadding(highlightPadding, 0, highlightPadding, highlightPadding);
-        lyrics.setLineSpacing(highlightPadding, 1.0f);
+        lyrics.setLineSpacing(highlightPadding, PaddedBackgroundColorSpan.LINE_SPACING_MULTIPLIER);
         lyricsScroller = rootView.findViewById(R.id.lyrics_scroller);
 
         return rootView;
@@ -263,7 +266,7 @@ public class LyricFragment extends Fragment {
 
         MenuItem itemNew = menu.findItem(R.id.new_lyrics);
         if (itemNew != null) {
-            itemNew.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
+            itemNew.setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
         }
 
         // Update the lyrics

@@ -4,6 +4,13 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
+        android:id="@+id/share_lyrics"
+        android:icon="@drawable/ic_share_22dp"
+        android:title="@string/lyric_options_share"
+        app:showAsAction="ifRoom"
+        />
+
+    <item
         android:id="@+id/edit_lyrics"
         android:title="@string/lyric_options_edit"
         app:showAsAction="never|withText"
@@ -14,13 +21,6 @@
         android:title="@string/lyric_options_show"
         app:showAsAction="never|withText"
         android:visible="false"
-        />
-
-    <item
-        android:id="@+id/share_lyrics"
-        android:icon="@drawable/ic_share_22dp"
-        android:title="@string/lyric_options_share"
-        app:showAsAction="ifRoom"
         />
 
     <item
