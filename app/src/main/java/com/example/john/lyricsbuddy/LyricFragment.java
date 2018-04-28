@@ -272,7 +272,7 @@ public class LyricFragment extends Fragment {
         // Update the lyrics
         updateLyricsMode(mode);
 
-        super.onCreateOptionsMenu(menu, inflater);
+//        super.onCreateOptionsMenu(menu, inflater);
     }
 
     @Override

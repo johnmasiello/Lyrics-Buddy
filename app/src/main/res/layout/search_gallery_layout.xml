@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.SearchView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/gallery_search_view"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:defaultQueryHint="Artist, Album, or Track Title"
+    android:inputType="textNoSuggestions|textCapWords"
+    >
+
+</android.support.v7.widget.SearchView>

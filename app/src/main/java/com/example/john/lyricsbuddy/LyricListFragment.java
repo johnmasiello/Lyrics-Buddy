@@ -441,6 +441,12 @@ public class LyricListFragment extends Fragment {
         super();
     }
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -500,8 +506,46 @@ public class LyricListFragment extends Fragment {
     }
 
     @Override
+    public void onCreateOptionsMenu(final Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.lyric_list_options, menu);
+        MenuItem searchGallery = menu.findItem(R.id.lyric_list_search);
+        final MenuItem narrowQuery = menu.findItem(R.id.narrow_query);
+
+        searchGallery.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
+            @Override
+            public boolean onMenuItemActionExpand(MenuItem item) {
+                item.setVisible(false);
+                narrowQuery.setVisible(true);
+                return true;
+            }
+
+            @Override
+            public boolean onMenuItemActionCollapse(MenuItem item) {
+                item.setVisible(true);
+                narrowQuery.setVisible(false);
+
+                Activity activity = getActivity();
+                if (activity != null) {
+                    activity.invalidateOptionsMenu();
+                }
+                return true;
+            }
+        });
+
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // TODO LyricListFragment allow sorts on list > using queries
-        return super.onOptionsItemSelected(item);
+        switch (item.getItemId()) {
+            case R.id.lyric_list_search:
+                // TODO Do Stuff on action search; ie, query local sqlite db
+                // ...
+                return super.onOptionsItemSelected(item);
+
+
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 }
