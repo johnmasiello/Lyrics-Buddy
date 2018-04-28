@@ -48,8 +48,9 @@
 
         <item
             android:id="@+id/palette"
+            android:icon="@drawable/ic_palette_black_24dp"
             android:title="@string/lyric_options_colors"
-            app:showAsAction="never|withText"
+            app:showAsAction="ifRoom"
             android:visible="false">
 
             <menu>
