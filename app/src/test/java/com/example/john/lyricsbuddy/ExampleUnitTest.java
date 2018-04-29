@@ -5,7 +5,6 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -109,6 +108,6 @@ public class ExampleUnitTest {
     @Test
     public void callKotlinFromJava() {
         Integer p = null;
-        assertEquals(0, LyricActionHelperKt.test(p));
+        assertEquals(0, LyricActionBarHelperKt.test(p));
     }
 }

@@ -23,6 +23,7 @@ import android.support.v7.view.ActionMode;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -258,6 +259,7 @@ public class LyricListFragment extends Fragment {
     private SongLyricsListViewModel mListViewModel;
     private SongLyricDetailItemViewModel mDetailViewModel;
     private MainActivityViewModel mActivityViewModel;
+
     /**
      * selectMode is the only action mode for the activity
      */
@@ -318,7 +320,7 @@ public class LyricListFragment extends Fragment {
             }
             // Handle the edge case that data in the detail UI has not been synchronized to the
             // data source yet, such as may occur in two-pane mode
-            LyricActionHelperKt.updateDetailOnSelectionMode(getFragmentManager(), mDetailViewModel);
+            LyricActionBarHelperKt.updateDetailOnSelectionMode(getFragmentManager(), mDetailViewModel);
             return true;
         }
 
@@ -388,9 +390,9 @@ public class LyricListFragment extends Fragment {
 
                                         if (menuId == R.id.multiple_share) {
                                             if (args != null) {
-                                                LyricActionHelperKt.share(fragment, args);
+                                                LyricActionBarHelperKt.share(fragment, args);
                                             } else {
-                                                LyricActionHelperKt.failShare(fragment.getContext(), R.string.share_intent_fail_message);
+                                                LyricActionBarHelperKt.failShare(fragment.getContext(), R.string.share_intent_fail_message);
                                             }
                                         } else {
                                             if (args != null) {
@@ -407,7 +409,7 @@ public class LyricListFragment extends Fragment {
                                                         callback)
                                                         .executeOnExecutor(AsyncTask.SERIAL_EXECUTOR, args);
                                             } else {
-                                                LyricActionHelperKt.failShare(activity, R.string.share_trash_fail_message);
+                                                LyricActionBarHelperKt.failShare(activity, R.string.share_trash_fail_message);
                                             }
                                         }
                                     }
@@ -508,9 +510,15 @@ public class LyricListFragment extends Fragment {
     @Override
     public void onCreateOptionsMenu(final Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.lyric_list_options, menu);
-        MenuItem searchGallery = menu.findItem(R.id.lyric_list_search);
-        final MenuItem narrowQuery = menu.findItem(R.id.narrow_query);
+        MenuItem searchGallery, searchFilter;
 
+        searchFilter = menu.findItem(mListViewModel.filterId);
+        if (searchFilter != null) {
+            searchFilter.setChecked(true);
+        }
+
+        final MenuItem narrowQuery = menu.findItem(R.id.narrow_query);
+        searchGallery = menu.findItem(R.id.lyric_list_search);
         searchGallery.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
             @Override
             public boolean onMenuItemActionExpand(MenuItem item) {
@@ -524,6 +532,10 @@ public class LyricListFragment extends Fragment {
                 item.setVisible(true);
                 narrowQuery.setVisible(false);
 
+                // Remove the filtering of list items
+                mListViewModel.searchQuery = null;
+                mListViewModel.refreshFilter();
+
                 Activity activity = getActivity();
                 if (activity != null) {
                     activity.invalidateOptionsMenu();
@@ -532,17 +544,46 @@ public class LyricListFragment extends Fragment {
             }
         });
 
+        // Set a callback for handling the search queries
+        View actionView = searchGallery.getActionView();
+        if (actionView instanceof SearchView) {
+            ((SearchView)actionView).setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+                @Override
+                public boolean onQueryTextSubmit(String query) {
+                    return false;
+                }
+
+                @Override
+                public boolean onQueryTextChange(String newText) {
+                    if (newText != null && newText.length() > 0) {
+                        mListViewModel.searchQuery = newText;
+                    } else {
+                        mListViewModel.searchQuery = null;
+                    }
+                    mListViewModel.refreshFilter();
+                    return true;
+                }
+            });
+        }
+
         super.onCreateOptionsMenu(menu, inflater);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.lyric_list_search:
-                // TODO Do Stuff on action search; ie, query local sqlite db
-                // ...
-                return super.onOptionsItemSelected(item);
+        int menuId = item.getItemId();
 
+        switch (menuId) {
+            case R.id.menu_filter_any:
+            case R.id.menu_filter_artist:
+            case R.id.menu_filter_album:
+            case R.id.menu_filter_track:
+                // Update the UI
+                item.setChecked(!item.isChecked());
+
+                mListViewModel.filterId = menuId;
+                mListViewModel.refreshFilter();
+                return true;
 
             default:
                 return super.onOptionsItemSelected(item);

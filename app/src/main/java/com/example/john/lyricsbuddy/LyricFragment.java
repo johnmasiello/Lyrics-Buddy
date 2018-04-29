@@ -309,9 +309,9 @@ public class LyricFragment extends Fragment {
                     SongLyrics songLyrics = songLyricsDetailViewModel.getSongLyricsInstantly();
 
                     if (songLyrics != null) {
-                        LyricActionHelperKt.share(this, songLyrics);
+                        LyricActionBarHelperKt.share(this, songLyrics);
                     } else {
-                        LyricActionHelperKt.failShare(getContext(), R.string.share_intent_fail_message);
+                        LyricActionBarHelperKt.failShare(getContext(), R.string.share_intent_fail_message);
                     }
                     break;
 

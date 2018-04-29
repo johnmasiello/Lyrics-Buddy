@@ -131,6 +131,10 @@
     <string name="mimeTypePrefix">text</string>
     <string name="menu_title_lyrics_on_web">Lyrics on Web</string>
     <string name="dialog_title_lyrics_on_web">Song Lyrics on the Web</string>
+    <string name="filter_any">Any</string>
+    <string name="filter_artist">Artist</string>
+    <string name="filter_album">Album</string>
+    <string name="filter_track">Track</string>
 
     <string-array name="song_lyric_site_names">
         <item>Google Search: \"Song Lyrics\"</item>

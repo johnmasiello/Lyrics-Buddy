@@ -17,7 +17,29 @@
             android:title="Narrow Search"
             app:showAsAction="ifRoom"
             android:visible="false"
-            />
+            >
+
+            <menu>
+                <group android:checkableBehavior="single">
+                    <item
+                        android:id="@+id/menu_filter_any"
+                        android:title="@string/filter_any"
+                        />
+
+                    <item android:id="@+id/menu_filter_artist"
+                        android:title="@string/filter_artist"
+                        />
+
+                    <item android:id="@+id/menu_filter_album"
+                        android:title="@string/filter_album"
+                        />
+
+                    <item android:id="@+id/menu_filter_track"
+                        android:title="@string/filter_track"
+                        />
+                </group>
+            </menu>
+        </item>
 
         <item
             android:id="@+id/sort_items"

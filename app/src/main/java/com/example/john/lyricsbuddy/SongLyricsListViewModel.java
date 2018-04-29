@@ -1,13 +1,18 @@
 package com.example.john.lyricsbuddy;
 
+import android.arch.core.util.Function;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MediatorLiveData;
+import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.Transformations;
 import android.arch.lifecycle.ViewModel;
+import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import java.lang.ref.WeakReference;
+import java.util.Collections;
 import java.util.List;
 
 import static com.example.john.lyricsbuddy.LyricDatabaseHelper.SongLyrics;
@@ -24,7 +29,12 @@ import static com.example.john.lyricsbuddy.LyricDatabaseHelper.SongLyricsListIte
 public class SongLyricsListViewModel extends ViewModel {
     private SongLyricsDao mSongLyricsDao;
     private MediatorLiveData<List<SongLyricsListItem>> mSongLyricListItems;
+    private LiveData<List<SongLyricsListItem>> mFilteredSongLyricListItems;
+    private MutableLiveData<List<SongLyricsListItem>> mFilterSongLyricListItemsWorker;
     private int mSortOrder;
+    public String searchQuery;
+    public int filterId;
+
     /**
      * Allows this view model to listen to changes in liveData in the detail view model
      */
@@ -42,6 +52,9 @@ public class SongLyricsListViewModel extends ViewModel {
     public SongLyricsListViewModel() {
         mSortOrder = ORDER_RECENT;
         songLyricsSourcedToListItems = false;
+        filterId = R.id.menu_filter_any;
+
+        mFilterSongLyricListItemsWorker = new MutableLiveData<>();
     }
 
     public LiveData<List<SongLyricsListItem>> getLyricList() {
@@ -57,6 +70,14 @@ public class SongLyricsListViewModel extends ViewModel {
 
         if (mSongLyricListItems == null) {
             mSongLyricListItems = new MediatorLiveData<>();
+            mFilteredSongLyricListItems = Transformations.switchMap(mSongLyricListItems,
+                    new Function<List<SongLyricsListItem>, LiveData<List<SongLyricsListItem>>>() {
+
+                @Override
+                public LiveData<List<SongLyricsListItem>> apply(List<SongLyricsListItem> input) {
+                    return filter(input);
+                }
+            });
             needsToFetchItems = true;
         }
         if (mSortOrder != sortOrder) {
@@ -66,7 +87,20 @@ public class SongLyricsListViewModel extends ViewModel {
         if (needsToFetchItems || forceRefresh) {
             loadSongLyricListItems();
         }
-        return mSongLyricListItems;
+        return mFilteredSongLyricListItems;
+    }
+
+    private LiveData<List<SongLyricsListItem>> filter(List<SongLyricsListItem> input) {
+
+        if (searchQuery != null && input != null) {
+            WeakReference<SongLyricsListViewModel> self = new WeakReference<>(this);
+            //noinspection unchecked
+            new FilterListItemAsyncTask(self)
+                    .execute(input);
+        } else {
+            mFilterSongLyricListItemsWorker.setValue(input);
+        }
+        return mFilterSongLyricListItemsWorker;
     }
 
     public void setSongLyricsDao(SongLyricsDao songLyricsDao) {
@@ -169,6 +203,56 @@ public class SongLyricsListViewModel extends ViewModel {
     public void setSongLyricViewModel(SongLyricDetailItemViewModel songLyricViewModel) {
         if (mSongLyricViewModel == null) {
             mSongLyricViewModel = new WeakReference<>(songLyricViewModel);
+        }
+    }
+
+    public void refreshFilter() {
+        filter(mSongLyricListItems.getValue());
+    }
+
+    private static class FilterListItemAsyncTask extends
+            AsyncTask<List<SongLyricsListItem>, Void, List<SongLyricsListItem>> {
+
+        final private WeakReference<SongLyricsListViewModel> mListModel;
+        private String query;
+        private int filterId;
+
+        public FilterListItemAsyncTask(WeakReference<SongLyricsListViewModel> songLyricsListViewModelWeakReference) {
+            mListModel = songLyricsListViewModelWeakReference;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            SongLyricsListViewModel viewModel = mListModel.get();
+            if (viewModel != null) {
+                query = viewModel.searchQuery;
+                filterId = viewModel.filterId;
+            } else {
+                cancel(true);
+            }
+        }
+
+        @Override
+        protected List<SongLyricsListItem> doInBackground(List<SongLyricsListItem>[] lists) {
+            List<SongLyricsListItem> filteredList = lists[0];
+
+            // An improvement would be for the implementation to call this methods isCancelled()
+            // while doing the work load
+            filteredList = LyricActionBarHelperKt.filterSongLyricsSearch(filteredList, filterId, query);
+
+            SongLyricsListViewModel viewModel = mListModel.get();
+            if (viewModel != null) {
+                viewModel.mFilterSongLyricListItemsWorker.postValue(filteredList);
+            }
+            return filteredList;
+        }
+
+        @Override
+        protected void onCancelled(List<SongLyricsListItem> songLyricsListItems) {
+            SongLyricsListViewModel viewModel = mListModel.get();
+            if (viewModel != null) {
+                viewModel.mFilterSongLyricListItemsWorker.setValue(songLyricsListItems);
+            }
         }
     }
 }

@@ -51,3 +51,38 @@ fun updateDetailOnSelectionMode(fragmentManager: FragmentManager?,
         songLyricDetailItemViewModel!!.updateDatabase(true, AsyncTask.SERIAL_EXECUTOR)
     }
 }
+
+@Synchronized
+fun filterSongLyricsSearch(listItems: List<LyricDatabaseHelper.SongLyricsListItem>,
+                           filterId: Int, query: String): List<LyricDatabaseHelper.SongLyricsListItem> {
+
+    // Delimit the query on ','
+    val tokens = java.lang.String(query).split(",")
+    val trimmedTokens = tokens.map {
+        var r = if (it != null) java.lang.String(it).trim() else null
+
+        if (r?.isEmpty() == true)
+            r = null
+
+        r
+    }
+    val searchableTokens = trimmedTokens.filterNotNull()
+
+    fun containsPartialMatch(field: String): Boolean {
+        return searchableTokens.find { tk -> field.contains(tk, ignoreCase = true) } != null
+    }
+
+    return listItems.filter {
+        when (filterId) {
+            R.id.menu_filter_artist -> containsPartialMatch(it.artist)
+
+            R.id.menu_filter_album -> containsPartialMatch(it.album)
+
+            R.id.menu_filter_track -> containsPartialMatch(it.trackTitle)
+
+            // Filter on 'any' case
+            else -> containsPartialMatch(it.artist) || containsPartialMatch(it.album) ||
+                    containsPartialMatch(it.trackTitle)
+        }
+    }
+}
