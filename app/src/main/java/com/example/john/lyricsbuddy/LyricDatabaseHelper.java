@@ -220,14 +220,6 @@ public class LyricDatabaseHelper {
             this.artist = artist;
         }
 
-        @Ignore
-        public SongLyricsListItem(@NonNull SongLyrics src) {
-            uid = src.uid;
-            album = src.album;
-            trackTitle = src.trackTitle;
-            artist = src.artist;
-        }
-
         public long getUid() {
             return uid;
         }
@@ -336,18 +328,6 @@ public class LyricDatabaseHelper {
          */
         @Query("SELECT * FROM SongLyrics WHERE uid IN (:uids)")
         LiveData<List<SongLyrics>> fetchSongLyrics(long... uids);
-
-        /*
-         Searches
-         */
-        @Query("SELECT uid, album, track_title, artist FROM SongLyrics WHERE artist LIKE :artist")
-        LiveData<List<SongLyricsListItem>> findByArtist(String artist);
-
-        @Query("SELECT uid, album, track_title, artist FROM SongLyrics WHERE album LIKE :album")
-        LiveData<List<SongLyricsListItem>> findByAlbum(String album);
-
-        @Query("SELECT uid, album, track_title, artist FROM SongLyrics WHERE track_title LIKE :track")
-        LiveData<List<SongLyricsListItem>> findByTrackTitle(String track);
 
         /*
         Population; should be run from a background thread

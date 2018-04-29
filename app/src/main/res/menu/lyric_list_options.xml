@@ -46,6 +46,28 @@
             android:icon="@drawable/ic_sort_black_24dp"
             android:title="Sort Items"
             app:showAsAction="ifRoom"
-            />
+            >
+
+            <menu>
+                <group android:checkableBehavior="single">
+                    <item
+                        android:id="@+id/menu_sort_natural"
+                        android:title="@string/sort_natural"
+                        />
+
+                    <item android:id="@+id/menu_sort_artist"
+                        android:title="@string/sort_artist"
+                        />
+
+                    <item android:id="@+id/menu_sort_album"
+                        android:title="@string/sort_album"
+                        />
+
+                    <item android:id="@+id/menu_sort_track"
+                        android:title="@string/sort_track"
+                        />
+                </group>
+            </menu>
+        </item>
     </group>
 </menu>

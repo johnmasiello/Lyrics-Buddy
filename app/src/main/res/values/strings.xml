@@ -135,6 +135,10 @@
     <string name="filter_artist">Artist</string>
     <string name="filter_album">Album</string>
     <string name="filter_track">Track</string>
+    <string name="sort_natural">By Recent</string>
+    <string name="sort_artist">By Artist</string>
+    <string name="sort_album">By Album</string>
+    <string name="sort_track">By Track</string>
 
     <string-array name="song_lyric_site_names">
         <item>Google Search: \"Song Lyrics\"</item>

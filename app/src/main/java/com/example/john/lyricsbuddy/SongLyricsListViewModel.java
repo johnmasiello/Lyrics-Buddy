@@ -210,6 +210,10 @@ public class SongLyricsListViewModel extends ViewModel {
         filter(mSongLyricListItems.getValue());
     }
 
+    public int getSortOrder() {
+        return mSortOrder;
+    }
+
     private static class FilterListItemAsyncTask extends
             AsyncTask<List<SongLyricsListItem>, Void, List<SongLyricsListItem>> {
 

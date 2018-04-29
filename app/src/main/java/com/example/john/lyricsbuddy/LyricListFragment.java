@@ -510,7 +510,7 @@ public class LyricListFragment extends Fragment {
     @Override
     public void onCreateOptionsMenu(final Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.lyric_list_options, menu);
-        MenuItem searchGallery, searchFilter;
+        MenuItem searchGallery, searchFilter, sortOrder;
 
         searchFilter = menu.findItem(mListViewModel.filterId);
         if (searchFilter != null) {
@@ -566,6 +566,32 @@ public class LyricListFragment extends Fragment {
             });
         }
 
+        int sortId = mListViewModel.getSortOrder();
+        int sortResId = 0;
+
+        switch (sortId) {
+            case SongLyricsListViewModel.ORDER_RECENT:
+                sortResId = R.id.menu_sort_natural;
+                break;
+
+            case SongLyricsListViewModel.ORDER_ARTIST:
+                sortResId = R.id.menu_sort_artist;
+                break;
+
+            case SongLyricsListViewModel.ORDER_ALBUM:
+                sortResId = R.id.menu_sort_album;
+                break;
+
+            case SongLyricsListViewModel.ORDER_TRACK:
+                sortResId = R.id.menu_sort_track;
+                break;
+        }
+
+        sortOrder = menu.findItem(sortResId);
+        if (sortOrder != null) {
+            sortOrder.setChecked(true);
+        }
+
         super.onCreateOptionsMenu(menu, inflater);
     }
 
@@ -583,6 +609,26 @@ public class LyricListFragment extends Fragment {
 
                 mListViewModel.filterId = menuId;
                 mListViewModel.refreshFilter();
+                return true;
+
+            case R.id.menu_sort_natural:
+                mListViewModel.getLyricList(SongLyricsListViewModel.ORDER_RECENT, false);
+                item.setChecked(!item.isChecked());
+                return true;
+
+            case R.id.menu_sort_artist:
+                mListViewModel.getLyricList(SongLyricsListViewModel.ORDER_ARTIST, false);
+                item.setChecked(!item.isChecked());
+                return true;
+
+            case R.id.menu_sort_album:
+                mListViewModel.getLyricList(SongLyricsListViewModel.ORDER_ALBUM, false);
+                item.setChecked(!item.isChecked());
+                return true;
+
+            case R.id.menu_sort_track:
+                mListViewModel.getLyricList(SongLyricsListViewModel.ORDER_TRACK, false);
+                item.setChecked(!item.isChecked());
                 return true;
 
             default:
