@@ -23,7 +23,7 @@ class LyricAnalyzer {
 
         int i = 0;
         for (String line : lines) {
-            out[i++] = line.replaceAll("[^A-Za-z0-9-' ]", " ").replaceAll(" +", " ").trim();
+            out[i++] = line.replaceAll("[\\x00-\\x20,.;:!?()\\[\\]{}\"]", " ").replaceAll(" +", " ").trim();
         }
 
         return out;
@@ -47,22 +47,22 @@ class LyricAnalyzer {
         String[] tLines = trimLyrics(lines);
         String line;
         List<List<Integer>> equivalentLines = new ArrayList<>(tLines.length);
-        List<Integer> list;
+        List<Integer> listMatchingLine_Numbers;
 
         for (int i = 0; i < tLines.length; i++) {
             line = tLines[i];
 
             if (containsWordsNoTrim(line)) {
-                list = new ArrayList<>();
+                listMatchingLine_Numbers = new ArrayList<>();
 
                 for (int j = 0; j < tLines.length; j++) {
                     if (j != i && line.equalsIgnoreCase(tLines[j]))
-                        list.add(j);
+                        listMatchingLine_Numbers.add(j);
                 }
             } else {
-                list = null;
+                listMatchingLine_Numbers = null;
             }
-            equivalentLines.add(list);
+            equivalentLines.add(listMatchingLine_Numbers);
         }
 
         return equivalentLines;
@@ -106,7 +106,7 @@ class LyricAnalyzer {
             regions[i] = -1;
         }
 
-        List<Integer> matches;
+        List<Integer> lineMatches;
         boolean newStanza;
         int coerceColor, lineColor, verseColor;
         int previousIndex, index;
@@ -117,14 +117,14 @@ class LyricAnalyzer {
         newStanza = true;
 
         while (index < regions.length) {
-            matches = equivalentLines.get(index);
+            lineMatches = equivalentLines.get(index);
 
-            if (matches == null || matches.size() > 0) {
+            if (lineMatches == null || lineMatches.size() > 0) {
 
                 // Case a line is repeating with some other line in the lyrics
-                 if (matches != null) {
-                    if (index > matches.get(0)) {
-                        coerceColor = regions[index] = regions[matches.get(0)];
+                 if (lineMatches != null) {
+                    if (index > lineMatches.get(0)) {
+                        coerceColor = regions[index] = regions[lineMatches.get(0)];
                     } else if (newStanza) {
                         coerceColor = regions[index] = ++lineColor; // Bump the color, once, on new stanza
                         newStanza = false;
@@ -142,7 +142,7 @@ class LyricAnalyzer {
                 }
 
                 // Case end of current stanza
-                if (matches == null) {
+                if (lineMatches == null) {
                     coerceColor = -1;
                     newStanza = true;
                 }
@@ -169,7 +169,7 @@ class LyricAnalyzer {
     /**
      *
      * @param body The text to split
-     * @return Splits with the delimiter D=System.separator()
+     * @return Splits with the delimiter D='\\n'
      */
     String[] delimitLines(String body) {
         return body.split("\\n");

@@ -272,7 +272,7 @@ public class LyricFragment extends Fragment {
         // Update the lyrics
         updateLyricsMode(mode);
 
-//        super.onCreateOptionsMenu(menu, inflater);
+        super.onCreateOptionsMenu(menu, inflater);
     }
 
     @Override
@@ -455,7 +455,7 @@ public class LyricFragment extends Fragment {
         int colorIndex = regions[regionIndex];
         int foregroundColor, backgroundColor;
 
-        if (colorIndex == 0) {
+        if (colorIndex <= 0) {
             foregroundColor = defaultLineColorDisplay;
         } else {
             backgroundColor = lyricSpanColors[(colorIndex + colorRotation) % lyricSpanColors.length];
