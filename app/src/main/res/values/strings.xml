@@ -142,17 +142,17 @@
 
     <string-array name="song_lyric_site_names">
         <item>Google Search: \"Song Lyrics\"</item>
+        <item>www.lyricsondemand.com/</item>
         <item>www.azlyrics.com/</item>
         <item>www.lyrics.com/</item>
         <item>genius.com/</item>
-        <item>www.lyricsondemand.com/</item>
     </string-array>
 
     <string-array name="secure_song_lyrics_site_urls">
         <item>Song Lyrics</item>
+        <item>https://www.lyricsondemand.com/</item>
         <item>https://www.azlyrics.com/</item>
         <item>https://www.lyrics.com/</item>
         <item>https://genius.com/</item>
-        <item>https://www.lyricsondemand.com/</item>
     </string-array>
 </resources>
