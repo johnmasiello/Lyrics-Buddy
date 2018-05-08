@@ -2,11 +2,12 @@ package com.example.john.lyricsbuddy;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.arch.lifecycle.LifecycleOwner;
+import android.app.AlertDialog;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -338,9 +339,7 @@ public class LyricListFragment extends Fragment {
 
         @Override
         public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-            final int menuId = item.getItemId();
-
-            switch (menuId) {
+            switch (item.getItemId()) {
                 case R.id.multiple_selectAll:
                     lyricListAdapter.selectAll();
                     item.setVisible(false);
@@ -363,10 +362,37 @@ public class LyricListFragment extends Fragment {
                     }
                     break;
 
-                case R.id.multiple_share:
-                case R.id.multiple_trash:
-                    final FragmentActivity activity = getActivity();
+                case R.id.multiple_share: {
                     final Fragment fragment = LyricListFragment.this;
+
+                    List<SongLyricsListItem> staticLiveItems =
+                            mListViewModel.getLyricList().getValue();
+
+                    long[] ids = LyricsListAdapter.getSelectedIds(staticLiveItems);
+
+                    final LiveData<List<LyricDatabaseHelper.SongLyrics>> liveData =
+                            mListViewModel.getSongLyricsDao().fetchSongLyrics(ids);
+
+                    liveData.observe(fragment,
+                            new Observer<List<LyricDatabaseHelper.SongLyrics>>() {
+                                @Override
+                                public void onChanged(@Nullable List<LyricDatabaseHelper.SongLyrics> list) {
+                                    liveData.removeObservers(fragment);
+                                    LyricDatabaseHelper.SongLyrics[] args = toArgs(list);
+
+                                    if (args != null) {
+                                        LyricActionBarHelperKt.share(fragment, args);
+                                    } else {
+                                        LyricActionBarHelperKt.failShare(fragment.getContext(), R.string.share_intent_fail_message);
+                                    }
+                                }
+                            });
+                }
+                break;
+
+                case R.id.multiple_trash:
+                {
+                    final FragmentActivity activity = getActivity();
                     if (activity != null) {
 
                         final SongLyricsListViewModel viewModel = mListViewModel;
@@ -375,47 +401,64 @@ public class LyricListFragment extends Fragment {
                                 viewModel.getLyricList().getValue();
 
                         long[] ids = LyricsListAdapter.getSelectedIds(staticLiveItems);
-                        final LifecycleOwner owner = menuId == R.id.multiple_share ? fragment :
-                                activity;
 
                         final LiveData<List<LyricDatabaseHelper.SongLyrics>> liveData =
                                 viewModel.getSongLyricsDao().fetchSongLyrics(ids);
 
-                        liveData.observe(owner,
-                            new Observer<List<LyricDatabaseHelper.SongLyrics>>() {
+                        liveData.observe(activity,
+                                new Observer<List<LyricDatabaseHelper.SongLyrics>>() {
                                     @Override
                                     public void onChanged(@Nullable List<LyricDatabaseHelper.SongLyrics> list) {
-                                        liveData.removeObservers(owner);
-                                        LyricDatabaseHelper.SongLyrics[] args = toArgs(list);
+                                        liveData.removeObservers(activity);
+                                        final LyricDatabaseHelper.SongLyrics[] args = toArgs(list);
 
-                                        if (menuId == R.id.multiple_share) {
-                                            if (args != null) {
-                                                LyricActionBarHelperKt.share(fragment, args);
-                                            } else {
-                                                LyricActionBarHelperKt.failShare(fragment.getContext(), R.string.share_intent_fail_message);
-                                            }
+                                        if (args != null) {
+                                            // First confirm delete with the user
+                                            AlertDialog.OnClickListener onClickListener =
+                                                    new AlertDialog.OnClickListener() {
+                                                        @Override
+                                                        public void onClick(DialogInterface dialog, int which) {
+                                                            switch (which) {
+                                                                case AlertDialog.BUTTON_POSITIVE:
+                                                                    // Proceed with the delete
+                                                                    SongLyricDetailItemViewModel.RefreshListItemsOnUpdateCallback callback;
+                                                                    callback = new SongLyricDetailItemViewModel.RefreshListItemsOnUpdateCallback(
+                                                                            new WeakReference<>(viewModel));
+
+                                                                    // Construct the task and execute on a serial executor
+                                                                    // in order to ensure that a preliminary update to the
+                                                                    // repository has completed before it will handle this action
+                                                                    new LyricDatabaseHelper.SongLyricAsyncTask(
+                                                                            viewModel.getSongLyricsDao(),
+                                                                            LyricDatabaseHelper.SongLyricAsyncTask.DELETE,
+                                                                            callback)
+                                                                            .executeOnExecutor(AsyncTask.SERIAL_EXECUTOR, args);
+                                                                    break;
+
+                                                                case AlertDialog.BUTTON_NEGATIVE:
+                                                                    Activity _activity = getActivity();
+                                                                    if (_activity != null) {
+                                                                        LyricActionBarHelperKt.failShare(_activity, R.string.share_trash_fail_message);
+                                                                    }
+                                                                    break;
+                                                            }
+                                                        }
+                                                    };
+
+                                            new AlertDialog.Builder(getContext())
+                                                    .setTitle(R.string.confirm_delete_title)
+                                                    .setMessage(String.format(getString(R.string.confirm_delete_msg), args.length))
+                                                    .setPositiveButton(R.string.confirm_delete_btn_positive, onClickListener)
+                                                    .setNegativeButton(R.string.confirm_delete_btn_negative, onClickListener)
+                                                    .show();
                                         } else {
-                                            if (args != null) {
-                                                SongLyricDetailItemViewModel.RefreshListItemsOnUpdateCallback callback;
-                                                callback = new SongLyricDetailItemViewModel.RefreshListItemsOnUpdateCallback(
-                                                        new WeakReference<>(viewModel));
-
-                                                // Construct the task and execute on a serial executor
-                                                // in order to ensure that a preliminary update to the
-                                                // repository has completed before it will handle this action
-                                                new LyricDatabaseHelper.SongLyricAsyncTask(
-                                                        viewModel.getSongLyricsDao(),
-                                                        LyricDatabaseHelper.SongLyricAsyncTask.DELETE,
-                                                        callback)
-                                                        .executeOnExecutor(AsyncTask.SERIAL_EXECUTOR, args);
-                                            } else {
-                                                LyricActionBarHelperKt.failShare(activity, R.string.share_trash_fail_message);
-                                            }
+                                            LyricActionBarHelperKt.failShare(activity, R.string.share_trash_fail_message);
                                         }
                                     }
                                 });
                     }
-                    break;
+                }
+                break;
 
                 default:
                     return false;
@@ -423,6 +466,7 @@ public class LyricListFragment extends Fragment {
             return true;
         }
 
+        // Convert a list to an array to support variadic parameter
         private LyricDatabaseHelper.SongLyrics[] toArgs(@Nullable List<LyricDatabaseHelper.SongLyrics> list) {
             LyricDatabaseHelper.SongLyrics[] args = null;
 

@@ -1,13 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/lyrics_scroller"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:scrollbarAlwaysDrawVerticalTrack="true"
-    >
+    android:scrollbarAlwaysDrawVerticalTrack="true">
 
     <LinearLayout
         android:id="@+id/lyrics_background"
@@ -28,7 +24,7 @@
             android:background="@android:color/transparent"
             android:gravity="center"
             android:hint="@string/title_view_hint"
-            android:inputType="textCapWords|textNoSuggestions|textMultiLine"
+            android:inputType="textNoSuggestions|textCapWords|textMultiLine"
             android:textAppearance="@style/TrackInfo"
             />
 
@@ -40,7 +36,7 @@
             android:background="@android:color/transparent"
             android:gravity="center"
             android:hint="@string/album_view_hint"
-            android:inputType="textCapWords|textNoSuggestions|textMultiLine"
+            android:inputType="textNoSuggestions|textCapWords|textMultiLine"
             android:maxWidth="@dimen/max_width_track_info"
             android:paddingEnd="@dimen/shadowPadding"
             android:paddingRight="@dimen/shadowPadding"
@@ -79,7 +75,7 @@
                 android:paddingEnd="@dimen/shadowPadding"
                 android:gravity="center_horizontal|top"
                 android:hint="@string/artist_view_hint"
-                android:inputType="textCapWords|textNoSuggestions|textMultiLine"
+                android:inputType="textNoSuggestions|textCapWords|textMultiLine"
                 android:textAllCaps="false"
                 android:textAppearance="@style/TrackInfo_Subordinate"
                 android:textStyle="italic" />
@@ -94,7 +90,7 @@
             android:background="@android:color/transparent"
             android:gravity="center_horizontal|top"
             android:hint="@string/lyrics_view_hint"
-            android:inputType="textCapSentences|textNoSuggestions|textMultiLine"
+            android:inputType="textNoSuggestions|textCapSentences|textMultiLine"
             />
     </LinearLayout>
 </ScrollView>

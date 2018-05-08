@@ -139,6 +139,10 @@
     <string name="sort_artist">By Artist</string>
     <string name="sort_album">By Album</string>
     <string name="sort_track">By Track</string>
+    <string name="confirm_delete_title">Confirm Delete</string>
+    <string name="confirm_delete_msg">Delete %d items?</string>
+    <string name="confirm_delete_btn_positive">Delete</string>
+    <string name="confirm_delete_btn_negative">Cancel</string>
 
     <string-array name="song_lyric_site_names">
         <item>Google Search: \"Song Lyrics\"</item>
