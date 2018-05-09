@@ -182,7 +182,11 @@ public class LyricFragment extends Fragment {
                 setTextWatcherEnabled(true);
             }
         };
-        songLyricsDetailViewModel.getSongLyrics().observe(this, songLyricsObserver);
+
+        LiveData<SongLyrics> songLyricsLiveData = songLyricsDetailViewModel.getSongLyrics();
+
+        // Set the observer on the live data
+        songLyricsLiveData.observe(this, songLyricsObserver);
 
         WrappedEditText.ensureUndoStack();
         WrappedEditText.ensureRedoStack();
