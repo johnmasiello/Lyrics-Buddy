@@ -145,6 +145,11 @@ Lyrics from https://www.lyricsondemand.com
                         lyrics.setText(new SpannableString(songLyrics.getLyrics()), TextView.BufferType.EDITABLE);
                    }
                    
+                   LiveData<SongLyrics> songLyricsLiveData = songLyricsDetailViewModel.getSongLyrics();
+                   
+                   // Set the observer on the live data
+                   songLyricsLiveData.observe(this, songLyricsObserver);
+                   
 #### Opening the Database is Easy with Room _Java_
 
         songLyricDatabase = Room.databaseBuilder(context,
