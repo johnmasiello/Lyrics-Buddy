@@ -1,7 +1,6 @@
-# Lyrics Buddy
+# Lyrics Buddy _Android_
 
 #### Search, Edit, Create, View Song lyrics
-for Android
 
 ## Components
 #### Android API
@@ -63,10 +62,6 @@ See the structure of the lyrics by clicking 'display' in the action bar.
 - Chorus stanzas and repeating lines are highlighted
     - Emphasis
     - Make Distinct from Verse
-- Choose the Color Scheme
-    - Scheme
-    - Randomize
-
 
 ![Lyric List Items View](images/s_Screenshot_SongLyrics_1.png)
 
