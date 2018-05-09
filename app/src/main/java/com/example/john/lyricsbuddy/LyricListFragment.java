@@ -538,7 +538,7 @@ public class LyricListFragment extends Fragment {
         mListViewModel.setSongLyricViewModel(mDetailViewModel);
         mDetailViewModel.setSongLyricsDao(dao);
         mDetailViewModel.setSongLyricsListViewModel(mListViewModel);
-        // Add an observer register changes from LiveData to the adapter backing the recyclerView
+        // Add an observer to register changes from LiveData to the adapter backing the recyclerView
         // to reflect changes in the UI
         mListViewModel
                 .getLyricList()
