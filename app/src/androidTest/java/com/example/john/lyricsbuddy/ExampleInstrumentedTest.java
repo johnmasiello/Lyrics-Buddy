@@ -27,7 +27,7 @@ public class ExampleInstrumentedTest {
 
         assertEquals("com.example.john.lyricsgrabber", appContext.getPackageName());
 
-        String lyrics = appContext.getString(R.string.lyrics);
+        String lyrics = appContext.getString(R.string.ballgame_lyrics);
 
         assertTrue("lyrics not read in", lyrics.length() > 0);
 
@@ -56,7 +56,7 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        String originalLyrics = appContext.getString(R.string.lyrics);
+        String originalLyrics = appContext.getString(R.string.ballgame_lyrics);
         LyricAnalyzer lyricAnalyzer = new LyricAnalyzer();
 
         // Find the matching lines

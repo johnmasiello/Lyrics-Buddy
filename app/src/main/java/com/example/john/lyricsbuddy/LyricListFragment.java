@@ -390,6 +390,46 @@ public class LyricListFragment extends Fragment {
                 }
                 break;
 
+                case R.id.multiple_copy: {
+                    final Fragment fragment = LyricListFragment.this;
+
+                    List<SongLyricsListItem> staticLiveItems =
+                            mListViewModel.getLyricList().getValue();
+
+                    long[] ids = LyricsListAdapter.getSelectedIds(staticLiveItems);
+
+                    final LiveData<List<LyricDatabaseHelper.SongLyrics>> liveData =
+                            mListViewModel.getSongLyricsDao().fetchSongLyrics(ids);
+
+                    liveData.observe(fragment,
+                            new Observer<List<LyricDatabaseHelper.SongLyrics>>() {
+                                @Override
+                                public void onChanged(@Nullable List<LyricDatabaseHelper.SongLyrics> list) {
+                                    liveData.removeObservers(fragment);
+                                    LyricDatabaseHelper.SongLyrics[] songLyrics = toArgs(list);
+
+                                    if (songLyrics != null) {
+                                        // Reset the UID so the insert all will add the records as new records
+                                        for (LyricDatabaseHelper.SongLyrics songLyric : songLyrics) {
+                                            songLyric.setUid(LyricDatabaseHelper.SongLyrics.UNSET_ID);
+                                        }
+
+                                        LyricDatabaseHelper.SongLyricAsyncTask task;
+
+                                        task = new LyricDatabaseHelper.SongLyricAsyncTask(
+                                           mListViewModel.getSongLyricsDao(),
+                                                LyricDatabaseHelper.SongLyricAsyncTask.INSERT_ALL,
+                                                new SongLyricDetailItemViewModel
+                                                        .RefreshListItemsOnUpdateCallback(new WeakReference<>(mListViewModel))
+                                                );
+
+                                        task.execute(songLyrics);
+                                    }
+                                }
+                            });
+                }
+                break;
+
                 case R.id.multiple_trash:
                 {
                     final FragmentActivity activity = getActivity();

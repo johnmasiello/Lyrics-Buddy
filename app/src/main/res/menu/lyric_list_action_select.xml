@@ -31,6 +31,12 @@
             android:icon="@drawable/ic_trash_24dp"
             app:showAsAction="always"
             />
+
+        <item
+            android:id="@+id/multiple_copy"
+            android:title="Duplicate"
+            app:showAsAction="never"
+            />
     </group>
 
 </menu>
